@@ -5,366 +5,213 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>EduTest Admin Panel</title>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:#f3f5fb;color:#172033}
-header{background:#172554;color:white;padding:20px}
-header h1{margin:0;font-size:24px}
-header p{margin:7px 0 0;color:#cbd5e1}
-.container{max-width:1100px;margin:22px auto;padding:0 14px}
-.card{background:white;border-radius:14px;padding:20px;margin-bottom:18px;box-shadow:0 4px 18px #17255410}
-h2{font-size:20px;margin-top:0}
-input,select,textarea{width:100%;padding:12px;margin:6px 0 14px;border:1px solid #cbd5e1;border-radius:8px;font-size:15px;background:white}
-textarea{min-height:80px;resize:vertical}
-button{padding:11px 15px;border:0;border-radius:8px;background:#2563eb;color:white;font-weight:bold;cursor:pointer;margin:3px}
-button:disabled{opacity:.5}
-.secondary{background:#475569}.danger{background:#dc2626}.green{background:#15803d}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
-.hidden{display:none!important}
-.note{font-size:13px;color:#64748b;line-height:1.5}
-.status{padding:12px;border-radius:8px;margin:12px 0;white-space:pre-wrap;overflow-wrap:anywhere}
-.ok{background:#dcfce7;color:#166534}.err{background:#fee2e2;color:#991b1b}
-.item{border:1px solid #e2e8f0;border-radius:10px;padding:14px;margin:10px 0;overflow-wrap:anywhere}
-.item h3{margin:0 0 8px}
-.question{border:1px solid #cbd5e1;padding:14px;border-radius:10px;margin:12px 0;background:#f8fafc}
-.badge{font-size:12px;padding:4px 8px;border-radius:20px;background:#e2e8f0}
-footer{text-align:center;color:#64748b;padding:20px;font-size:12px}
+body{font-family:Arial,sans-serif;background:#f3f5f9;margin:0;padding:16px;color:#172033}
+main{max-width:720px;margin:auto}
+section{background:white;padding:18px;margin:14px 0;border-radius:14px;box-shadow:0 2px 9px #0001}
+input,textarea,select,button{box-sizing:border-box;width:100%;padding:12px;margin:7px 0;border:1px solid #ccd3df;border-radius:8px;font-size:15px}
+button{background:#155eef;color:white;border:0;font-weight:bold;cursor:pointer}
+h1{font-size:25px}h2{font-size:19px}
+.hidden{display:none}.note{font-size:13px;color:#555}
 </style>
 </head>
 <body>
-<header>
-  <h1>EduTest Admin Panel</h1>
-  <p>Study Material · Test Series · Dashboard</p>
-</header>
+<main>
+<h1>EduTest Admin</h1>
 
-<div class="container">
-  <section id="loginCard" class="card">
-    <h2>🔐 Admin Login</h2>
-    <label>Admin Password</label>
-    <input id="password" type="password" placeholder="पासवर्ड डालें" autocomplete="current-password">
-    <button onclick="login()">Login</button>
-    <div id="loginMsg" class="note"></div>
-    <p class="note">ध्यान दें: यह पासवर्ड केवल पैनल का UI खोलता है। Firebase डेटा की सुरक्षा Firestore Rules/backend से अलग नियंत्रित होती है।</p>
-  </section>
+<section id="login">
+<h2>Admin Login</h2>
+<input id="password" type="password" placeholder="Admin password">
+<button onclick="loginAdmin()">Login</button>
+<p id="loginMsg"></p>
+</section>
 
-  <main id="panel" class="hidden">
-    <div class="card">
-      <div class="grid">
-        <div><strong>Study Materials</strong><h2 id="materialCount">—</h2></div>
-        <div><strong>Test Series</strong><h2 id="testCount">—</h2></div>
-      </div>
-      <button class="secondary" onclick="loadAll()">Refresh Data</button>
-      <button class="danger" onclick="logout()">Logout</button>
-      <div id="status"></div>
-    </div>
+<div id="panel" class="hidden">
+<section>
+<h2>📚 Add Study Material / PDF</h2>
+<input id="pdfTitle" placeholder="PDF का नाम">
+<input id="pdfSubject" placeholder="Subject">
+<input id="pdfTopic" placeholder="Topic">
+<input id="pdfUrl" type="url" placeholder="Google Drive PDF link">
+<textarea id="pdfDesc" placeholder="Description"></textarea>
+<label><input id="pdfPublished" type="checkbox" checked style="width:auto"> Publish for students</label>
+<button onclick="savePDF()">Save PDF</button>
+<p id="pdfMsg"></p>
+</section>
 
-    <section class="card">
-      <h2>📚 Add Study Material</h2>
-      <form id="materialForm">
-        <label>Material Title *</label>
-        <input id="mTitle" required placeholder="जैसे: भारतीय इतिहास नोट्स">
-        <div class="grid">
-          <div><label>Subject *</label><input id="mSubject" required placeholder="जैसे: History"></div>
-          <div><label>Topic / Category</label><input id="mTopic" placeholder="जैसे: Modern India"></div>
-        </div>
-        <label>Google Drive PDF Link *</label>
-        <input id="mUrl" type="url" required placeholder="https://drive.google.com/file/d/...">
-        <label>Description</label>
-        <textarea id="mDescription" placeholder="इस PDF में क्या है?"></textarea>
-        <label>Publish Status</label>
-        <select id="mPublished"><option value="true">Published — विद्यार्थी देख सकेंगे</option><option value="false">Draft — अभी प्रकाशित नहीं</option></select>
-        <button type="submit">Save Study Material</button>
-      </form>
-      <p class="note">Drive में PDF Share → General access → Anyone with the link → Viewer चुनें, यदि सभी विद्यार्थियों को खोलने देना है।</p>
-    </section>
+<section>
+<h2>📝 Add Test Series</h2>
+<input id="testTitle" placeholder="Test का नाम">
+<input id="testSubject" placeholder="Subject">
+<input id="duration" type="number" placeholder="Duration (minutes)">
+<div id="questions"></div>
+<button onclick="addQuestion()">+ Add Question</button>
+<label><input id="testPublished" type="checkbox" checked style="width:auto"> Publish for students</label>
+<button onclick="saveTest()">Save Test</button>
+<p id="testMsg"></p>
+</section>
 
-    <section class="card">
-      <h2>📝 Create Test Series</h2>
-      <form id="testForm">
-        <label>Test Title *</label>
-        <input id="tTitle" required placeholder="जैसे: SSC GK Practice Test 1">
-        <div class="grid">
-          <div><label>Subject / Exam *</label><input id="tSubject" required placeholder="SSC / Railway / GK"></div>
-          <div><label>Duration (minutes) *</label><input id="tDuration" type="number" min="1" value="30" required></div>
-          <div><label>Marks per correct answer</label><input id="tMarks" type="number" min="0" step="0.25" value="1" required></div>
-          <div><label>Negative marks per wrong answer</label><input id="tNegative" type="number" min="0" step="0.25" value="0" required></div>
-        </div>
-        <label>Description</label>
-        <textarea id="tDescription" placeholder="Test के बारे में जानकारी"></textarea>
-
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
-          <h3>Questions</h3>
-          <button type="button" class="secondary" onclick="addQuestion()">+ Add Question</button>
-        </div>
-        <div id="questions"></div>
-
-        <label>Publish Status</label>
-        <select id="tPublished"><option value="true">Published — विद्यार्थी देख सकेंगे</option><option value="false">Draft — अभी प्रकाशित नहीं</option></select>
-        <button type="submit">Save Test Series</button>
-      </form>
-    </section>
-
-    <section class="card">
-      <h2>📖 Study Materials List</h2>
-      <div id="materialsList">Refresh Data दबाएँ।</div>
-    </section>
-    <section class="card">
-      <h2>🧠 Test Series List</h2>
-      <div id="testsList">Refresh Data दबाएँ।</div>
-    </section>
-  </main>
+<section>
+<h2>Saved content</h2>
+<button onclick="loadContent()">Refresh list</button>
+<div id="items"></div>
+<button onclick="logoutAdmin()" style="background:#555">Logout</button>
+</section>
 </div>
-<footer>EduTest Admin · Firebase Firestore</footer>
+</main>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
-/* Firebase project configuration */
+// Firebase Console > Project settings > Your apps से config भरें.
 const firebaseConfig = {
-  apiKey: "AIzaSyB5vN74NfP-Tx1tIxMDSmOwjhvkgp06Soo",
+  apiKey: "YOUR_API_KEY",
   authDomain: "edutest-admin.firebaseapp.com",
+  databaseURL: "YOUR_REALTIME_DATABASE_URL",
   projectId: "edutest-admin",
   storageBucket: "edutest-admin.firebasestorage.app",
   messagingSenderId: "785312729550",
-  appId: "1:785312729550:web:d9cc16fee38afdc88b839f",
-  measurementId: "G-83B1SDVYKF"
+  appId: "YOUR_APP_ID"
 };
 
-/* UI-only password. This is NOT secure server authentication. */
+// यह केवल UI password check है, सुरक्षित server authentication नहीं।
 const ADMIN_PASSWORD = "79051";
 
 firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+const db = firebase.database();
 
-let questionCount = 0;
-let isLoggedIn = false;
-
-function $(id){ return document.getElementById(id); }
-
-function showStatus(message, error=false){
-  const el = $("status");
-  el.className = "status " + (error ? "err" : "ok");
-  el.textContent = message;
-}
-
-function friendlyError(e){
-  console.error(e);
-  if(e && (e.code === "permission-denied" || e.code === "unauthenticated")){
-    return "Firebase ने अनुमति नहीं दी (Permission Denied)। Firestore Rules/backend में अधिकृत write access सेट करना होगा।";
+function loginAdmin(){
+  if(document.getElementById("password").value === ADMIN_PASSWORD){
+    document.getElementById("login").classList.add("hidden");
+    document.getElementById("panel").classList.remove("hidden");
+    addQuestion();
+    loadContent();
+  } else {
+    document.getElementById("loginMsg").textContent="गलत पासवर्ड";
   }
-  return (e && e.message) ? e.message : "कोई त्रुटि हुई।";
+}
+function logoutAdmin(){
+  document.getElementById("panel").classList.add("hidden");
+  document.getElementById("login").classList.remove("hidden");
+  document.getElementById("password").value="";
 }
 
-function login(){
-  if($("password").value !== ADMIN_PASSWORD){
-    $("loginMsg").textContent = "गलत पासवर्ड।";
-    return;
-  }
-  isLoggedIn = true;
-  $("loginCard").classList.add("hidden");
-  $("panel").classList.remove("hidden");
-  $("loginMsg").textContent = "";
-  loadAll();
-}
+function val(id){return document.getElementById(id).value.trim();}
+function msg(id,text){document.getElementById(id).textContent=text;}
 
-function logout(){
-  isLoggedIn = false;
-  $("panel").classList.add("hidden");
-  $("loginCard").classList.remove("hidden");
-  $("password").value = "";
-}
-
-function driveLinkValid(url){
+async function savePDF(){
+  const title=val("pdfTitle"),subject=val("pdfSubject"),url=val("pdfUrl");
+  if(!title||!subject||!url){msg("pdfMsg","PDF का नाम, subject और Drive link भरें।");return;}
   try{
-    const u = new URL(url);
-    return u.protocol === "https:" &&
-      (u.hostname === "drive.google.com" || u.hostname === "docs.google.com");
-  }catch(e){ return false; }
+    const host=new URL(url).hostname;
+    if(!["drive.google.com","docs.google.com"].includes(host)){
+      throw new Error("Google Drive का सही link डालें।");
+    }
+    const record={
+      title,subject,topic:val("pdfTopic"),url,
+      description:val("pdfDesc"),
+      published:document.getElementById("pdfPublished").checked,
+      createdAt:Date.now()
+    };
+    await db.ref("study_materials").push(record);
+    msg("pdfMsg","PDF रिकॉर्ड सेव हो गया।");
+    ["pdfTitle","pdfSubject","pdfTopic","pdfUrl","pdfDesc"].forEach(id=>document.getElementById(id).value="");
+    loadContent();
+  }catch(e){msg("pdfMsg","Save error: "+e.message);}
 }
 
-function addQuestion(data={}){
-  questionCount++;
-  const n = questionCount;
-  const box = document.createElement("div");
-  box.className = "question";
-  box.dataset.question = "1";
-  box.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <strong>Question ${n}</strong>
-      <button type="button" class="danger" onclick="this.closest('.question').remove()">Remove</button>
-    </div>
-    <label>Question text *</label>
-    <textarea class="q-text" required placeholder="यहाँ प्रश्न लिखें"></textarea>
-    <div class="grid">
-      <div><label>Option A *</label><input class="q-a" required></div>
-      <div><label>Option B *</label><input class="q-b" required></div>
-      <div><label>Option C *</label><input class="q-c" required></div>
-      <div><label>Option D *</label><input class="q-d" required></div>
-    </div>
-    <label>Correct Answer *</label>
-    <select class="q-correct">
+let questionCount=0;
+function addQuestion(){
+  const n=++questionCount;
+  const div=document.createElement("section");
+  div.id="q"+n;
+  div.innerHTML=`
+    <h3>Question ${n}</h3>
+    <textarea class="question" placeholder="प्रश्न लिखें"></textarea>
+    <input class="opt" placeholder="Option A">
+    <input class="opt" placeholder="Option B">
+    <input class="opt" placeholder="Option C">
+    <input class="opt" placeholder="Option D">
+    <label>सही उत्तर</label>
+    <select class="correct">
       <option value="0">A</option><option value="1">B</option>
       <option value="2">C</option><option value="3">D</option>
     </select>
-    <label>Explanation (optional)</label>
-    <textarea class="q-explanation" placeholder="उत्तर की व्याख्या"></textarea>
-  `;
-  $("questions").appendChild(box);
-  if(data.question) box.querySelector(".q-text").value = data.question;
-  if(data.options) {
-    [".q-a",".q-b",".q-c",".q-d"].forEach((s,i)=>box.querySelector(s).value=data.options[i]||"");
-  }
-  if(data.correctAnswer !== undefined) box.querySelector(".q-correct").value=String(data.correctAnswer);
-  if(data.explanation) box.querySelector(".q-explanation").value=data.explanation;
+    <input class="marks" type="number" value="1" placeholder="Marks">
+    <textarea class="explanation" placeholder="Explanation (optional)"></textarea>
+    <button type="button" onclick="this.parentElement.remove()" style="background:#b42318">Remove question</button>`;
+  document.getElementById("questions").appendChild(div);
 }
 
-function getQuestions(){
-  const boxes = [...$("questions").querySelectorAll(".question")];
-  if(!boxes.length) throw new Error("कम-से-कम एक प्रश्न जोड़ें।");
-  return boxes.map((box,i)=>{
-    const question = box.querySelector(".q-text").value.trim();
-    const options = [".q-a",".q-b",".q-c",".q-d"].map(s=>box.querySelector(s).value.trim());
-    const correctAnswer = Number(box.querySelector(".q-correct").value);
-    const explanation = box.querySelector(".q-explanation").value.trim();
-    if(!question || options.some(x=>!x)) throw new Error("Question "+(i+1)+": सभी प्रश्न और विकल्प भरें।");
-    return {question, options, correctAnswer, explanation, marks:Number($("tMarks").value)||1};
-  });
+async function saveTest(){
+  const title=val("testTitle"),subject=val("testSubject");
+  const boxes=[...document.querySelectorAll("#questions section")];
+  if(!title||!subject||!boxes.length){msg("testMsg","Test का नाम, subject और कम-से-कम एक प्रश्न भरें।");return;}
+  const questions=[];
+  for(const b of boxes){
+    const question=b.querySelector(".question").value.trim();
+    const options=[...b.querySelectorAll(".opt")].map(x=>x.value.trim());
+    if(!question||options.some(x=>!x)){msg("testMsg","हर प्रश्न और उसके चारों options भरें।");return;}
+    questions.push({
+      question,options,
+      correctAnswer:Number(b.querySelector(".correct").value),
+      marks:Number(b.querySelector(".marks").value)||1,
+      explanation:b.querySelector(".explanation").value.trim()
+    });
+  }
+  const totalMarks=questions.reduce((sum,q)=>sum+q.marks,0);
+  const record={
+    title,subject,duration:Number(val("duration"))||30,
+    questions,totalQuestions:questions.length,totalMarks,
+    published:document.getElementById("testPublished").checked,
+    createdAt:Date.now()
+  };
+  try{
+    await db.ref("tests").push(record);
+    msg("testMsg","Test Series सेव हो गई।");
+    document.getElementById("testTitle").value="";
+    document.getElementById("testSubject").value="";
+    document.getElementById("duration").value="";
+    document.getElementById("questions").innerHTML="";
+    questionCount=0;addQuestion();loadContent();
+  }catch(e){msg("testMsg","Save error: "+e.message);}
 }
 
-$("materialForm").addEventListener("submit", async e=>{
-  e.preventDefault();
-  if(!isLoggedIn) return;
-  const url = $("mUrl").value.trim();
-  if(!driveLinkValid(url)){
-    showStatus("कृपया सही Google Drive/Docs HTTPS लिंक डालें।",true); return;
-  }
-  const btn = e.submitter;
-  btn.disabled = true;
+async function loadContent(){
+  const target=document.getElementById("items");
+  target.textContent="Loading...";
   try{
-    const data = {
-      title: $("mTitle").value.trim(),
-      subject: $("mSubject").value.trim(),
-      topic: $("mTopic").value.trim(),
-      url: url,
-      description: $("mDescription").value.trim(),
-      published: $("mPublished").value === "true",
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    };
-    await db.collection("study_materials").add(data);
-    showStatus("Study Material सेव हो गया।");
-    e.target.reset();
-    await loadAll();
-  }catch(err){ showStatus(friendlyError(err),true); }
-  finally{ btn.disabled = false; }
-});
-
-$("testForm").addEventListener("submit", async e=>{
-  e.preventDefault();
-  if(!isLoggedIn) return;
-  const btn = e.submitter;
-  btn.disabled = true;
-  try{
-    const questions = getQuestions();
-    const data = {
-      title: $("tTitle").value.trim(),
-      subject: $("tSubject").value.trim(),
-      duration: Number($("tDuration").value),
-      marksPerQuestion: Number($("tMarks").value),
-      negativeMarks: Number($("tNegative").value),
-      description: $("tDescription").value.trim(),
-      questions: questions,
-      totalQuestions: questions.length,
-      totalMarks: questions.reduce((sum,q)=>sum+q.marks,0),
-      published: $("tPublished").value === "true",
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    };
-    if(!data.title || !data.subject || data.duration < 1) throw new Error("Test Title, Subject और Duration सही भरें।");
-    await db.collection("tests").add(data);
-    showStatus("Test Series सेव हो गई।");
-    e.target.reset();
-    $("questions").innerHTML = "";
-    questionCount = 0;
-    $("tDuration").value = 30;
-    $("tMarks").value = 1;
-    $("tNegative").value = 0;
-    addQuestion();
-    await loadAll();
-  }catch(err){ showStatus(friendlyError(err),true); }
-  finally{ btn.disabled = false; }
-});
-
-async function loadAll(){
-  if(!isLoggedIn) return;
-  showStatus("डेटा लोड हो रहा है…");
-  try{
-    const [materials, tests] = await Promise.all([
-      db.collection("study_materials").orderBy("createdAt","desc").get(),
-      db.collection("tests").orderBy("createdAt","desc").get()
+    const [pdfs,tests]=await Promise.all([
+      db.ref("study_materials").once("value"),
+      db.ref("tests").once("value")
     ]);
-    $("materialCount").textContent = materials.size;
-    $("testCount").textContent = tests.size;
-
-    $("materialsList").innerHTML = "";
-    materials.forEach(doc=>{
-      const d = doc.data();
-      const el = document.createElement("div");
-      el.className = "item";
-      const title = document.createElement("h3"); title.textContent = d.title || "Untitled";
-      const meta = document.createElement("p"); meta.textContent = (d.subject||"") + " · " + (d.topic||"");
-      const badge = document.createElement("span"); badge.className = "badge"; badge.textContent = d.published ? "Published" : "Draft";
-      const link = document.createElement("a"); link.href = d.url || d.pdfUrl || "#"; link.target="_blank"; link.rel="noopener"; link.textContent="Open PDF link";
-      const toggle = document.createElement("button"); toggle.className="secondary"; toggle.textContent=d.published?"Unpublish":"Publish";
-      toggle.onclick=()=>togglePublished("study_materials",doc.id,!!d.published);
-      const del = document.createElement("button"); del.className="danger"; del.textContent="Delete";
-      del.onclick=()=>deleteRecord("study_materials",doc.id);
-      el.append(title,meta,badge,document.createElement("br"),link,toggle,del);
-      $("materialsList").appendChild(el);
-    });
-    if(!materials.size) $("materialsList").textContent = "अभी कोई सामग्री नहीं है।";
-
-    $("testsList").innerHTML = "";
-    tests.forEach(doc=>{
-      const d = doc.data();
-      const el = document.createElement("div"); el.className="item";
-      const title=document.createElement("h3"); title.textContent=d.title||"Untitled";
-      const meta=document.createElement("p"); meta.textContent=(d.subject||"")+" · प्रश्न: "+(d.totalQuestions ?? (d.questions||[]).length)+" · अवधि: "+(d.duration||"—")+" मिनट";
-      const badge=document.createElement("span"); badge.className="badge"; badge.textContent=d.published?"Published":"Draft";
-      const toggle=document.createElement("button"); toggle.className="secondary"; toggle.textContent=d.published?"Unpublish":"Publish";
-      toggle.onclick=()=>togglePublished("tests",doc.id,!!d.published);
-      const del=document.createElement("button"); del.className="danger"; del.textContent="Delete";
-      del.onclick=()=>deleteRecord("tests",doc.id);
-      el.append(title,meta,badge,toggle,del);
-      $("testsList").appendChild(el);
-    });
-    if(!tests.size) $("testsList").textContent = "अभी कोई टेस्ट नहीं है।";
-    showStatus("डेटा लोड हो गया।");
-  }catch(err){ showStatus(friendlyError(err),true); }
+    target.innerHTML="";
+    function addGroup(snapshot,label,path){
+      snapshot.forEach(child=>{
+        const data=child.val();
+        const row=document.createElement("div");
+        row.style.cssText="padding:10px 0;border-bottom:1px solid #ddd";
+        const title=document.createElement("strong");
+        title.textContent=label+": "+(data.title||"Untitled");
+        const status=document.createElement("span");
+        status.textContent=data.published?" — Published":" — Draft";
+        const del=document.createElement("button");
+        del.textContent="Delete";
+        del.style.background="#b42318";
+        del.onclick=async()=>{
+          if(confirm("क्या इसे delete करना है?")){
+            try{await db.ref(path+"/"+child.key).remove();loadContent();}
+            catch(e){alert("Delete error: "+e.message);}
+          }
+        };
+        row.append(title,status,del);target.appendChild(row);
+      });
+    }
+    addGroup(pdfs,"PDF","study_materials");
+    addGroup(tests,"Test","tests");
+    if(!target.children.length)target.textContent="अभी कोई रिकॉर्ड नहीं है।";
+  }catch(e){target.textContent="Load error: "+e.message;}
 }
-
-async function togglePublished(collection,id,current){
-  if(!isLoggedIn) return;
-  try{
-    await db.collection(collection).doc(id).update({
-      published:!current,
-      updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-    });
-    showStatus("Publish Status अपडेट हो गया।");
-    await loadAll();
-  }catch(err){ showStatus(friendlyError(err),true); }
-}
-
-async function deleteRecord(collection,id){
-  if(!isLoggedIn || !confirm("क्या आप इसे स्थायी रूप से Delete करना चाहते हैं?")) return;
-  try{
-    await db.collection(collection).doc(id).delete();
-    showStatus("Record Delete हो गया।");
-    await loadAll();
-  }catch(err){ showStatus(friendlyError(err),true); }
-}
-
-addQuestion();
 </script>
 </body>
 </html>
