@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="hi">
 <head>
@@ -13,19 +12,19 @@ main{max-width:850px;margin:auto}
 h1{margin:0 0 5px;font-size:27px}
 h2{margin:0 0 14px;font-size:20px}
 .sub{color:#667085;font-size:14px}
-.card{background:white;border:1px solid #e2e8f0;border-radius:16px;padding:18px;margin:14px 0;box-shadow:0 4px 16px #0b23400a}
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:18px;margin:14px 0;box-shadow:0 4px 16px #0b23400a}
 label{display:block;font-size:14px;font-weight:650;margin:10px 0 5px}
-input,textarea,select{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:9px;font:inherit;background:white}
+input,textarea,select{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:9px;font:inherit;background:#fff}
 textarea{min-height:76px;resize:vertical}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-button{border:0;border-radius:9px;padding:12px 14px;background:#155eef;color:white;font:inherit;font-weight:700;cursor:pointer;margin-top:10px}
+button{border:0;border-radius:9px;padding:12px 14px;background:#155eef;color:#fff;font:inherit;font-weight:700;cursor:pointer;margin-top:10px}
 button.secondary{background:#475467}
 button.danger{background:#b42318}
 button.light{background:#e8efff;color:#1746a2}
 .actions{display:flex;gap:8px;flex-wrap:wrap}
 .actions button{flex:1}
 .hidden{display:none!important}
-.status{padding:12px;border-radius:9px;margin-top:10px;white-space:pre-wrap;font-size:14px}
+.status{padding:12px;border-radius:9px;margin-top:10px;white-space:pre-wrap;font-size:14px;overflow-wrap:anywhere}
 .ok{background:#dcfae6;color:#05603a}
 .err{background:#fee4e2;color:#912018}
 .info{background:#eff8ff;color:#175cd3}
@@ -47,9 +46,10 @@ button.light{background:#e8efff;color:#1746a2}
 
 <section id="loginCard" class="card">
 <h2>Admin Login</h2>
-<p class="sub">पहले Firebase Authentication से लॉगिन करें।</p>
-<label for="password">Admin Password</label>
-<input id="password" type="password" inputmode="numeric" placeholder="790123">
+<label for="email">Email</label>
+<input id="email" type="email" autocomplete="username" placeholder="admin@example.com">
+<label for="password">Password</label>
+<input id="password" type="password" autocomplete="current-password">
 <button id="loginBtn">Login</button>
 <div id="loginStatus" aria-live="polite"></div>
 </section>
@@ -58,7 +58,7 @@ button.light{background:#e8efff;color:#1746a2}
 <section class="card">
 <h2>Firebase Connection</h2>
 <div class="sub">Project: edutest-admin</div>
-<div id="connection" class="status info">Connecting…</div>
+<div id="connection" class="status info">Connected</div>
 <div class="actions">
 <button class="secondary" id="refreshBtn">Refresh List</button>
 <button class="danger" id="logoutBtn">Logout</button>
@@ -102,8 +102,7 @@ button.light{background:#e8efff;color:#1746a2}
 </section>
 
 <section class="card">
-<h2>Saved Materials & Tests</h2>
-<div class="sub">यहाँ सेव की गई सामग्री दिखाई देगी।</div>
+<h2>Saved Materials &amp; Tests</h2>
 <div id="items">Refresh दबाएँ।</div>
 </section>
 </div>
@@ -121,149 +120,104 @@ const firebaseConfig = {
   projectId: "edutest-admin",
   storageBucket: "edutest-admin.firebasestorage.app",
   messagingSenderId: "785312729550",
-  appId: "1:785312729550:web:d9cc16fee38afdc88b839f",
-  measurementId: "G-83B1SDVYKF"
+  appId: "1:785312729550:web:d9cc16fee38afdc88b839f"
 };
-
-// Admin UID: Firebase Authentication से सत्यापित होना जरूरी है।
-const ADMIN_UID = "PkvCDwLI9aaNcUKYFCchKc6UesJi1;
-const ADMIN_PASSWORD = "79051";
 
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
 let questionCounter = 0;
 const $ = id => document.getElementById(id);
+const val = id => $(id).value.trim();
 
-function status(id, text, type="info") {
+function status(id, text, type) {
   const el = $(id);
-  el.className = "status " + type;
+  el.className = "status " + (type || "info");
   el.textContent = text;
 }
 
-function login() {
-  const user = auth.currentUser;
-
-  if (!user) {
-    status("loginStatus",
-      "पहले admin-auth.html खोलकर Firebase Email/Password से लॉगिन करें।",
-      "err");
-    return;
+/* ---------- LOGIN ---------- */
+async function login() {
+  const email = val("email");
+  const pass = $("password").value;
+  if (!email || !pass) return status("loginStatus", "Email और Password दोनों भरें।", "err");
+  status("loginStatus", "Login हो रहा है…", "info");
+  try {
+    await auth.signInWithEmailAndPassword(email, pass);
+  } catch (e) {
+    const map = {
+      "auth/invalid-credential": "Email या Password गलत है।",
+      "auth/wrong-password": "Password गलत है।",
+      "auth/user-not-found": "यह Email Firebase Authentication में नहीं है।",
+      "auth/operation-not-allowed": "Firebase में Email/Password sign-in चालू नहीं है।",
+      "auth/unauthorized-domain": "Authorized domains में currentswipe.github.io जोड़ें।",
+      "auth/too-many-requests": "बहुत ज्यादा कोशिशें। कुछ देर बाद करें।"
+    };
+    status("loginStatus", (map[e.code] || e.message) + "\n(" + e.code + ")", "err");
   }
-
-  if (user.uid !== ADMIN_UID) {
-    status("loginStatus",
-      "Firebase UID Admin UID से मेल नहीं खाती। Authentication Users में UID जाँचें।",
-      "err");
-    return;
-  }
-
-  if ($("password").value !== ADMIN_PASSWORD) {
-    status("loginStatus", "गलत पासवर्ड।", "err");
-    return;
-  }
-
-  $("loginCard").classList.add("hidden");
-  $("app").classList.remove("hidden");
-  $("password").value = "";
-
-  if (questionCounter === 0) addQuestion();
-  checkConnection();
-  loadContent();
 }
-
 $("loginBtn").onclick = login;
-$("password").addEventListener("keydown", e => {
-  if (e.key === "Enter") login();
+$("password").addEventListener("keydown", e => { if (e.key === "Enter") login(); });
+
+// Login ke baad check: kya Database rules is user ko admin maanti hain?
+auth.onAuthStateChanged(async user => {
+  if (!user) {
+    $("app").classList.add("hidden");
+    $("loginCard").classList.remove("hidden");
+    return;
+  }
+  try {
+    await db.ref("admin_ping").once("value");
+    $("loginCard").classList.add("hidden");
+    $("app").classList.remove("hidden");
+    $("password").value = "";
+    if (questionCounter === 0) addQuestion();
+    loadContent();
+  } catch (e) {
+    $("app").classList.add("hidden");
+    $("loginCard").classList.remove("hidden");
+    status("loginStatus",
+      "Login सफल, पर यह account Admin के रूप में Database Rules में नहीं है।\n\n" +
+      "आपका UID:\n" + user.uid +
+      "\n\nइसे Realtime Database → Rules में PASTE_YOUR_UID की जगह डालकर Publish करें।\n\n(" + e.message + ")",
+      "err");
+  }
 });
 
 $("logoutBtn").onclick = async () => {
-  try {
-    await auth.signOut();
-  } catch (e) {
-    console.error(e);
-  }
-
-  $("app").classList.add("hidden");
-  $("loginCard").classList.remove("hidden");
+  await auth.signOut();
   status("loginStatus", "लॉगआउट हो गया।", "info");
 };
 
-async function checkConnection() {
-  try {
-    await db.ref(".info/connected").once("value");
-    status("connection",
-      "Firebase SDK चालू है। Database permission अलग से जाँची जाएगी।",
-      "info");
-  } catch (e) {
-    status("connection", "Connection error: " + e.message, "err");
-  }
-}
-
-const val = id => $(id).value.trim();
-
+/* ---------- PDF ---------- */
 function validDrive(url) {
-  try {
-    return ["drive.google.com", "docs.google.com"]
-      .includes(new URL(url).hostname);
-  } catch (e) {
-    return false;
-  }
+  try { return ["drive.google.com", "docs.google.com"].includes(new URL(url).hostname); }
+  catch (e) { return false; }
 }
 
 async function savePDF() {
-  if (!auth.currentUser || auth.currentUser.uid !== ADMIN_UID) {
-    status("pdfStatus", "Admin Firebase login नहीं है।", "err");
-    return;
-  }
-
-  const title = val("pdfTitle");
-  const subject = val("pdfSubject");
-  const url = val("pdfUrl");
-
-  if (!title || !subject || !url) {
-    status("pdfStatus", "PDF का नाम, Subject और Drive Link भरें।", "err");
-    return;
-  }
-
-  if (!validDrive(url)) {
-    status("pdfStatus", "सही Google Drive या Docs link डालें।", "err");
-    return;
-  }
-
+  const title = val("pdfTitle"), subject = val("pdfSubject"), url = val("pdfUrl");
+  if (!title || !subject || !url) return status("pdfStatus", "PDF का नाम, Subject और Drive Link भरें।", "err");
+  if (!validDrive(url)) return status("pdfStatus", "सही Google Drive या Docs link डालें।", "err");
   try {
     await db.ref("study_materials").push({
-      title,
-      subject,
-      topic: val("pdfTopic"),
-      url,
-      description: val("pdfDesc"),
-      published: $("pdfPublished").checked,
-      createdAt: Date.now(),
-      updatedAt: Date.now()
+      title, subject, topic: val("pdfTopic"), url, description: val("pdfDesc"),
+      published: $("pdfPublished").checked, createdAt: Date.now(), updatedAt: Date.now()
     });
-
     status("pdfStatus", "PDF रिकॉर्ड सेव हो गया।", "ok");
-
-    ["pdfTitle", "pdfSubject", "pdfTopic", "pdfUrl", "pdfDesc"]
-      .forEach(id => $(id).value = "");
-
+    ["pdfTitle", "pdfSubject", "pdfTopic", "pdfUrl", "pdfDesc"].forEach(id => $(id).value = "");
     await loadContent();
   } catch (e) {
-    status("pdfStatus",
-      "PDF सेव नहीं हुई: " + e.message +
-      "\nFirebase Authentication और Database Rules जाँचें।",
-      "err");
+    status("pdfStatus", "PDF सेव नहीं हुई: " + e.message, "err");
   }
 }
-
 $("savePdfBtn").onclick = savePDF;
 
+/* ---------- TEST ---------- */
 function addQuestion() {
   const n = ++questionCounter;
   const box = document.createElement("div");
   box.className = "qbox";
-
   box.innerHTML = `
     <h3>Question ${n}</h3>
     <label>प्रश्न *</label>
@@ -276,142 +230,89 @@ function addQuestion() {
     </div>
     <label>सही उत्तर</label>
     <select class="q-correct">
-      <option value="0">A</option>
-      <option value="1">B</option>
-      <option value="2">C</option>
-      <option value="3">D</option>
+      <option value="0">A</option><option value="1">B</option>
+      <option value="2">C</option><option value="3">D</option>
     </select>
     <label>Marks</label>
     <input class="q-marks" type="number" min="0" step="0.25" value="1">
     <label>Explanation</label>
     <textarea class="q-explanation"></textarea>
-    <button type="button" class="danger remove-q">Remove Question</button>
-  `;
-
+    <button type="button" class="danger remove-q">Remove Question</button>`;
   box.querySelector(".remove-q").onclick = () => box.remove();
   $("questions").appendChild(box);
 }
-
 $("addQuestionBtn").onclick = addQuestion;
 
 async function saveTest() {
-  if (!auth.currentUser || auth.currentUser.uid !== ADMIN_UID) {
-    status("testStatus", "Admin Firebase login नहीं है।", "err");
-    return;
-  }
-
-  const title = val("testTitle");
-  const subject = val("testSubject");
+  const title = val("testTitle"), subject = val("testSubject");
   const boxes = [...document.querySelectorAll(".qbox")];
-
-  if (!title || !subject || boxes.length === 0) {
-    status("testStatus",
-      "Test का नाम, Subject और कम-से-कम एक प्रश्न जरूरी है।",
-      "err");
-    return;
-  }
+  if (!title || !subject || boxes.length === 0)
+    return status("testStatus", "Test का नाम, Subject और कम-से-कम एक प्रश्न जरूरी है।", "err");
 
   const questions = [];
-
   for (let i = 0; i < boxes.length; i++) {
     const box = boxes[i];
     const question = box.querySelector(".q-text").value.trim();
-    const options = [...box.querySelectorAll(".q-opt")]
-      .map(x => x.value.trim());
-
-    if (!question || options.some(x => !x)) {
-      status("testStatus",
-        `Question ${i+1}: प्रश्न और चारों Options भरें।`,
-        "err");
-      return;
-    }
-
+    const options = [...box.querySelectorAll(".q-opt")].map(x => x.value.trim());
+    if (!question || options.some(x => !x))
+      return status("testStatus", `Question ${i + 1}: प्रश्न और चारों Options भरें।`, "err");
     questions.push({
-      question,
-      options,
+      question, options,
       correctAnswer: Number(box.querySelector(".q-correct").value),
       marks: Number(box.querySelector(".q-marks").value) || 1,
       explanation: box.querySelector(".q-explanation").value.trim()
     });
   }
-
-  const totalMarks = questions.reduce((sum, q) => sum + q.marks, 0);
-
+  const totalMarks = questions.reduce((s, q) => s + q.marks, 0);
   try {
     await db.ref("tests").push({
-      title,
-      subject,
+      title, subject,
       duration: Number(val("testDuration")) || 30,
       negativeMarks: Number(val("negativeMarks")) || 0,
-      questions,
-      totalQuestions: questions.length,
-      totalMarks,
-      published: $("testPublished").checked,
-      createdAt: Date.now(),
-      updatedAt: Date.now()
+      questions, totalQuestions: questions.length, totalMarks,
+      published: $("testPublished").checked, createdAt: Date.now(), updatedAt: Date.now()
     });
-
     status("testStatus", "Test Series सेव हो गई।", "ok");
-    $("testTitle").value = "";
-    $("testSubject").value = "";
-    $("questions").innerHTML = "";
-    questionCounter = 0;
-    addQuestion();
+    $("testTitle").value = ""; $("testSubject").value = "";
+    $("questions").innerHTML = ""; questionCounter = 0; addQuestion();
     await loadContent();
   } catch (e) {
-    status("testStatus",
-      "Test सेव नहीं हुआ: " + e.message +
-      "\nFirebase Authentication और Database Rules जाँचें।",
-      "err");
+    status("testStatus", "Test सेव नहीं हुआ: " + e.message, "err");
   }
 }
-
 $("saveTestBtn").onclick = saveTest;
 $("refreshBtn").onclick = loadContent;
 
+/* ---------- LIST ---------- */
 function addItem(parent, title, meta, path, key, data) {
   const row = document.createElement("div");
   row.className = "item";
-
   const strong = document.createElement("strong");
   strong.textContent = title;
-
   const small = document.createElement("small");
-  small.textContent = meta + " · " +
-    (data.published ? "Published" : "Draft");
-
+  small.textContent = meta + " · " + (data.published ? "Published" : "Draft");
   const actions = document.createElement("div");
   actions.className = "actions";
 
   const toggle = document.createElement("button");
   toggle.className = "light";
   toggle.textContent = data.published ? "Unpublish" : "Publish";
-
   toggle.onclick = async () => {
     try {
-      await db.ref(path + "/" + key).update({
-        published: !data.published,
-        updatedAt: Date.now()
-      });
+      await db.ref(path + "/" + key).update({ published: !data.published, updatedAt: Date.now() });
       await loadContent();
-    } catch (e) {
-      alert("Update failed: " + e.message);
-    }
+    } catch (e) { alert("Update failed: " + e.message); }
   };
 
   const del = document.createElement("button");
   del.className = "danger";
   del.textContent = "Delete";
-
   del.onclick = async () => {
     if (!confirm("क्या इसे हमेशा के लिए Delete करना है?")) return;
-
     try {
       await db.ref(path + "/" + key).remove();
       await loadContent();
-    } catch (e) {
-      alert("Delete failed: " + e.message);
-    }
+    } catch (e) { alert("Delete failed: " + e.message); }
   };
 
   actions.append(toggle, del);
@@ -422,44 +323,29 @@ function addItem(parent, title, meta, path, key, data) {
 async function loadContent() {
   const target = $("items");
   target.textContent = "Loading…";
-
-  if (!auth.currentUser || auth.currentUser.uid !== ADMIN_UID) {
-    target.textContent = "पहले Firebase Admin Login करें।";
-    return;
-  }
-
   try {
     const [pdfs, tests] = await Promise.all([
       db.ref("study_materials").once("value"),
       db.ref("tests").once("value")
     ]);
-
     target.innerHTML = "";
     let count = 0;
-
-    pdfs.forEach(child => {
-      const data = child.val() || {};
-      addItem(target, "PDF: " + (data.title || "Untitled"),
-        data.subject || "", "study_materials", child.key, data);
+    pdfs.forEach(c => {
+      const d = c.val() || {};
+      addItem(target, "PDF: " + (d.title || "Untitled"), d.subject || "", "study_materials", c.key, d);
       count++;
     });
-
-    tests.forEach(child => {
-      const data = child.val() || {};
-      addItem(target, "Test: " + (data.title || "Untitled"),
-        (data.subject || "") + " · " +
-        (data.totalQuestions || 0) + " questions",
-        "tests", child.key, data);
+    tests.forEach(c => {
+      const d = c.val() || {};
+      addItem(target, "Test: " + (d.title || "Untitled"),
+        (d.subject || "") + " · " + (d.totalQuestions || 0) + " questions", "tests", c.key, d);
       count++;
     });
-
     if (!count) target.textContent = "अभी कोई रिकॉर्ड नहीं मिला।";
     status("connection", "Database read सफल हुआ।", "ok");
   } catch (e) {
     target.textContent = "Load error: " + e.message;
-    status("connection",
-      "Database Rules या Authentication access रोक रहे हैं।",
-      "err");
+    status("connection", "Database Rules access रोक रहे हैं।", "err");
   }
 }
 </script>
