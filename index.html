@@ -6,13 +6,17 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script>
+function showErr(m){var d=document.getElementById('errbar');if(!d){d=document.createElement('div');d.id='errbar';d.style.cssText='position:fixed;left:0;right:0;bottom:0;background:#b91c1c;color:#fff;padding:10px;font:13px sans-serif;z-index:99999;white-space:pre-wrap';document.body.appendChild(d)}d.textContent='Error: '+m}
+window.addEventListener('error',function(e){showErr(e.message)});
+window.addEventListener('unhandledrejection',function(e){showErr((e.reason&&e.reason.message)||String(e.reason))});
+</script>
 </head>
-<body class="bg-slate-50 text-slate-900"><div id="app"></div>
-
-<script type="text/plain" id="studentCode">
+<body class="bg-slate-50 text-slate-900"><div id="app"><p style="padding:20px;font-family:sans-serif">Loading…</p></div>
+<script>
+if(typeof firebase==='undefined')throw new Error('Firebase library load nahi hui. Internet ya ad-blocker check karo.');
 firebase.initializeApp({apiKey:"AIzaSyB5vN74NfP-Tx1tIxMDSmOwjhvkgp06Soo",authDomain:"edutest-admin.firebaseapp.com",projectId:"edutest-admin",storageBucket:"edutest-admin.firebasestorage.app",appId:"1:785312729550:web:d9cc16fee38afdc88b839f"});
-const auth=firebase.auth(),db=firebase.firestore(),app=document.getElementById('app');
+const auth=firebase.auth(),db=firebase.firestore(),root=document.getElementById('app');
 const $=i=>document.getElementById(i),v=i=>$(i).value;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const em=u=>u+'@edu.app';
@@ -22,11 +26,13 @@ const isPrem=()=>me.premium&&(!me.expiry||me.expiry>Date.now());
 
 async function loadMe(uid){for(let i=0;i<6;i++){const d=await db.collection('users').doc(uid).get();if(d.exists)return{id:uid,...d.data()};await new Promise(r=>setTimeout(r,600))}return null}
 auth.onAuthStateChanged(async u=>{
-  if(!u){me=null;return loginView()}
-  const m=await loadMe(u.uid);
-  if(!m){await auth.signOut();return}
-  if(m.status==='suspended'||m.status==='locked'){alert('Your account is '+m.status+'. Contact admin.');await auth.signOut();return}
-  me=m;go('home');
+  try{
+    if(!u){me=null;return loginView()}
+    const m=await loadMe(u.uid);
+    if(!m){await auth.signOut();return}
+    if(m.status==='suspended'||m.status==='locked'){alert('Your account is '+m.status+'. Contact admin.');await auth.signOut();return}
+    me=m;go('home');
+  }catch(e){showErr(e.message);loginView()}
 });
 
 /* ---------- LOGIN / REGISTER ---------- */
@@ -34,7 +40,7 @@ function err(t){$('err').textContent=t}
 function tog(){$('pw').type=$('pw').type=='password'?'text':'password'}
 function loginView(){
   const reg=mode=='reg';
-  app.innerHTML=`<div class="mx-auto max-w-sm p-6 pt-16"><h1 class="text-2xl font-bold text-indigo-600 mb-4">EduApp</h1>
+  root.innerHTML=`<div class="mx-auto max-w-sm p-6 pt-16"><h1 class="text-2xl font-bold text-indigo-600 mb-4">EduApp</h1>
   <div class="space-y-3 bg-white p-5 rounded-xl shadow">
   ${reg?`<input id=fn class="${inp}" placeholder="Full name">`:''}
   <input id=id class="${inp}" placeholder="${reg?'Username':'Username or Mobile Number'}">
@@ -70,8 +76,8 @@ async function doLogin(){
 
 /* ---------- SHELL ---------- */
 const tabs=[['home','Home'],['study','Study'],['tests','Tests'],['rank','Ranks'],['prof','Profile']];
-function go(t){tab=t;clearInterval(timer);R=null;shell('<p>Loading…</p>');({home,study,tests,rank,prof})[t]()}
-function shell(h){app.innerHTML=`<div class="min-h-screen pb-16 md:pb-0"><header class="sticky top-0 z-10 bg-white border-b flex items-center justify-between px-4 py-3"><b class="text-indigo-600">EduApp</b>
+function go(t){tab=t;clearInterval(timer);R=null;shell('<p>Loading…</p>');({home,study,tests,rank,prof})[t]().catch(e=>showErr(e.message))}
+function shell(h){root.innerHTML=`<div class="min-h-screen pb-16 md:pb-0"><header class="sticky top-0 z-10 bg-white border-b flex items-center justify-between px-4 py-3"><b class="text-indigo-600">EduApp</b>
 <nav class="hidden md:flex gap-2">${tabs.map(([k,l])=>`<button onclick="go('${k}')" class="px-3 py-1 rounded ${k==tab?'bg-indigo-600 text-white':''}">${l}</button>`).join('')}</nav>
 <button onclick="auth.signOut()" class="text-sm text-slate-600">Logout</button></header>
 <main class="mx-auto max-w-3xl p-4">${h}</main>
@@ -114,7 +120,7 @@ function start(i){
   R={t,i:0,a:Array(t.questions.length).fill(-1),mk:{},end:Date.now()+t.duration*6e4,done:false};
   timer=setInterval(tick,1000);showQ();
 }
-function tick(){const s=Math.max(0,Math.floor((R.end-Date.now())/1000)),e=$('tm');if(e)e.textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0');if(s<=0)submit(true)}
+function tick(){if(!R)return;const s=Math.max(0,Math.floor((R.end-Date.now())/1000)),e=$('tm');if(e)e.textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0');if(s<=0)submit(true)}
 const pick=j=>{R.a[R.i]=j;showQ()},nav=d=>{R.i=Math.min(R.t.questions.length-1,Math.max(0,R.i+d));showQ()},mark=()=>{R.mk[R.i]=!R.mk[R.i];showQ()};
 function showQ(){
   const {t,i,a,mk}=R,x=t.questions[i];
@@ -139,94 +145,4 @@ async function submit(auto){
   try{await db.collection('attempts').add(r)}catch(e){alert('Could not save result: '+e.message)}
   shell(`<div class="bg-white p-4 rounded-xl shadow"><h2 class="font-bold text-lg">Result: ${r.score}/${r.max} (${r.pct}%)</h2>
   <p class="text-sm">Correct ${r.correct} · Wrong ${r.wrong} · Unanswered ${r.skipped} · Accuracy ${r.accuracy}% · Time ${r.time}s</p></div>`+
-  t.questions.map((x,k)=>`<div class="bg-white p-3 rounded-lg shadow mt-3 text-sm"><p class="font-medium">${k+1}. ${esc(x.q)}</p>
-  <p>Your answer: ${a[k]<0?'—':esc(x.o[a[k]])}</p><p class="text-green-700">Correct: ${esc(x.o[x.ans])}</p>${x.exp?`<p class="text-slate-500">${esc(x.exp)}</p>`:''}</div>`).join(''));
-}
-
-/* ---------- LEADERBOARD ---------- */
-const cmp=(a,b)=>b.pct-a.pct||b.accuracy-a.accuracy||a.time-b.time;
-async function rank(){
-  shell(`<select id=per onchange="drawRank()" class="${inp} mb-3"><option value=0>All time</option><option value=1>Today</option><option value=7>This week</option><option value=30>This month</option></select><div id=rk>Loading…</div>`);
-  RK=(await db.collection('attempts').orderBy('pct','desc').limit(300).get()).docs.map(d=>d.data());drawRank();
-}
-function drawRank(){
-  const d=+v('per'),min=d?Date.now()-d*864e5:0,best={};
-  RK.filter(x=>x.at>=min).forEach(x=>{const b=best[x.uid];if(!b||cmp(x,b)<0)best[x.uid]=x});
-  $('rk').innerHTML=Object.values(best).sort(cmp).slice(0,50).map((x,i)=>`<div class="flex justify-between p-3 mb-1 rounded-lg ${x.uid==me.id?'bg-indigo-100 font-bold':'bg-white'}"><span>#${i+1} ${esc(x.name)}</span><span>${x.pct}% · ${x.accuracy}% acc · ${x.time}s</span></div>`).join('')||'<p class="text-slate-500">No results yet.</p>';
-}
-
-/* ---------- PROFILE ---------- */
-async function prof(){
-  A=await myAttempts();
-  shell(`<div class="bg-white p-4 rounded-xl shadow"><h2 class="font-bold text-lg">${esc(me.name)}</h2>
-  <p class="text-sm">Student ID: ${esc(me.sid)}<br>Username: ${esc(me.username)}<br>Mobile: ${esc(me.mobile)}<br>Membership: ${isPrem()?'Premium':'Free'}</p>
-  <p class="text-xs text-slate-500 mt-2">Privacy: we store your test results and profile details to show progress and leaderboards.</p></div>
-  <button onclick="csv()" class="${btn} mt-3">Export CSV</button><h3 class="mt-4 mb-2 font-semibold">Test history</h3>
-  ${A.map(x=>`<div class="bg-white p-3 rounded-lg mb-2 text-sm flex justify-between"><span>${esc(x.testTitle)}<br><span class="text-slate-500">${new Date(x.at).toLocaleString()}</span></span><b>${x.score}/${x.max}</b></div>`).join('')||'<p class="text-slate-500">No attempts yet.</p>'}`);
-}
-function csv(){
-  const rows=[['Test','Date','Score','Max','Percent','Accuracy','Correct','Wrong','Skipped']].concat(A.map(x=>[x.testTitle,new Date(x.at).toISOString(),x.score,x.max,x.pct,x.accuracy,x.correct,x.wrong,x.skipped]));
-  const b=new Blob([rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n')],{type:'text/csv'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='my-report.csv';a.click();
-}
-</script>
-
-<script type="text/plain" id="adminCode">
-firebase.initializeApp({apiKey:"AIzaSyB5vN74NfP-Tx1tIxMDSmOwjhvkgp06Soo",authDomain:"edutest-admin.firebaseapp.com",projectId:"edutest-admin",storageBucket:"edutest-admin.firebasestorage.app",appId:"1:785312729550:web:d9cc16fee38afdc88b839f"});
-const auth=firebase.auth(),db=firebase.firestore(),st=firebase.storage(),app=document.getElementById('app');
-const $=i=>document.getElementById(i),v=i=>$(i).value;
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const btn='rounded-lg bg-indigo-600 px-4 py-2 text-white font-medium',inp='w-full rounded-lg border p-2',card='bg-white p-4 rounded-xl shadow';
-let me=null,tab='dash',U=[],MT=[],TT=[];
-const log=(action,target)=>db.collection('audit').add({by:me.id,action,target:String(target),at:Date.now()}).catch(()=>{});
-
-auth.onAuthStateChanged(async u=>{
-  if(!u){me=null;return loginView()}
-  const d=await db.collection('users').doc(u.uid).get();
-  if(!d.exists||d.data().role!=='admin'){await auth.signOut();alert('Not an admin account');return}
-  me={id:u.uid,...d.data()};go('dash');
-});
-function loginView(){
-  app.innerHTML=`<div class="mx-auto max-w-sm p-6 pt-16"><h1 class="text-2xl font-bold text-indigo-600 mb-4">Admin Login</h1><div class="${card} space-y-3">
-  <input id=em class="${inp}" placeholder="Admin email"><input id=pw type=password class="${inp}" placeholder="Password">
-  <p id=err class="text-sm text-red-600"></p><button onclick="login()" class="${btn} w-full">Login</button></div></div>`;
-}
-async function login(){try{await auth.signInWithEmailAndPassword(v('em').trim(),v('pw'))}catch(e){$('err').textContent='Incorrect credentials'}}
-
-const tabs=[['dash','Dashboard'],['stu','Students'],['con','Content'],['tst','Tests']];
-function go(t){tab=t;shell('<p>Loading…</p>');({dash,stu,con,tst})[t]()}
-function shell(h){app.innerHTML=`<div class="min-h-screen pb-16 md:pb-0"><header class="sticky top-0 z-10 bg-white border-b flex items-center justify-between px-4 py-3"><b class="text-indigo-600">Admin Panel</b>
-<nav class="hidden md:flex gap-2">${tabs.map(([k,l])=>`<button onclick="go('${k}')" class="px-3 py-1 rounded ${k==tab?'bg-indigo-600 text-white':''}">${l}</button>`).join('')}</nav>
-<button onclick="auth.signOut()" class="text-sm text-slate-600">Logout</button></header><main class="mx-auto max-w-4xl p-4">${h}</main>
-<nav class="md:hidden fixed bottom-0 inset-x-0 bg-white border-t flex justify-around py-3 text-xs">${tabs.map(([k,l])=>`<button onclick="go('${k}')" class="px-2 ${k==tab?'text-indigo-600 font-bold':'text-slate-500'}">${l}</button>`).join('')}</nav></div>`}
-
-async function dash(){
-  const [u,m,t,a,l]=await Promise.all(['users','materials','tests','attempts'].map(c=>db.collection(c).get()).concat(db.collection('audit').orderBy('at','desc').limit(8).get()));
-  const us=u.docs.map(d=>d.data()).filter(x=>x.role!=='admin'),now=Date.now();
-  const prem=us.filter(x=>x.premium&&(!x.expiry||x.expiry>now)).length;
-  const avg=a.size?a.docs.reduce((s,d)=>s+d.data().pct,0)/a.size:0;
-  shell(`<div class="grid grid-cols-2 md:grid-cols-4 gap-3">${[['Students',us.length],['Premium',prem],['Free',us.length-prem],['Suspended/Locked',us.filter(x=>x.status!=='active').length],['PDFs',m.size],['Tests',t.size],['Attempts',a.size],['Avg score',avg.toFixed(1)+'%']].map(([k,x])=>`<div class="${card}"><p class="text-xs text-slate-500">${k}</p><p class="text-xl font-bold">${x}</p></div>`).join('')}</div>
-  <h3 class="mt-5 mb-2 font-semibold">Recent admin activity</h3>${l.docs.map(d=>{const x=d.data();return `<div class="bg-white p-2 rounded mb-1 text-sm">${esc(x.action)} · ${esc(x.target)} · ${new Date(x.at).toLocaleString()}</div>`}).join('')||'<p class="text-slate-500">None yet.</p>'}`);
-}
-
-/* ---------- STUDENTS ---------- */
-async function stu(){
-  U=(await db.collection('users').limit(500).get()).docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.role!=='admin');
-  shell(`<input id=sq class="${inp} mb-3" placeholder="Search name, username, mobile, ID" oninput="drawStu()"><div id=sl></div>`);drawStu();
-}
-function drawStu(){
-  const q=v('sq').toLowerCase();
-  $('sl').innerHTML=U.filter(x=>[x.name,x.username,x.mobile,x.sid].join(' ').toLowerCase().includes(q)).map(x=>{
-    const p=x.premium&&(!x.expiry||x.expiry>Date.now());
-    return `<div class="${card} mb-2 text-sm"><b>${esc(x.name)}</b> <span class="text-slate-500">${esc(x.sid)} · @${esc(x.username)} · ${esc(x.mobile)}</span>
-    <p>Plan: ${p?'Premium'+(x.expiry?' till '+new Date(x.expiry).toLocaleDateString():' (permanent)'):'Free'} · Status: ${esc(x.status)} · Joined ${new Date(x.createdAt).toLocaleDateString()}</p>
-    <div class="mt-2 flex gap-2 flex-wrap"><button onclick="togPrem('${x.id}')" class="px-3 py-1 border rounded">${p?'Revoke Premium':'Grant Premium'}</button>
-    <button onclick="setStatus('${x.id}','${x.status==='active'?'suspended':'active'}')" class="px-3 py-1 border rounded">${x.status==='active'?'Suspend':'Reactivate'}</button>
-    <button onclick="setStatus('${x.id}','${x.status==='locked'?'active':'locked'}')" class="px-3 py-1 border rounded">${x.status==='locked'?'Unlock':'Lock'}</button></div></div>`}).join('')||'<p class="text-slate-500">No students.</p>';
-}
-async function togPrem(id){
-  const x=U.find(u=>u.id==id),p=x.premium&&(!x.expiry||x.expiry>Date.now());let upd;
-  if(p){if(!confirm('Revoke premium?'))return;upd={premium:false,expiry:null}}
-  else{const d=prompt('Premium days (leave blank for permanent):');if(d===null)return;upd={premium:true,expiry:d.trim()?Date.now()+(+d)*864e5:null}}
-  const reason=prompt('Reason (recorded in audit log):')||'';
-  await db.collection('users').doc(id).update(upd);log((p?'revoke':'grant')+' premium '+reason,x.username);stu();
+  t.questions.map((x,k)=>`<div class="bg-white p-3 rounded
