@@ -1,154 +1,88 @@
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="hi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>EduPath | Admin Studio</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
-<style>
-*{box-sizing:border-box}
-body{margin:0;background:#f6f7fb;color:#192238;font-family:'DM Sans',sans-serif}
-h1,h2,h3{font-family:'Plus Jakarta Sans',sans-serif}
-.sidebar{width:245px;position:fixed;inset:0 auto 0 0;background:#17182d;color:#c6c8d9;padding:24px 16px;display:flex;flex-direction:column;z-index:10}
-.main{margin-left:245px;min-height:100vh}
-.nav{width:100%;display:flex;align-items:center;gap:11px;padding:12px;border-radius:10px;text-align:left;font-size:14px;font-weight:600;color:#c6c8d9;margin:3px 0}
-.nav:hover,.nav.active{background:#333151;color:white}
-.card{background:white;border:1px solid #e8eaf1;border-radius:16px}
-.field{width:100%;border:1px solid #e1e5ed;border-radius:10px;padding:11px 12px;font-size:14px;background:white;outline:none}
-.field:focus{border-color:#7666ed;box-shadow:0 0 0 3px #7666ed1c}
-.btn{padding:11px 15px;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer}
-.primary{background:#6858e8;color:white}
-.primary:hover{background:#5141cf}
-.secondary{background:#f0efff;color:#5b4bd5}
-.danger{background:#fff0f0;color:#c43c4b}
-.view{display:none}.view.active{display:block}
-.muted{color:#7e879a}
-@media(max-width:760px){.sidebar{width:100%;height:auto;position:relative;padding:14px}.sidebar nav{display:flex;flex-wrap:wrap}.sidebar .nav{width:auto;padding:9px;font-size:12px}.sidebottom{display:none}.main{margin:0}.topbar{padding:16px!important}.content{padding:16px!important}}
-</style>
-</head>
-<body>
-
-<!-- ADMIN LOGIN -->
-<section id="loginScreen" class="min-h-screen flex items-center justify-center p-5">
-  <div class="card w-full max-w-md p-7 sm:p-9">
-    <div class="w-12 h-12 rounded-2xl bg-violet-600 text-white flex items-center justify-center text-2xl font-bold">E</div>
-    <p class="text-xs tracking-widest font-bold text-violet-600 mt-6">EDUPATH ADMINISTRATION</p>
-    <h1 class="text-3xl font-extrabold mt-2">Welcome back</h1>
-    <p class="muted text-sm mt-2 mb-7">Sign in to manage learning resources.</p>
-    <form id="loginForm" class="space-y-4">
-      <div><label class="block text-sm font-semibold mb-2">Admin email</label><input id="email" class="field" type="email" autocomplete="username" required placeholder="admin@example.com"></div>
-      <div><label class="block text-sm font-semibold mb-2">Password</label><input id="password" class="field" type="password" autocomplete="current-password" required placeholder="Enter password"></div>
-      <button id="loginBtn" class="btn primary w-full" type="submit">Sign in securely</button>
-      <p id="loginMessage" class="text-sm text-rose-600"></p>
-    </form>
-    <p class="text-xs muted mt-6">Authorized administrators only.</p>
-  </div>
-</section>
-
-<!-- ADMIN APP -->
-<div id="adminApp" class="hidden">
-  <aside class="sidebar">
-    <div class="flex items-center gap-3 px-2 mb-8">
-      <div class="w-10 h-10 rounded-xl bg-violet-500 text-white flex items-center justify-center font-extrabold text-xl">E</div>
-      <div><div class="text-white text-lg font-extrabold">EduPath</div><div class="text-xs text-slate-400">ADMIN STUDIO</div></div>
-    </div>
-    <p class="text-[10px] tracking-widest text-slate-500 font-bold px-3 mb-3">MANAGEMENT</p>
-    <nav>
-      <button class="nav active" data-view="overview">◫ &nbsp; Overview</button>
-      <button class="nav" data-view="pdfs">▤ &nbsp; Study Materials</button>
-      <button class="nav" data-view="testbuilder">☷ &nbsp; Create Test Series</button>
-      <button class="nav" data-view="tests">✓ &nbsp; Manage Tests</button>
-    </nav>
-    <div class="sidebottom mt-auto">
-      <div class="rounded-xl bg-white/5 p-4 mt-8">
-        <p class="text-white text-sm font-bold">Admin Workspace</p>
-        <p class="text-xs text-slate-400 mt-2">Manage your learning content from one place.</p>
-      </div>
-      <button id="logoutBtn" class="nav mt-5">↪ &nbsp; Sign out</button>
-    </div>
-  </aside>
-
-  <main class="main">
-    <header class="topbar bg-white border-b border-slate-200 px-8 py-5 flex justify-between items-center gap-4">
-      <div><p class="text-xs muted">EDUPATH / ADMINISTRATION</p><h2 id="pageTitle" class="text-xl font-extrabold mt-1">Overview</h2></div>
-      <div class="flex items-center gap-3"><div class="hidden sm:block text-right"><p class="text-sm font-bold">Administrator</p><p id="adminEmail" class="text-xs muted"></p></div><div class="w-10 h-10 rounded-full bg-violet-100 text-violet-700 font-bold flex items-center justify-center">A</div></div>
-    </header>
-
-    <div class="content p-8 max-w-7xl mx-auto">
-
-      <section id="overview" class="view active">
-        <div class="mb-7"><h1 class="text-2xl font-extrabold">Content overview</h1><p class="muted text-sm mt-2">Manage your library and test series.</p></div>
-        <div class="grid sm:grid-cols-3 gap-4 mb-6">
-          <div class="card p-5"><p class="text-sm muted">Study materials</p><p id="pdfCount" class="text-3xl font-extrabold mt-3">0</p><p class="text-xs muted mt-2">Published resources</p></div>
-          <div class="card p-5"><p class="text-sm muted">Test series</p><p id="testCount" class="text-3xl font-extrabold mt-3">0</p><p class="text-xs muted mt-2">Published tests</p></div>
-          <div class="card p-5"><p class="text-sm muted">Admin status</p><p class="text-xl font-extrabold mt-3 text-emerald-600">Authenticated</p><p class="text-xs muted mt-2">Firebase session active</p></div>
-        </div>
-        <div class="card p-6">
-          <h3 class="font-bold text-lg">Quick actions</h3>
-          <p class="muted text-sm mt-1 mb-5">Add new learning content to your portal.</p>
-          <div class="flex flex-wrap gap-3"><button class="btn primary" onclick="showView('pdfs')">＋ Upload Study PDF</button><button class="btn secondary" onclick="showView('testbuilder')">＋ Create Test Series</button></div>
-        </div>
-        <div class="mt-6 card p-5"><h3 class="font-bold">Setup status</h3><p id="setupStatus" class="text-sm muted mt-2">Checking Firebase connection…</p></div>
-      </section>
-
-      <section id="pdfs" class="view">
-        <div class="mb-6"><h1 class="text-2xl font-extrabold">Study Materials</h1><p class="muted text-sm mt-2">Upload a PDF and publish it to the student portal.</p></div>
-        <form id="pdfForm" class="card p-5 sm:p-7 space-y-5">
-          <div class="grid sm:grid-cols-2 gap-4">
-            <div><label class="text-sm font-semibold block mb-2">Material title *</label><input id="pdfTitle" class="field" required maxlength="160" placeholder="e.g. Indian Polity Notes"></div>
-            <div><label class="text-sm font-semibold block mb-2">Subject *</label><input id="pdfSubject" class="field" required maxlength="80" placeholder="e.g. General Studies"></div>
-            <div><label class="text-sm font-semibold block mb-2">Topic / Category</label><input id="pdfTopic" class="field" maxlength="100" placeholder="e.g. Constitution"></div>
-            <div><label class="text-sm font-semibold block mb-2">Exam</label><select id="pdfExam" class="field"><option>All Exams</option><option>SSC</option><option>Banking</option><option>Railway</option><option>UPSC</option><option>State Exams</option><option>Other</option></select></div>
-          </div>
-          <div><label class="text-sm font-semibold block mb-2">Short description</label><textarea id="pdfDescription" class="field" maxlength="500" rows="3" placeholder="Describe this material..."></textarea></div>
-          <div class="rounded-xl border-2 border-dashed border-slate-200 p-5">
-            <label class="text-sm font-semibold block mb-3">Select PDF file * (maximum 20 MB)</label>
-            <input id="pdfFile" class="block w-full text-sm" type="file" accept=".pdf,application/pdf" required>
-            <p id="fileInfo" class="text-xs muted mt-3">PDF format only.</p>
-          </div>
-          <label class="flex items-center gap-3 text-sm"><input id="pdfPublished" type="checkbox" checked class="w-4 h-4 accent-violet-600"> Publish immediately to Student Portal</label>
-          <div class="flex flex-wrap gap-3"><button id="pdfSubmit" class="btn primary" type="submit">Upload & Publish PDF</button><button class="btn border border-slate-200" type="reset">Reset form</button></div>
-          <p id="pdfMessage" class="text-sm"></p>
-        </form>
-        <div class="card mt-6 overflow-hidden"><div class="p-5 font-bold">Uploaded materials</div><div id="pdfList"><p class="p-5 text-sm muted">Loading…</p></div></div>
-      </section>
-
-      <section id="testbuilder" class="view">
-        <div class="mb-6"><h1 class="text-2xl font-extrabold">Test Series Builder</h1><p class="muted text-sm mt-2">Create MCQ tests with automatic score calculation.</p></div>
-        <form id="testForm" class="card p-5 sm:p-7 space-y-5">
-          <div class="grid sm:grid-cols-2 gap-4">
-            <div><label class="text-sm font-semibold block mb-2">Test title *</label><input id="testTitle" class="field" required maxlength="160" placeholder="e.g. SSC CGL Mock Test 01"></div>
-            <div><label class="text-sm font-semibold block mb-2">Subject *</label><input id="testSubject" class="field" required maxlength="80" placeholder="e.g. Reasoning"></div>
-            <div><label class="text-sm font-semibold block mb-2">Exam category</label><select id="testExam" class="field"><option>SSC</option><option>Banking</option><option>Railway</option><option>UPSC</option><option>State Exams</option><option>General</option></select></div>
-            <div><label class="text-sm font-semibold block mb-2">Duration (minutes) *</label><input id="testDuration" class="field" type="number" min="1" max="300" value="30" required></div>
-            <div><label class="text-sm font-semibold block mb-2">Marks per question</label><input id="testMarks" class="field" type="number" min="1" max="20" value="1" required></div>
-            <div><label class="text-sm font-semibold block mb-2">Negative marks per wrong answer</label><input id="testNegative" class="field" type="number" min="0" max="20" step="0.25" value="0"></div>
-          </div>
-          <div><label class="text-sm font-semibold block mb-2">Instructions</label><textarea id="testInstructions" class="field" rows="2" maxlength="1000" placeholder="Instructions for students..."></textarea></div>
-          <div class="flex justify-between items-center gap-3"><h3 class="font-bold text-lg">Questions</h3><button type="button" id="addQuestion" class="btn secondary">＋ Add question</button></div>
-          <div id="questionsContainer" class="space-y-4"></div>
-          <label class="flex items-center gap-3 text-sm"><input id="testPublished" type="checkbox" checked class="w-4 h-4 accent-violet-600"> Publish test immediately</label>
-          <div class="flex flex-wrap gap-3"><button id="testSubmit" class="btn primary" type="submit">Save Test Series</button><button type="button" id="clearQuestions" class="btn border border-slate-200">Clear questions</button></div>
-          <p id="testMessage" class="text-sm"></p>
-        </form>
-      </section>
-
-      <section id="tests" class="view">
-        <div class="mb-6"><h1 class="text-2xl font-extrabold">Manage Test Series</h1><p class="muted text-sm mt-2">Review, unpublish or delete your tests.</p></div>
-        <div class="card overflow-hidden"><div id="testList"><p class="p-5 text-sm muted">Loading…</p></div></div>
-      </section>
-    </div>
-  </main>
-</div>
-
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EduPath Admin Panel</title>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 text-slate-800">
+<main class="max-w-5xl mx-auto p-4 sm:p-8">
+  <section id="login" class="bg-white rounded-2xl p-6 max-w-md mx-auto mt-12 shadow">
+    <h1 class="text-2xl font-black text-indigo-700">EduPath Admin</h1>
+    <p class="text-sm text-slate-500 mt-2">Admin password दर्ज करें।</p>
+    <form id="loginForm">
+      <input id="password" type="password" class="border rounded-xl p-3 w-full mt-4" placeholder="Admin Password" required>
+      <button class="bg-indigo-600 text-white rounded-xl p-3 w-full mt-3 font-bold">Login</button>
+    </form>
+    <p id="loginMsg" class="text-red-600 text-sm mt-3"></p>
+    <p class="text-xs text-slate-500 mt-4">यह पासवर्ड स्क्रीन अकेले Firebase की सुरक्षा नहीं करती। नीचे नोट देखें।</p>
+  </section>
+
+  <section id="panel" class="hidden">
+    <header class="flex flex-wrap justify-between items-center gap-3 mb-6">
+      <div><h1 class="text-3xl font-black text-indigo-700">EduPath Admin</h1><p class="text-slate-500">Study Material और Test Management</p></div>
+      <button id="logout" class="bg-slate-700 text-white rounded-lg px-4 py-2">Logout</button>
+    </header>
+
+    <div class="grid sm:grid-cols-2 gap-4 mb-6">
+      <div class="bg-white rounded-2xl p-5 shadow-sm"><div class="text-slate-500">Study Materials</div><div id="materialCount" class="text-3xl font-black">0</div></div>
+      <div class="bg-white rounded-2xl p-5 shadow-sm"><div class="text-slate-500">Tests</div><div id="testCount" class="text-3xl font-black">0</div></div>
+    </div>
+
+    <div class="bg-white rounded-2xl p-5 mb-6">
+      <h2 class="text-xl font-bold mb-4">Study Material जोड़ें / अपडेट करें</h2>
+      <form id="materialForm" class="grid sm:grid-cols-2 gap-3">
+        <input id="mid" type="hidden">
+        <input id="title" class="border rounded-lg p-3" placeholder="Material का नाम" required>
+        <input id="subject" class="border rounded-lg p-3" placeholder="Subject" required>
+        <input id="topic" class="border rounded-lg p-3" placeholder="Topic">
+        <input id="fileUrl" type="url" class="border rounded-lg p-3" placeholder="Google Drive PDF Link" required>
+        <textarea id="description" class="border rounded-lg p-3 sm:col-span-2" placeholder="Description"></textarea>
+        <label class="flex gap-2 items-center"><input id="premium" type="checkbox"> Premium material</label>
+        <label class="flex gap-2 items-center"><input id="published" type="checkbox" checked> Publish to students</label>
+        <div class="sm:col-span-2 flex flex-wrap gap-2">
+          <button class="bg-indigo-600 text-white rounded-lg px-5 py-3 font-bold">Save Material</button>
+          <button type="button" id="clearMaterial" class="bg-slate-200 rounded-lg px-5 py-3">Clear</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="bg-white rounded-2xl p-5 mb-6">
+      <h2 class="text-xl font-bold mb-4">Materials की सूची</h2>
+      <div id="materials" class="space-y-3"></div>
+    </div>
+
+    <div class="bg-white rounded-2xl p-5 mb-6">
+      <h2 class="text-xl font-bold mb-4">MCQ Test बनाएं</h2>
+      <form id="testForm" class="space-y-3">
+        <input id="testTitle" class="border rounded-lg p-3 w-full" placeholder="Test का नाम" required>
+        <input id="testSubject" class="border rounded-lg p-3 w-full" placeholder="Subject" required>
+        <div class="grid sm:grid-cols-3 gap-3">
+          <input id="duration" type="number" min="1" value="15" class="border rounded-lg p-3" placeholder="Minutes">
+          <input id="marks" type="number" min="1" value="1" class="border rounded-lg p-3" placeholder="Marks/question">
+          <input id="negative" type="number" min="0" step="0.25" value="0" class="border rounded-lg p-3" placeholder="Negative marks">
+        </div>
+        <div id="questions" class="space-y-4"></div>
+        <button type="button" id="addQuestion" class="bg-slate-200 rounded-lg px-4 py-2">+ Add Question</button>
+        <label class="flex gap-2 items-center"><input id="testPublished" type="checkbox" checked> Publish test</label>
+        <button class="bg-indigo-600 text-white rounded-lg p-3 w-full font-bold">Save Test</button>
+      </form>
+    </div>
+
+    <div class="bg-white rounded-2xl p-5">
+      <h2 class="text-xl font-bold mb-4">Test सूची</h2>
+      <div id="tests" class="space-y-3"></div>
+    </div>
+    <p id="status" class="mt-5 text-sm whitespace-pre-wrap"></p>
+  </section>
+</main>
+
 <script>
-/* Use the same Firebase project as your Student Portal */
 const firebaseConfig = {
   apiKey: "AIzaSyB5vN74NfP-Tx1tIxMDSmOwjhvkgp06Soo",
   authDomain: "edutest-admin.firebaseapp.com",
@@ -159,243 +93,222 @@ const firebaseConfig = {
   measurementId: "G-83B1SDVYKF"
 };
 
-/* IMPORTANT: use the exact Admin email in your Firestore/Storage Rules */
-const ADMIN_EMAIL = "YOUR_ADMIN_EMAIL";
-const MAX_PDF_BYTES = 20 * 1024 * 1024;
+// यह पासवर्ड ब्राउज़र के source code में देखा जा सकता है।
+const ADMIN_PASSWORD = "79051";
 
-let auth, db, storage;
-let unsubscribeMaterials = null, unsubscribeTests = null;
-let questionCount = 0;
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+let materials = [], tests = [];
+
 const $ = id => document.getElementById(id);
-const safe = value => String(value ?? '').replace(/[&<>"']/g, c => ({
-  '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+const say = text => $("status").textContent = text;
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
 }[c]));
 
-function message(id, text, ok=false) {
-  $(id).textContent = text;
-  $(id).className = 'text-sm ' + (ok ? 'text-emerald-600' : 'text-rose-600');
-}
-function initFirebase() {
-  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-  auth = firebase.auth();
-  db = firebase.firestore();
-  storage = firebase.storage();
-  auth.onAuthStateChanged(user => {
-    if (!user) {
-      stopListeners();
-      $('loginScreen').classList.remove('hidden');
-      $('adminApp').classList.add('hidden');
-      return;
-    }
-    if (!user.email || user.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
-      auth.signOut();
-      message('loginMessage','This account is not authorized as an administrator.');
-      return;
-    }
-    $('loginScreen').classList.add('hidden');
-    $('adminApp').classList.remove('hidden');
-    $('adminEmail').textContent = user.email;
-    $('setupStatus').textContent = 'Firebase initialized. Admin session verified.';
-    startListeners();
-  });
-}
-$('loginForm').addEventListener('submit', async e => {
+$("loginForm").addEventListener("submit", async e => {
   e.preventDefault();
-  $('loginBtn').disabled = true;
-  message('loginMessage','Signing in…',true);
-  try {
-    await auth.signInWithEmailAndPassword($('email').value.trim(),$('password').value);
-  } catch(err) {
-    message('loginMessage',err.message || 'Login failed.');
-  } finally { $('loginBtn').disabled = false; }
-});
-$('logoutBtn').addEventListener('click', () => auth.signOut());
-
-const titles = {
-  overview:'Overview',pdfs:'Study Materials',
-  testbuilder:'Create Test Series',tests:'Manage Tests'
-};
-function showView(id) {
-  document.querySelectorAll('.view').forEach(el=>el.classList.toggle('active',el.id===id));
-  document.querySelectorAll('.nav').forEach(el=>el.classList.toggle('active',el.dataset.view===id));
-  $('pageTitle').textContent=titles[id] || id;
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-document.querySelectorAll('[data-view]').forEach(el=>el.addEventListener('click',()=>showView(el.dataset.view)));
-
-function stopListeners() {
-  if(unsubscribeMaterials) unsubscribeMaterials();
-  if(unsubscribeTests) unsubscribeTests();
-  unsubscribeMaterials=unsubscribeTests=null;
-}
-function startListeners() {
-  stopListeners();
-  unsubscribeMaterials=db.collection('study_materials').onSnapshot(snap=>{
-    $('pdfCount').textContent=snap.size;
-    renderPdfList(snap);
-  },err=>{$('pdfList').textContent='Could not load materials: '+err.message;});
-  unsubscribeTests=db.collection('tests').onSnapshot(snap=>{
-    $('testCount').textContent=snap.size;
-    renderTestList(snap);
-  },err=>{$('testList').textContent='Could not load tests: '+err.message;});
-}
-
-$('pdfFile').addEventListener('change',()=>{
-  const f=$('pdfFile').files[0];
-  $('fileInfo').textContent=f ? `${f.name} · ${(f.size/1024/1024).toFixed(2)} MB` : 'PDF format only.';
-});
-$('pdfForm').addEventListener('reset',()=>setTimeout(()=>message('pdfMessage',''),0));
-$('pdfForm').addEventListener('submit',async e=>{
-  e.preventDefault();
-  const user=auth.currentUser, file=$('pdfFile').files[0];
-  if(!user || user.email.toLowerCase()!==ADMIN_EMAIL.toLowerCase()) return message('pdfMessage','Admin authentication required.');
-  if(!file) return message('pdfMessage','Please select a PDF file.');
-  if(file.type!=='application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) return message('pdfMessage','Only PDF files are allowed.');
-  if(file.size>MAX_PDF_BYTES) return message('pdfMessage','File exceeds 20 MB.');
-  const btn=$('pdfSubmit'); btn.disabled=true; btn.textContent='Uploading…';
-  let uploadedRef=null;
-  try {
-    const docRef=db.collection('study_materials').doc();
-    uploadedRef=storage.ref(`study_materials/${user.uid}/${docRef.id}.pdf`);
-    await uploadedRef.put(file,{contentType:'application/pdf'});
-    const url=await uploadedRef.getDownloadURL();
-    await docRef.set({
-      title:$('pdfTitle').value.trim(),
-      subject:$('pdfSubject').value.trim(),
-      topic:$('pdfTopic').value.trim(),
-      exam:$('pdfExam').value,
-      description:$('pdfDescription').value.trim(),
-      fileName:file.name, fileUrl:url,
-      published:$('pdfPublished').checked,
-      createdAt:firebase.firestore.FieldValue.serverTimestamp(),
-      createdBy:user.uid
-    });
-    message('pdfMessage','PDF uploaded and saved successfully.',true);
-    $('pdfForm').reset();
-  } catch(err) {
-    if(uploadedRef) { try { await uploadedRef.delete(); } catch(_) {} }
-    message('pdfMessage','Upload failed: '+err.message);
-  } finally { btn.disabled=false; btn.textContent='Upload & Publish PDF'; }
-});
-
-function addQuestion(data={}) {
-  questionCount++;
-  const n=questionCount;
-  const div=document.createElement('div');
-  div.className='rounded-xl border border-slate-200 p-4 sm:p-5';
-  div.dataset.question='1';
-  div.innerHTML=`
-    <div class="flex justify-between items-center mb-4">
-      <h3 class="font-bold">Question ${n}</h3>
-      <button type="button" class="text-xs font-bold text-rose-600 remove-question">Remove</button>
-    </div>
-    <textarea class="field question-text" rows="2" maxlength="2000" required placeholder="Write your question...">${safe(data.text||'')}</textarea>
-    <div class="grid sm:grid-cols-2 gap-3 mt-3">
-      ${[0,1,2,3].map(i=>`<div><label class="text-xs muted block mb-1">Option ${String.fromCharCode(65+i)}</label><input class="field option" maxlength="500" required value="${safe((data.options||[])[i]||'')}" placeholder="Enter option ${String.fromCharCode(65+i)}"></div>`).join('')}
-    </div>
-    <div class="grid sm:grid-cols-2 gap-3 mt-4">
-      <div><label class="text-xs muted block mb-1">Correct answer</label>
-        <select class="field correct-answer">${[0,1,2,3].map(i=>`<option value="${i}" ${Number(data.correctIndex||0)===i?'selected':''}>Option ${String.fromCharCode(65+i)}</option>`).join('')}</select>
-      </div>
-      <div><label class="text-xs muted block mb-1">Explanation (optional)</label><input class="field explanation" maxlength="1000" value="${safe(data.explanation||'')}" placeholder="Explain the correct answer"></div>
-    </div>`;
-  div.querySelector('.remove-question').addEventListener('click',()=>div.remove());
-  $('questionsContainer').appendChild(div);
-}
-$('addQuestion').addEventListener('click',()=>addQuestion());
-$('clearQuestions').addEventListener('click',()=>{$('questionsContainer').innerHTML='';questionCount=0;});
-
-$('testForm').addEventListener('submit',async e=>{
-  e.preventDefault();
-  const user=auth.currentUser;
-  if(!user || user.email.toLowerCase()!==ADMIN_EMAIL.toLowerCase()) return message('testMessage','Admin authentication required.');
-  const cards=[...$('questionsContainer').querySelectorAll('[data-question]')];
-  if(!cards.length) return message('testMessage','Add at least one question.');
-  const questions=[];
-  for(let i=0;i<cards.length;i++){
-    const card=cards[i];
-    const text=card.querySelector('.question-text').value.trim();
-    const options=[...card.querySelectorAll('.option')].map(x=>x.value.trim());
-    if(!text || options.some(x=>!x)) return message('testMessage',`Complete question ${i+1} and all four options.`);
-    questions.push({
-      text,options,
-      correctIndex:Number(card.querySelector('.correct-answer').value),
-      explanation:card.querySelector('.explanation').value.trim()
-    });
+  if ($("password").value !== ADMIN_PASSWORD) {
+    $("loginMsg").textContent = "गलत पासवर्ड।";
+    return;
   }
-  const btn=$('testSubmit');btn.disabled=true;btn.textContent='Saving test…';
-  try{
-    await db.collection('tests').add({
-      title:$('testTitle').value.trim(),
-      subject:$('testSubject').value.trim(),
-      exam:$('testExam').value,
-      durationMinutes:Number($('testDuration').value),
-      marksPerQuestion:Number($('testMarks').value),
-      negativeMarks:Number($('testNegative').value),
-      instructions:$('testInstructions').value.trim(),
-      questions,
-      totalQuestions:questions.length,
-      totalMarks:questions.length*Number($('testMarks').value),
-      published:$('testPublished').checked,
-      createdAt:firebase.firestore.FieldValue.serverTimestamp(),
-      createdBy:user.uid
-    });
-    message('testMessage','Test series saved successfully.',true);
-    $('testForm').reset();$('questionsContainer').innerHTML='';questionCount=0;addQuestion();
-  }catch(err){message('testMessage','Could not save test: '+err.message);}
-  finally{btn.disabled=false;btn.textContent='Save Test Series';}
+  $("loginMsg").textContent =
+    "पासवर्ड सही है, लेकिन Firebase में सुरक्षित admin authentication भी जरूरी है।";
+  // केवल password match होने से Firestore write permission नहीं मिलती।
 });
 
-function renderPdfList(snap) {
-  const list=$('pdfList');
-  if(snap.empty){list.innerHTML='<p class="p-5 text-sm muted">No study materials added yet.</p>';return;}
-  list.innerHTML=snap.docs.map(doc=>{
-    const d=doc.data();
-    return `<div class="p-4 sm:p-5 border-t border-slate-100 flex flex-wrap items-center gap-3 justify-between">
-      <div class="min-w-0 flex-1"><p class="font-bold text-sm break-words">${safe(d.title)}</p><p class="text-xs muted mt-1">${safe(d.subject)} · ${safe(d.topic||'General')}</p></div>
-      <span class="text-xs font-bold ${d.published?'text-emerald-600':'text-amber-600'}">${d.published?'Published':'Draft'}</span>
-      <div class="flex gap-2"><button class="btn secondary" data-pdf-toggle="${doc.id}" data-published="${!!d.published}">${d.published?'Unpublish':'Publish'}</button><button class="btn danger" data-pdf-delete="${doc.id}" data-path="${safe(d.filePath||'')}">Delete</button></div>
-    </div>`;
-  }).join('');
+$("logout").onclick = () => {
+  $("panel").classList.add("hidden");
+  $("login").classList.remove("hidden");
+  $("password").value = "";
+};
+
+function resetMaterial() {
+  $("materialForm").reset();
+  $("mid").value = "";
+  $("published").checked = true;
 }
-function renderTestList(snap) {
-  const list=$('testList');
-  if(snap.empty){list.innerHTML='<p class="p-5 text-sm muted">No test series created yet.</p>';return;}
-  list.innerHTML=snap.docs.map(doc=>{
-    const d=doc.data();
-    return `<div class="p-4 sm:p-5 border-t border-slate-100 flex flex-wrap items-center gap-3 justify-between">
-      <div class="min-w-0 flex-1"><p class="font-bold text-sm">${safe(d.title)}</p><p class="text-xs muted mt-1">${safe(d.subject)} · ${Number(d.totalQuestions||d.questions?.length||0)} questions · ${Number(d.durationMinutes||0)} min</p></div>
-      <span class="text-xs font-bold ${d.published?'text-emerald-600':'text-amber-600'}">${d.published?'Published':'Draft'}</span>
-      <div class="flex gap-2"><button class="btn secondary" data-test-toggle="${doc.id}" data-published="${!!d.published}">${d.published?'Unpublish':'Publish'}</button><button class="btn danger" data-test-delete="${doc.id}">Delete</button></div>
-    </div>`;
-  }).join('');
+$("clearMaterial").onclick = resetMaterial;
+
+function driveUrlValid(value) {
+  try {
+    const u = new URL(value);
+    return u.protocol === "https:" &&
+      ["drive.google.com","docs.google.com"].includes(u.hostname);
+  } catch { return false; }
 }
-document.addEventListener('click',async e=>{
-  const t=e.target.closest('button');if(!t)return;
-  try{
-    if(t.dataset.pdfToggle){
-      const published=t.dataset.published==='true';
-      await db.collection('study_materials').doc(t.dataset.pdfToggle).update({published:!published});
+
+$("materialForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  if (!auth.currentUser) {
+    say("Firestore में सेव करने के लिए Firebase Admin Authentication आवश्यक है।");
+    return;
+  }
+  const url = $("fileUrl").value.trim();
+  if (!driveUrlValid(url)) {
+    say("सही Google Drive PDF लिंक डालें।");
+    return;
+  }
+  const data = {
+    title: $("title").value.trim(),
+    subject: $("subject").value.trim(),
+    topic: $("topic").value.trim(),
+    description: $("description").value.trim(),
+    fileUrl: url,
+    premium: $("premium").checked,
+    published: $("published").checked,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  try {
+    if ($("mid").value) {
+      await db.collection("study_materials").doc($("mid").value).update(data);
+    } else {
+      data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      await db.collection("study_materials").add(data);
     }
-    if(t.dataset.testToggle){
-      const published=t.dataset.published==='true';
-      await db.collection('tests').doc(t.dataset.testToggle).update({published:!published});
-    }
-    if(t.dataset.pdfDelete){
-      if(!confirm('Delete this material and its uploaded PDF?'))return;
-      const ref=db.collection('study_materials').doc(t.dataset.pdfDelete);
-      const snap=await ref.get(),d=snap.data();
-      await ref.delete();
-      if(d?.filePath){try{await storage.ref(d.filePath).delete();}catch(err){console.warn('Storage file cleanup:',err.message);}}
-    }
-    if(t.dataset.testDelete){
-      if(!confirm('Delete this test series?'))return;
-      await db.collection('tests').doc(t.dataset.testDelete).delete();
-    }
-  }catch(err){alert('Action failed: '+err.message);}
+    say("Material सेव हो गया।");
+    resetMaterial();
+    await loadContent();
+  } catch (err) {
+    say("Save नहीं हुआ: " + err.message);
+  }
 });
-initFirebase();
+
+function editMaterial(id) {
+  const m = materials.find(x => x.id === id);
+  if (!m) return;
+  $("mid").value = id;
+  $("title").value = m.title || "";
+  $("subject").value = m.subject || "";
+  $("topic").value = m.topic || "";
+  $("fileUrl").value = m.fileUrl || "";
+  $("description").value = m.description || "";
+  $("premium").checked = !!m.premium;
+  $("published").checked = !!m.published;
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+async function deleteMaterial(id) {
+  if (!confirm("इस material को हटाएँ?")) return;
+  try {
+    await db.collection("study_materials").doc(id).delete();
+    await loadContent();
+    say("Material हटा दिया गया।");
+  } catch (e) { say("Delete नहीं हुआ: " + e.message); }
+}
+
+function renderMaterials() {
+  $("materialCount").textContent = materials.length;
+  $("materials").innerHTML = materials.map(m => `
+    <article class="border rounded-xl p-4">
+      <div class="font-bold">${esc(m.title)}</div>
+      <div class="text-sm text-slate-500">${esc(m.subject)} · ${esc(m.topic)}</div>
+      <div class="text-xs mt-1">${m.published ? "Published" : "Draft"} · ${m.premium ? "Premium" : "Free"}</div>
+      <div class="flex flex-wrap gap-2 mt-3">
+        <button class="bg-indigo-100 text-indigo-700 rounded-lg px-3 py-2" onclick="editMaterial('${m.id}')">Edit</button>
+        <a class="bg-slate-100 rounded-lg px-3 py-2" target="_blank" rel="noopener" href="${esc(m.fileUrl)}">Open PDF</a>
+        <button class="bg-red-100 text-red-700 rounded-lg px-3 py-2" onclick="deleteMaterial('${m.id}')">Delete</button>
+      </div>
+    </article>`).join("") || "<p>अभी कोई सामग्री नहीं है।</p>";
+}
+
+function addQuestion() {
+  const n = $("questions").children.length;
+  const div = document.createElement("div");
+  div.className = "border rounded-xl p-4 space-y-2";
+  div.innerHTML = `
+    <div class="flex justify-between"><b>Question ${n+1}</b>
+    <button type="button" class="text-red-600" onclick="this.closest('.border').remove()">Remove</button></div>
+    <input class="qtext border rounded-lg p-3 w-full" placeholder="Question" required>
+    <div class="grid sm:grid-cols-2 gap-2">
+      <input class="qopt border rounded-lg p-3" placeholder="Option A" required>
+      <input class="qopt border rounded-lg p-3" placeholder="Option B" required>
+      <input class="qopt border rounded-lg p-3" placeholder="Option C" required>
+      <input class="qopt border rounded-lg p-3" placeholder="Option D" required>
+    </div>
+    <label class="text-sm">Correct answer
+      <select class="qcorrect border rounded-lg p-2 ml-2">
+        <option value="0">A</option><option value="1">B</option>
+        <option value="2">C</option><option value="3">D</option>
+      </select>
+    </label>`;
+  $("questions").appendChild(div);
+}
+$("addQuestion").onclick = addQuestion;
 addQuestion();
+
+$("testForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  if (!auth.currentUser) {
+    say("Test सेव करने के लिए Firebase Admin Authentication आवश्यक है।");
+    return;
+  }
+  const questionBlocks = [...$("questions").children];
+  const questions = questionBlocks.map(b => ({
+    text: b.querySelector(".qtext").value.trim(),
+    options: [...b.querySelectorAll(".qopt")].map(x => x.value.trim()),
+    correctIndex: Number(b.querySelector(".qcorrect").value)
+  }));
+  if (!questions.length || questions.some(q => !q.text || q.options.some(o => !o))) {
+    say("हर प्रश्न और उसके चारों विकल्प भरें।");
+    return;
+  }
+  const data = {
+    title: $("testTitle").value.trim(),
+    subject: $("testSubject").value.trim(),
+    durationMinutes: Number($("duration").value) || 15,
+    marksPerQuestion: Number($("marks").value) || 1,
+    negativeMarks: Number($("negative").value) || 0,
+    questions,
+    published: $("testPublished").checked,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  try {
+    data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+    await db.collection("tests").add(data);
+    $("testForm").reset();
+    $("questions").innerHTML = "";
+    addQuestion();
+    await loadContent();
+    say("Test सेव हो गया।");
+  } catch (err) { say("Test सेव नहीं हुआ: " + err.message); }
+});
+
+async function deleteTest(id) {
+  if (!confirm("यह test हटाएँ?")) return;
+  try {
+    await db.collection("tests").doc(id).delete();
+    await loadContent();
+    say("Test हटा दिया गया।");
+  } catch (e) { say("Delete नहीं हुआ: " + e.message); }
+}
+
+function renderTests() {
+  $("testCount").textContent = tests.length;
+  $("tests").innerHTML = tests.map(t => `
+    <article class="border rounded-xl p-4">
+      <b>${esc(t.title)}</b>
+      <div class="text-sm text-slate-500">${esc(t.subject)} · ${(t.questions||[]).length} questions</div>
+      <div class="text-xs mt-1">${t.published ? "Published" : "Draft"}</div>
+      <button class="bg-red-100 text-red-700 rounded-lg px-3 py-2 mt-3" onclick="deleteTest('${t.id}')">Delete</button>
+    </article>`).join("") || "<p>अभी कोई test नहीं है।</p>";
+}
+
+async function loadContent() {
+  try {
+    const [m,t] = await Promise.all([
+      db.collection("study_materials").get(),
+      db.collection("tests").get()
+    ]);
+    materials = m.docs.map(d => ({id:d.id,...d.data()}));
+    tests = t.docs.map(d => ({id:d.id,...d.data()}));
+    renderMaterials();
+    renderTests();
+  } catch (e) {
+    say("Firebase permission error: " + e.message);
+  }
+}
 </script>
 </body>
 </html>
