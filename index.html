@@ -250,4 +250,28 @@ function renderMaterials(){
     list.innerHTML=filtered.length?filtered.map(m=>`<div class="card p-5"><div class="flex items-start justify-between"><div class="w-11 h-11 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center"><i data-lucide="file-text"></i></div><button onclick="toggleBookmark('${m.id}')" class="muted"><i data-lucide="bookmark"></i></button></div><div class="tag bg-violet-50 text-violet-700 mt-4">${m.subject}</div><h3 class="font-bold mt-3">${m.title}</h3><p class="text-sm muted mt-2">${m.description||'Study resource'}</p><a href="${m.url}" target="_blank" rel="noopener noreferrer" class="mt-5 inline-flex items-center gap-2 text-sm text-violet-600 font-bold">Open resource <i data-lucide="arrow-up-right" class="w-4"></i></a></div>`).join(''):emptyCard('search','No matching resources','Try another search or subject.');
   }
   document.getElementById('materialCount').textContent=materials.length;
-  document.getElementById('recentMaterials').innerHTML=materials.length?materials.slice(0,3).map(m=>`<div class="flex items-center gap-3 py-3 border-b border-slate-100 last:border-0"><div class="w-10 h-10 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center"><i data-lucide="file-text"></i></div><div class="flex-1 min-w-0"><div class="font-bold text-sm truncate">${m.title}</div><div class="text-xs muted mt-1">${m.subject}</div></div><a class="text-sm text-violet-600 font-bold" target="_blank" rel="noopener noreferrer" href="${m.url}">Open</a
+  document.getElementById('recentMaterials').innerHTML=materials.length?materials.slice(0,3).map(m=>`<div class="flex items-center gap-3 py-3 border-b border-slate-100 last:border-0"><div class="w-10 h-10 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center"><i data-lucide="file-text"></i></div><div class="flex-1 min-w-0"><div class="font-bold text-sm truncate">${m.title}</div><div class="text-xs muted mt-1">${m.subject}</div></div><a class="text-sm text-violet-600 font-bold" target="_blank" rel="noopener noreferrer" href="${m.url}">Open</a></div>`).join(''):emptyCard('book-open','Your learning library is ready','Materials will appear here when added.');
+  document.getElementById('recentTable').innerHTML=materials.length?materials.slice(0,5).map(m=>`<div class="table-row"><div class="font-semibold">${m.title}</div><div class="muted hide-tablet">${m.subject}</div><div class="muted hide-tablet">Resource</div><div><a class="text-violet-600 font-bold" href="${m.url}" target="_blank" rel="noopener noreferrer">Open ↗</a></div></div>`).join(''):'Materials added by your portal administrator will appear here.';
+  lucide.createIcons();
+}
+function filterMaterials(){renderMaterials()}
+function renderTests(){
+ document.getElementById('testCount').textContent=tests.length;
+ document.getElementById('testsList').innerHTML=tests.length?tests.map(t=>`<div class="card p-5"><div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center"><i data-lucide="clipboard-check"></i></div><div class="tag bg-emerald-50 text-emerald-700 mt-4">Practice test</div><h3 class="font-bold mt-3">${t.title}</h3><p class="text-sm muted mt-2">${t.description||'Test your knowledge'}</p><a href="${t.url}" target="_blank" rel="noopener noreferrer" class="mt-5 inline-flex items-center gap-2 text-sm text-violet-600 font-bold">Start test <i data-lucide="arrow-up-right" class="w-4"></i></a></div>`).join(''):emptyCard('clipboard-check','No tests published yet','New practice tests will appear here when connected to your database.');
+ lucide.createIcons();
+}
+function toggleBookmark(id){
+ const index=bookmarks.indexOf(id);
+ if(index>=0)bookmarks.splice(index,1);else bookmarks.push(id);
+ localStorage.setItem('edupath_bookmarks',JSON.stringify(bookmarks));
+ renderBookmarks();renderMaterials();
+}
+function renderBookmarks(){
+ const saved=materials.filter(m=>bookmarks.includes(m.id));
+ document.getElementById('bookmarksList').innerHTML=saved.length?saved.map(m=>`<div class="card p-5"><div class="tag bg-violet-50 text-violet-700">${m.subject}</div><h3 class="font-bold mt-3">${m.title}</h3><a href="${m.url}" target="_blank" rel="noopener noreferrer" class="text-sm text-violet-600 font-bold mt-4 inline-block">Open resource ↗</a><button onclick="toggleBookmark('${m.id}')" class="block text-xs muted mt-3">Remove bookmark</button></div>`).join(''):emptyCard('bookmark','Nothing saved yet','Bookmark a resource to find it quickly later.');
+ lucide.createIcons();
+}
+renderMaterials();renderTests();renderBookmarks();lucide.createIcons();
+</script>
+</body>
+</html>
