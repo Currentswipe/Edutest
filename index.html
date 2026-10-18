@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EduApp</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-900"><div id="app"></div>
+<script>
+firebase.initializeApp({apiKey:"PASTE",authDomain:"PASTE",projectId:"PASTE",storageBucket:"PASTE",appId:"PASTE"});
+const auth=firebase.auth(),db=firebase.firestore(),app=document.getElementById('app');
+const $=i=>document.getElementById(i),v=i=>$(i).value;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const em=u=>u+'@edu.app';
+const btn='rounded-lg bg-indigo-600 px-4 py-2 text-white font-medium',inp='w-full rounded-lg border p-2';
+let me=null,tab='home',mode='login',R=null,timer=null,M=[],TS=[],RK=[],A=[];
+const isPrem=()=>me.premium&&(!me.expiry||me.expiry>Date.now());
+
+async function loadMe(uid){for(let i=0;i<6;i++){const d=await db.collection('users').doc(uid).get();if(d.exists)return{id:uid,...d.data()};await new Promise(r=>setTimeout(r,600))}return null}
+auth.onAuthStateChanged(async u=>{
+  if(!u){me=null;return loginView()}
+  const m=await loadMe(u.uid);
+  if(!m){await auth.signOut();return}
+  if(m.status==='suspended'||m.status==='locked'){alert('Your account is '+m.status+'. Contact admin.');await auth.signOut();return}
+  me=m;go('home');
+});
+
+/* ---------- LOGIN / REGISTER ---------- */
+function err(t){$('err').textContent=t}
+function tog(){$('pw').type=$('pw').type=='password'?'text':'password'}
+function loginView(){
+  const reg=mode=='reg';
+  app.innerHTML=`<div class="mx-auto max-w-sm p-6 pt-16"><h1 class="text-2xl font-bold text-indigo-600 mb-4">EduApp</h1>
+  <div class="space-y-3 bg-white p-5 rounded-xl shadow">
+  ${reg?`<input id=fn class="${inp}" placeholder="Full name">`:''}
+  <input id=id class="${inp}" placeholder="${reg?'Username':'Username or Mobile Number'}">
+  ${reg?`<input id=mo class="${inp}" placeholder="Mobile (10 digits)" inputmode=numeric>`:''}
+  <div class="relative"><input id=pw type=password class="${inp}" placeholder="Password">
+  <button type=button onclick="tog()" class="absolute right-2 top-2 text-xs text-slate-500">Show/Hide</button></div>
+  ${reg?`<input id=pw2 type=password class="${inp}" placeholder="Confirm password">`:''}
+  <p id=err class="text-sm text-red-600"></p>
+  <button onclick="${reg?'doReg()':'doLogin()'}" class="${btn} w-full">${reg?'Register':'Login'}</button>
+  ${reg?'':'<button onclick="alert(\'Contact admin to reset your password.\')" class="text-sm text-indigo-600">Forgot password?</button>'}
+  <button onclick="mode='${reg?'login':'reg'}';loginView()" class="block text-sm text-slate-600">${reg?'Have an account? Login':'New student? Register'}</button>
+  </div></div>`;
+}
+async function doReg(){
+  const n=v('fn').trim(),u=v('id').trim().toLowerCase(),m=v('mo').trim(),p=v('pw');
+  if(n.length<2||!/^[a-z][a-z0-9_]{3,19}$/.test(u)||!/^\d{10}$/.test(m)||p.length<6)return err('Fill all fields. Username: 4-20 letters/numbers/_ starting with a letter. Mobile: 10 digits. Password: 6+.');
+  if(p!==v('pw2'))return err('Passwords do not match');
+  try{
+    if((await db.collection('lookup').doc(m).get()).exists)return err('Mobile already registered');
+    const c=await auth.createUserWithEmailAndPassword(em(u),p);
+    await db.collection('users').doc(c.user.uid).set({name:n,username:u,mobile:m,role:'student',premium:false,status:'active',sid:'S'+Date.now().toString().slice(-8),createdAt:Date.now()});
+    await db.collection('lookup').doc(m).set({username:u});
+  }catch(e){err(e.code=='auth/email-already-in-use'?'Username already taken':e.message)}
+}
+async function doLogin(){
+  let u=v('id').trim().toLowerCase();const p=v('pw');
+  if(!u||!p)return err('Enter both fields');
+  try{
+    if(/^\d{10}$/.test(u)){const l=await db.collection('lookup').doc(u).get();if(!l.exists)return err('Incorrect credentials');u=l.data().username}
+    await auth.signInWithEmailAndPassword(em(u),p);
+  }catch(e){err(e.code=='auth/too-many-requests'?'Too many attempts. Try later.':'Incorrect credentials')}
+}
+
+/* ---------- SHELL ---------- */
+const tabs=[['home','Home'],['study','Study'],['tests','Tests'],['rank','Ranks'],['prof','Profile']];
+function go(t){tab=t;clearInterval(timer);R=null;shell('<p>Loading…</p>');({home,study,tests,rank,prof})[t]()}
+function shell(h){app.innerHTML=`<div class="min-h-screen pb-16 md:pb-0"><header class="sticky top-0 z-10 bg-white border-b flex items-center justify-between px-4 py-3"><b class="text-indigo-600">EduApp</b>
+<nav class="hidden md:flex gap-2">${tabs.map(([k,l])=>`<button onclick="go('${k}')" class="px-3 py-1 rounded ${k==tab?'bg-indigo-600 text-white':''}">${l}</button>`).join('')}</nav>
+<button onclick="auth.signOut()" class="text-sm text-slate-600">Logout</button></header>
+<main class="mx-auto max-w-3xl p-4">${h}</main>
+<nav class="md:hidden fixed bottom-0 inset-x-0 bg-white border-t flex justify-around py-3 text-xs">${tabs.map(([k,l])=>`<button onclick="go('${k}')" class="px-2 ${k==tab?'text-indigo-600 font-bold':'text-slate-500'}">${l}</button>`).join('')}</nav></div>`}
+
+/* ---------- HOME ---------- */
+async function myAttempts(){const s=await db.collection('attempts').where('uid','==',me.id).get();return s.docs.map(d=>d.data()).sort((a,b)=>b.at-a.at)}
+async function home(){
+  const a=await myAttempts(),n=a.length,avg=n?a.reduce((s,x)=>s+x.pct,0)/n:0;
+  const c=a.reduce((s,x)=>s+x.correct,0),w=a.reduce((s,x)=>s+x.wrong,0),acc=c+w?c/(c+w)*100:0;
+  shell(`<h2 class="text-xl font-semibold mb-3">Welcome, ${esc(me.name)}</h2><div class="grid grid-cols-2 gap-3">
+  ${[['Tests attempted',n],['Average score',avg.toFixed(1)+'%'],['Accuracy',acc.toFixed(1)+'%'],['Membership',isPrem()?'Premium'+(me.expiry?' till '+new Date(me.expiry).toLocaleDateString():''):'Free']].map(([l,x])=>`<div class="bg-white p-4 rounded-xl shadow"><p class="text-xs text-slate-500">${l}</p><p class="text-lg font-bold">${x}</p></div>`).join('')}</div>
+  <h3 class="mt-5 mb-2 font-semibold">Recent results</h3>
+  ${a.slice(0,5).map(x=>`<div class="bg-white p-3 rounded-lg mb-2 flex justify-between"><span>${esc(x.testTitle)}</span><b>${x.score}/${x.max}</b></div>`).join('')||'<p class="text-slate-500">No tests yet.</p>'}`);
+}
+
+/* ---------- STUDY ---------- */
+async function study(){
+  M=(await db.collection('materials').get()).docs.map(d=>d.data());
+  shell(`<input id=q placeholder="Search PDFs" class="${inp} mb-3" oninput="drawStudy()"><div id=list></div>`);drawStudy();
+}
+function drawStudy(){
+  const q=v('q').toLowerCase(),g={};
+  M.filter(x=>(x.title+x.topic+x.subject).toLowerCase().includes(q)).forEach(x=>{((g[x.subject]??={})[x.topic]??=[]).push(x)});
+  $('list').innerHTML=Object.entries(g).map(([s,t])=>`<details ${q?'open':''} class="bg-white rounded-xl shadow mb-3 p-3"><summary class="font-semibold">${esc(s)}</summary>
+  ${Object.entries(t).map(([tp,f])=>`<div class="mt-2 ml-2"><p class="text-sm font-medium text-indigo-600">${esc(tp)}</p>
+  ${f.map(x=>`<div class="flex justify-between border-b py-2 text-sm"><span>${esc(x.title)} ${x.premium?'👑':''}</span>${x.premium&&!isPrem()?'<span class="text-amber-600">Premium locked</span>':`<a class="text-indigo-600" target="_blank" rel="noopener" href="${esc(x.url)}">Open</a>`}</div>`).join('')}</div>`).join('')}</details>`).join('')||'<p class="text-slate-500">No material found.</p>';
+}
+
+/* ---------- TESTS ---------- */
+async function tests(){
+  TS=(await db.collection('tests').where('published','==',true).get()).docs.map(d=>({id:d.id,...d.data()}));
+  shell(TS.map((t,i)=>`<div class="bg-white p-4 rounded-xl shadow mb-3"><b>${esc(t.title)}</b> ${t.premium?'👑':''}
+  <p class="text-sm text-slate-500">${esc(t.subject)} · ${t.questions.length} Qs · ${t.duration} min · +${t.marks} / -${t.neg}</p>
+  <button onclick="start(${i})" class="${btn} mt-2">${t.premium&&!isPrem()?'Premium locked':'Start'}</button></div>`).join('')||'<p>No tests yet.</p>');
+}
+function start(i){
+  const t=TS[i];if(t.premium&&!isPrem())return alert('Premium required');
+  if(!confirm('Start "'+t.title+'"? Duration: '+t.duration+' minutes.'))return;
+  R={t,i:0,a:Array(t.questions.length).fill(-1),mk:{},end:Date.now()+t.duration*6e4,done:false};
+  timer=setInterval(tick,1000);showQ();
+}
+function tick(){const s=Math.max(0,Math.floor((R.end-Date.now())/1000)),e=$('tm');if(e)e.textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0');if(s<=0)submit(true)}
+const pick=j=>{R.a[R.i]=j;showQ()},nav=d=>{R.i=Math.min(R.t.questions.length-1,Math.max(0,R.i+d));showQ()},mark=()=>{R.mk[R.i]=!R.mk[R.i];showQ()};
+function showQ(){
+  const {t,i,a,mk}=R,x=t.questions[i];
+  shell(`<div class="flex justify-between mb-3"><b>${esc(t.title)}</b><span id=tm class="font-mono text-red-600"></span></div>
+  <div class="bg-white p-4 rounded-xl shadow"><p class="text-sm text-slate-500">Question ${i+1}/${t.questions.length}</p><p class="font-medium my-2">${esc(x.q)}</p>
+  ${x.o.map((o,j)=>`<button onclick="pick(${j})" class="block w-full text-left rounded-lg border p-3 mb-2 ${a[i]==j?'bg-indigo-100 border-indigo-500':''}">${'ABCD'[j]}. ${esc(o)}</button>`).join('')}
+  <div class="flex gap-2 flex-wrap mt-2"><button onclick="nav(-1)" class="px-3 py-2 border rounded">Prev</button><button onclick="nav(1)" class="px-3 py-2 border rounded">Next</button>
+  <button onclick="mark()" class="px-3 py-2 border rounded">${mk[i]?'Unmark':'Mark review'}</button><button onclick="submit(false)" class="${btn} ml-auto">Submit</button></div></div>
+  <p class="text-sm mt-3">Answered ${a.filter(z=>z>=0).length} · Unanswered ${a.filter(z=>z<0).length} · Marked ${Object.values(mk).filter(Boolean).length}</p>
+  <div class="flex flex-wrap gap-2 mt-2">${a.map((z,k)=>`<button onclick="R.i=${k};showQ()" class="h-8 w-8 rounded text-xs ${k==i?'ring-2 ring-indigo-600':''} ${mk[k]?'bg-amber-300':z>=0?'bg-green-300':'bg-slate-200'}">${k+1}</button>`).join('')}</div>`);
+  tick();
+}
+async function submit(auto){
+  if(!R||R.done)return;
+  if(!auto&&!confirm('Submit test?'))return;
+  R.done=true;clearInterval(timer);
+  const {t,a}=R;let c=0,w=0;
+  a.forEach((z,k)=>{if(z<0)return;z==t.questions[k].ans?c++:w++});
+  const n=t.questions.length,score=+(c*t.marks-w*t.neg).toFixed(2),max=n*t.marks;
+  const r={uid:me.id,name:me.name,testId:t.id,testTitle:t.title,subject:t.subject,score,max,pct:max?+(score/max*100).toFixed(2):0,
+    accuracy:c+w?+(c/(c+w)*100).toFixed(2):0,correct:c,wrong:w,skipped:n-c-w,time:Math.min(t.duration*60,Math.round((Date.now()-(R.end-t.duration*6e4))/1000)),at:Date.now()};
+  try{await db.collection('attempts').add(r)}catch(e){alert('Could not save result: '+e.message)}
+  shell(`<div class="bg-white p-4 rounded-xl shadow"><h2 class="font-bold text-lg">Result: ${r.score}/${r.max} (${r.pct}%)</h2>
+  <p class="text-sm">Correct ${r.correct} · Wrong ${r.wrong} · Unanswered ${r.skipped} · Accuracy ${r.accuracy}% · Time ${r.time}s</p></div>`+
+  t.questions.map((x,k)=>`<div class="bg-white p-3 rounded-lg shadow mt-3 text-sm"><p class="font-medium">${k+1}. ${esc(x.q)}</p>
+  <p>Your answer: ${a[k]<0?'—':esc(x.o[a[k]])}</p><p class="text-green-700">Correct: ${esc(x.o[x.ans])}</p>${x.exp?`<p class="text-slate-500">${esc(x.exp)}</p>`:''}</div>`).join(''));
+}
+
+/* ---------- LEADERBOARD ---------- */
+const cmp=(a,b)=>b.pct-a.pct||b.accuracy-a.accuracy||a.time-b.time;
+async function rank(){
+  shell(`<select id=per onchange="drawRank()" class="${inp} mb-3"><option value=0>All time</option><option value=1>Today</option><option value=7>This week</option><option value=30>This month</option></select><div id=rk>Loading…</div>`);
+  RK=(await db.collection('attempts').orderBy('pct','desc').limit(300).get()).docs.map(d=>d.data());drawRank();
+}
+function drawRank(){
+  const d=+v('per'),min=d?Date.now()-d*864e5:0,best={};
+  RK.filter(x=>x.at>=min).forEach(x=>{const b=best[x.uid];if(!b||cmp(x,b)<0)best[x.uid]=x});
+  $('rk').innerHTML=Object.values(best).sort(cmp).slice(0,50).map((x,i)=>`<div class="flex justify-between p-3 mb-1 rounded-lg ${x.uid==me.id?'bg-indigo-100 font-bold':'bg-white'}"><span>#${i+1} ${esc(x.name)}</span><span>${x.pct}% · ${x.accuracy}% acc · ${x.time}s</span></div>`).join('')||'<p class="text-slate-500">No results yet.</p>';
+}
+
+/* ---------- PROFILE ---------- */
+async function prof(){
+  A=await myAttempts();
+  shell(`<div class="bg-white p-4 rounded-xl shadow"><h2 class="font-bold text-lg">${esc(me.name)}</h2>
+  <p class="text-sm">Student ID: ${esc(me.sid)}<br>Username: ${esc(me.username)}<br>Mobile: ${esc(me.mobile)}<br>Membership: ${isPrem()?'Premium':'Free'}</p>
+  <p class="text-xs text-slate-500 mt-2">Privacy: we store your test results and profile details to show progress and leaderboards.</p></div>
+  <button onclick="csv()" class="${btn} mt-3">Export CSV</button><h3 class="mt-4 mb-2 font-semibold">Test history</h3>
+  ${A.map(x=>`<div class="bg-white p-3 rounded-lg mb-2 text-sm flex justify-between"><span>${esc(x.testTitle)}<br><span class="text-slate-500">${new Date(x.at).toLocaleString()}</span></span><b>${x.score}/${x.max}</b></div>`).join('')||'<p class="text-slate-500">No attempts yet.</p>'}`);
+}
+function csv(){
+  const rows=[['Test','Date','Score','Max','Percent','Accuracy','Correct','Wrong','Skipped']].concat(A.map(x=>[x.testTitle,new Date(x.at).toISOString(),x.score,x.max,x.pct,x.accuracy,x.correct,x.wrong,x.skipped]));
+  const b=new Blob([rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n')],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='my-report.csv';a.click();
+}
+</script></body></html>
