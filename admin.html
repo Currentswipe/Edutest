@@ -4,213 +4,351 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>EduTest Admin Panel</title>
+<title>EduTest Admin</title>
 <style>
-body{font-family:Arial,sans-serif;background:#f3f5f9;margin:0;padding:16px;color:#172033}
-main{max-width:720px;margin:auto}
-section{background:white;padding:18px;margin:14px 0;border-radius:14px;box-shadow:0 2px 9px #0001}
-input,textarea,select,button{box-sizing:border-box;width:100%;padding:12px;margin:7px 0;border:1px solid #ccd3df;border-radius:8px;font-size:15px}
-button{background:#155eef;color:white;border:0;font-weight:bold;cursor:pointer}
-h1{font-size:25px}h2{font-size:19px}
-.hidden{display:none}.note{font-size:13px;color:#555}
+body{font-family:Arial,sans-serif;background:#f1f5f9;margin:0;padding:15px;color:#172033}
+main{max-width:850px;margin:auto}
+.card{background:white;padding:18px;margin:14px 0;border-radius:14px;box-shadow:0 3px 12px #0001}
+h1{color:#155eef}h2{font-size:21px}
+input,textarea,select{width:100%;padding:12px;margin:6px 0 12px;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:8px;font-size:16px}
+textarea{min-height:75px}
+button{padding:12px 15px;border:0;border-radius:8px;background:#155eef;color:white;font-size:15px;font-weight:bold;margin:4px 2px;cursor:pointer}
+.red{background:#b42318}.gray{background:#475467}.green{background:#067647}
+.hidden{display:none!important}
+.status{padding:12px;border-radius:8px;white-space:pre-wrap;overflow-wrap:anywhere}
+.error{background:#fee4e2;color:#912018}.success{background:#dcfae6;color:#05603a}
+.item{border-top:1px solid #ddd;padding:12px 0;overflow-wrap:anywhere}
+.question{background:#f8fafc;padding:12px;margin:12px 0;border-radius:10px}
+label{font-weight:bold}
 </style>
 </head>
 <body>
 <main>
-<h1>EduTest Admin</h1>
+<h1>EduTest Admin Panel</h1>
 
-<section id="login">
+<section class="card" id="login">
 <h2>Admin Login</h2>
+<label>Password</label>
 <input id="password" type="password" placeholder="Admin password">
 <button onclick="loginAdmin()">Login</button>
-<p id="loginMsg"></p>
+<div id="loginMsg"></div>
 </section>
 
 <div id="panel" class="hidden">
-<section>
+
+<section class="card">
+<h2>Dashboard</h2>
+<p>Firebase Realtime Database</p>
+<button class="gray" onclick="loadItems()">Refresh Data</button>
+<button class="red" onclick="logoutAdmin()">Logout</button>
+<div id="connection" class="status"></div>
+</section>
+
+<section class="card">
 <h2>📚 Add Study Material / PDF</h2>
+<label>PDF Title *</label>
 <input id="pdfTitle" placeholder="PDF का नाम">
-<input id="pdfSubject" placeholder="Subject">
+
+<label>Subject *</label>
+<input id="pdfSubject" placeholder="जैसे: General Knowledge">
+
+<label>Topic</label>
 <input id="pdfTopic" placeholder="Topic">
-<input id="pdfUrl" type="url" placeholder="Google Drive PDF link">
-<textarea id="pdfDesc" placeholder="Description"></textarea>
+
+<label>Google Drive PDF Link *</label>
+<input id="pdfUrl" type="url" placeholder="https://drive.google.com/file/d/...">
+
+<label>Description</label>
+<textarea id="pdfDescription" placeholder="PDF की जानकारी"></textarea>
+
 <label><input id="pdfPublished" type="checkbox" checked style="width:auto"> Publish for students</label>
+<br>
 <button onclick="savePDF()">Save PDF</button>
-<p id="pdfMsg"></p>
+<div id="pdfMsg"></div>
 </section>
 
-<section>
-<h2>📝 Add Test Series</h2>
-<input id="testTitle" placeholder="Test का नाम">
+<section class="card">
+<h2>📝 Create Test Series</h2>
+<label>Test Name *</label>
+<input id="testTitle" placeholder="SSC Mock Test 1">
+
+<label>Subject *</label>
 <input id="testSubject" placeholder="Subject">
-<input id="duration" type="number" placeholder="Duration (minutes)">
+
+<label>Duration (minutes)</label>
+<input id="testDuration" type="number" value="30" min="1">
+
+<label>Negative Marks per wrong answer</label>
+<input id="negativeMarks" type="number" value="0" min="0" step="0.25">
+
 <div id="questions"></div>
-<button onclick="addQuestion()">+ Add Question</button>
+<button class="gray" onclick="addQuestion()">+ Add Question</button>
+<br>
 <label><input id="testPublished" type="checkbox" checked style="width:auto"> Publish for students</label>
-<button onclick="saveTest()">Save Test</button>
-<p id="testMsg"></p>
+<br>
+<button onclick="saveTest()">Save Test Series</button>
+<div id="testMsg"></div>
 </section>
 
-<section>
-<h2>Saved content</h2>
-<button onclick="loadContent()">Refresh list</button>
-<div id="items"></div>
-<button onclick="logoutAdmin()" style="background:#555">Logout</button>
+<section class="card">
+<h2>Saved Materials & Tests</h2>
+<div id="items">Refresh Data दबाएँ।</div>
 </section>
+
 </div>
 </main>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
 <script>
-// Firebase Console > Project settings > Your apps से config भरें.
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
+  apiKey: "AIzaSyB5vN74NfP-Tx1tIxMDSmOwjhvkgp06Soo",
   authDomain: "edutest-admin.firebaseapp.com",
-  databaseURL: "YOUR_REALTIME_DATABASE_URL",
+  databaseURL: "https://edutest-admin-default-rtdb.firebaseio.com",
   projectId: "edutest-admin",
   storageBucket: "edutest-admin.firebasestorage.app",
   messagingSenderId: "785312729550",
-  appId: "YOUR_APP_ID"
+  appId: "1:785312729550:web:d9cc16fee38afdc88b839f",
+  measurementId: "G-83B1SDVYKF"
 };
 
-// यह केवल UI password check है, सुरक्षित server authentication नहीं।
+// यह केवल UI password है, सुरक्षित authentication नहीं।
 const ADMIN_PASSWORD = "79051";
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
+function msg(id,text,error=false){
+  const el=document.getElementById(id);
+  el.className="status "+(error?"error":"success");
+  el.textContent=text;
+}
+
 function loginAdmin(){
-  if(document.getElementById("password").value === ADMIN_PASSWORD){
+  if(document.getElementById("password").value===ADMIN_PASSWORD){
     document.getElementById("login").classList.add("hidden");
     document.getElementById("panel").classList.remove("hidden");
+    document.getElementById("password").value="";
     addQuestion();
-    loadContent();
-  } else {
-    document.getElementById("loginMsg").textContent="गलत पासवर्ड";
+    loadItems();
+  }else{
+    msg("loginMsg","गलत पासवर्ड",true);
   }
 }
+
 function logoutAdmin(){
   document.getElementById("panel").classList.add("hidden");
   document.getElementById("login").classList.remove("hidden");
-  document.getElementById("password").value="";
 }
 
-function val(id){return document.getElementById(id).value.trim();}
-function msg(id,text){document.getElementById(id).textContent=text;}
+function value(id){
+  return document.getElementById(id).value.trim();
+}
 
-async function savePDF(){
-  const title=val("pdfTitle"),subject=val("pdfSubject"),url=val("pdfUrl");
-  if(!title||!subject||!url){msg("pdfMsg","PDF का नाम, subject और Drive link भरें।");return;}
+function validDriveURL(url){
   try{
     const host=new URL(url).hostname;
-    if(!["drive.google.com","docs.google.com"].includes(host)){
-      throw new Error("Google Drive का सही link डालें।");
-    }
-    const record={
-      title,subject,topic:val("pdfTopic"),url,
-      description:val("pdfDesc"),
-      published:document.getElementById("pdfPublished").checked,
-      createdAt:Date.now()
-    };
-    await db.ref("study_materials").push(record);
-    msg("pdfMsg","PDF रिकॉर्ड सेव हो गया।");
-    ["pdfTitle","pdfSubject","pdfTopic","pdfUrl","pdfDesc"].forEach(id=>document.getElementById(id).value="");
-    loadContent();
-  }catch(e){msg("pdfMsg","Save error: "+e.message);}
+    return host==="drive.google.com" || host==="docs.google.com";
+  }catch(e){return false;}
 }
 
-let questionCount=0;
+async function savePDF(){
+  const title=value("pdfTitle");
+  const subject=value("pdfSubject");
+  const url=value("pdfUrl");
+
+  if(!title||!subject||!url){
+    msg("pdfMsg","Title, Subject और PDF link भरें।",true);
+    return;
+  }
+  if(!validDriveURL(url)){
+    msg("pdfMsg","सही Google Drive PDF link डालें।",true);
+    return;
+  }
+
+  const record={
+    title:title,
+    subject:subject,
+    topic:value("pdfTopic"),
+    url:url,
+    description:value("pdfDescription"),
+    published:document.getElementById("pdfPublished").checked,
+    createdAt:Date.now(),
+    updatedAt:Date.now()
+  };
+
+  try{
+    await db.ref("study_materials").push(record);
+    msg("pdfMsg","PDF record save हो गया।");
+    ["pdfTitle","pdfSubject","pdfTopic","pdfUrl","pdfDescription"]
+      .forEach(id=>document.getElementById(id).value="");
+    loadItems();
+  }catch(e){
+    msg("pdfMsg","Save failed: "+e.message+
+      "\nRealtime Database Rules या authentication access रोक रहे हैं।",true);
+  }
+}
+
+let qCount=0;
+
 function addQuestion(){
-  const n=++questionCount;
-  const div=document.createElement("section");
-  div.id="q"+n;
-  div.innerHTML=`
-    <h3>Question ${n}</h3>
-    <textarea class="question" placeholder="प्रश्न लिखें"></textarea>
-    <input class="opt" placeholder="Option A">
-    <input class="opt" placeholder="Option B">
-    <input class="opt" placeholder="Option C">
-    <input class="opt" placeholder="Option D">
-    <label>सही उत्तर</label>
+  qCount++;
+  const box=document.createElement("div");
+  box.className="question";
+  box.innerHTML=`
+    <h3>Question ${qCount}</h3>
+    <label>Question *</label>
+    <textarea class="questionText" placeholder="प्रश्न लिखें"></textarea>
+
+    <label>Option A *</label><input class="option" placeholder="Option A">
+    <label>Option B *</label><input class="option" placeholder="Option B">
+    <label>Option C *</label><input class="option" placeholder="Option C">
+    <label>Option D *</label><input class="option" placeholder="Option D">
+
+    <label>Correct Answer</label>
     <select class="correct">
-      <option value="0">A</option><option value="1">B</option>
-      <option value="2">C</option><option value="3">D</option>
+      <option value="0">A</option>
+      <option value="1">B</option>
+      <option value="2">C</option>
+      <option value="3">D</option>
     </select>
-    <input class="marks" type="number" value="1" placeholder="Marks">
-    <textarea class="explanation" placeholder="Explanation (optional)"></textarea>
-    <button type="button" onclick="this.parentElement.remove()" style="background:#b42318">Remove question</button>`;
-  document.getElementById("questions").appendChild(div);
+
+    <label>Marks</label>
+    <input class="marks" type="number" min="0" step="0.25" value="1">
+
+    <label>Explanation</label>
+    <textarea class="explanation" placeholder="वैकल्पिक"></textarea>
+    <button class="red removeQuestion" type="button">Remove Question</button>
+  `;
+  box.querySelector(".removeQuestion").onclick=()=>box.remove();
+  document.getElementById("questions").appendChild(box);
 }
 
 async function saveTest(){
-  const title=val("testTitle"),subject=val("testSubject");
-  const boxes=[...document.querySelectorAll("#questions section")];
-  if(!title||!subject||!boxes.length){msg("testMsg","Test का नाम, subject और कम-से-कम एक प्रश्न भरें।");return;}
+  const title=value("testTitle");
+  const subject=value("testSubject");
+  const boxes=[...document.querySelectorAll(".question")];
+
+  if(!title||!subject||boxes.length===0){
+    msg("testMsg","Test title, subject और कम-से-कम एक प्रश्न जरूरी है।",true);
+    return;
+  }
+
   const questions=[];
-  for(const b of boxes){
-    const question=b.querySelector(".question").value.trim();
-    const options=[...b.querySelectorAll(".opt")].map(x=>x.value.trim());
-    if(!question||options.some(x=>!x)){msg("testMsg","हर प्रश्न और उसके चारों options भरें।");return;}
+  for(let i=0;i<boxes.length;i++){
+    const b=boxes[i];
+    const question=b.querySelector(".questionText").value.trim();
+    const options=[...b.querySelectorAll(".option")].map(x=>x.value.trim());
+
+    if(!question||options.some(x=>!x)){
+      msg("testMsg","Question "+(i+1)+": प्रश्न और चारों options भरें।",true);
+      return;
+    }
+
     questions.push({
-      question,options,
+      question:question,
+      options:options,
       correctAnswer:Number(b.querySelector(".correct").value),
       marks:Number(b.querySelector(".marks").value)||1,
       explanation:b.querySelector(".explanation").value.trim()
     });
   }
+
   const totalMarks=questions.reduce((sum,q)=>sum+q.marks,0);
+
   const record={
-    title,subject,duration:Number(val("duration"))||30,
-    questions,totalQuestions:questions.length,totalMarks,
+    title:title,
+    subject:subject,
+    duration:Number(value("testDuration"))||30,
+    negativeMarks:Number(value("negativeMarks"))||0,
+    questions:questions,
+    totalQuestions:questions.length,
+    totalMarks:totalMarks,
     published:document.getElementById("testPublished").checked,
-    createdAt:Date.now()
+    createdAt:Date.now(),
+    updatedAt:Date.now()
   };
+
   try{
     await db.ref("tests").push(record);
-    msg("testMsg","Test Series सेव हो गई।");
+    msg("testMsg","Test Series save हो गई।");
     document.getElementById("testTitle").value="";
     document.getElementById("testSubject").value="";
-    document.getElementById("duration").value="";
     document.getElementById("questions").innerHTML="";
-    questionCount=0;addQuestion();loadContent();
-  }catch(e){msg("testMsg","Save error: "+e.message);}
+    qCount=0;
+    addQuestion();
+    loadItems();
+  }catch(e){
+    msg("testMsg","Save failed: "+e.message+
+      "\nRealtime Database Rules या authentication access रोक रहे हैं।",true);
+  }
 }
 
-async function loadContent(){
-  const target=document.getElementById("items");
-  target.textContent="Loading...";
+async function loadItems(){
+  const out=document.getElementById("items");
+  out.textContent="Loading...";
   try{
-    const [pdfs,tests]=await Promise.all([
+    const results=await Promise.all([
       db.ref("study_materials").once("value"),
       db.ref("tests").once("value")
     ]);
-    target.innerHTML="";
-    function addGroup(snapshot,label,path){
+
+    out.innerHTML="";
+    let count=0;
+
+    function render(snapshot,path,type){
       snapshot.forEach(child=>{
-        const data=child.val();
+        count++;
+        const d=child.val()||{};
         const row=document.createElement("div");
-        row.style.cssText="padding:10px 0;border-bottom:1px solid #ddd";
+        row.className="item";
+
         const title=document.createElement("strong");
-        title.textContent=label+": "+(data.title||"Untitled");
-        const status=document.createElement("span");
-        status.textContent=data.published?" — Published":" — Draft";
+        title.textContent=type+": "+(d.title||"Untitled");
+
+        const detail=document.createElement("p");
+        detail.textContent=(d.subject||"")+" · "+
+          (d.published?"Published":"Draft");
+
+        const toggle=document.createElement("button");
+        toggle.className="green";
+        toggle.textContent=d.published?"Unpublish":"Publish";
+        toggle.onclick=async()=>{
+          try{
+            await db.ref(path+"/"+child.key).update({
+              published:!d.published,updatedAt:Date.now()
+            });
+            loadItems();
+          }catch(e){alert("Update failed: "+e.message);}
+        };
+
         const del=document.createElement("button");
+        del.className="red";
         del.textContent="Delete";
-        del.style.background="#b42318";
         del.onclick=async()=>{
-          if(confirm("क्या इसे delete करना है?")){
-            try{await db.ref(path+"/"+child.key).remove();loadContent();}
-            catch(e){alert("Delete error: "+e.message);}
+          if(confirm("क्या आप इसे delete करना चाहते हैं?")){
+            try{
+              await db.ref(path+"/"+child.key).remove();
+              loadItems();
+            }catch(e){alert("Delete failed: "+e.message);}
           }
         };
-        row.append(title,status,del);target.appendChild(row);
+
+        row.append(title,detail,toggle,del);
+        out.appendChild(row);
       });
     }
-    addGroup(pdfs,"PDF","study_materials");
-    addGroup(tests,"Test","tests");
-    if(!target.children.length)target.textContent="अभी कोई रिकॉर्ड नहीं है।";
-  }catch(e){target.textContent="Load error: "+e.message;}
+
+    render(results[0],"study_materials","PDF");
+    render(results[1],"tests","Test");
+
+    if(count===0)out.textContent="अभी कोई record नहीं मिला।";
+    msg("connection","Database read सफल हुआ।");
+  }catch(e){
+    out.textContent="Load failed: "+e.message;
+    msg("connection","Database Rules ने access रोक दिया हो सकता है।",true);
+  }
 }
 </script>
 </body>
