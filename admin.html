@@ -1,140 +1,401 @@
-<!doctype html>
-<html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>EduApp Admin</title>
-<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EduPath | Admin Studio</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f6f7fb;color:#192238;font-family:'DM Sans',sans-serif}
+h1,h2,h3{font-family:'Plus Jakarta Sans',sans-serif}
+.sidebar{width:245px;position:fixed;inset:0 auto 0 0;background:#17182d;color:#c6c8d9;padding:24px 16px;display:flex;flex-direction:column;z-index:10}
+.main{margin-left:245px;min-height:100vh}
+.nav{width:100%;display:flex;align-items:center;gap:11px;padding:12px;border-radius:10px;text-align:left;font-size:14px;font-weight:600;color:#c6c8d9;margin:3px 0}
+.nav:hover,.nav.active{background:#333151;color:white}
+.card{background:white;border:1px solid #e8eaf1;border-radius:16px}
+.field{width:100%;border:1px solid #e1e5ed;border-radius:10px;padding:11px 12px;font-size:14px;background:white;outline:none}
+.field:focus{border-color:#7666ed;box-shadow:0 0 0 3px #7666ed1c}
+.btn{padding:11px 15px;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer}
+.primary{background:#6858e8;color:white}
+.primary:hover{background:#5141cf}
+.secondary{background:#f0efff;color:#5b4bd5}
+.danger{background:#fff0f0;color:#c43c4b}
+.view{display:none}.view.active{display:block}
+.muted{color:#7e879a}
+@media(max-width:760px){.sidebar{width:100%;height:auto;position:relative;padding:14px}.sidebar nav{display:flex;flex-wrap:wrap}.sidebar .nav{width:auto;padding:9px;font-size:12px}.sidebottom{display:none}.main{margin:0}.topbar{padding:16px!important}.content{padding:16px!important}}
+</style>
+</head>
+<body>
+
+<!-- ADMIN LOGIN -->
+<section id="loginScreen" class="min-h-screen flex items-center justify-center p-5">
+  <div class="card w-full max-w-md p-7 sm:p-9">
+    <div class="w-12 h-12 rounded-2xl bg-violet-600 text-white flex items-center justify-center text-2xl font-bold">E</div>
+    <p class="text-xs tracking-widest font-bold text-violet-600 mt-6">EDUPATH ADMINISTRATION</p>
+    <h1 class="text-3xl font-extrabold mt-2">Welcome back</h1>
+    <p class="muted text-sm mt-2 mb-7">Sign in to manage learning resources.</p>
+    <form id="loginForm" class="space-y-4">
+      <div><label class="block text-sm font-semibold mb-2">Admin email</label><input id="email" class="field" type="email" autocomplete="username" required placeholder="admin@example.com"></div>
+      <div><label class="block text-sm font-semibold mb-2">Password</label><input id="password" class="field" type="password" autocomplete="current-password" required placeholder="Enter password"></div>
+      <button id="loginBtn" class="btn primary w-full" type="submit">Sign in securely</button>
+      <p id="loginMessage" class="text-sm text-rose-600"></p>
+    </form>
+    <p class="text-xs muted mt-6">Authorized administrators only.</p>
+  </div>
+</section>
+
+<!-- ADMIN APP -->
+<div id="adminApp" class="hidden">
+  <aside class="sidebar">
+    <div class="flex items-center gap-3 px-2 mb-8">
+      <div class="w-10 h-10 rounded-xl bg-violet-500 text-white flex items-center justify-center font-extrabold text-xl">E</div>
+      <div><div class="text-white text-lg font-extrabold">EduPath</div><div class="text-xs text-slate-400">ADMIN STUDIO</div></div>
+    </div>
+    <p class="text-[10px] tracking-widest text-slate-500 font-bold px-3 mb-3">MANAGEMENT</p>
+    <nav>
+      <button class="nav active" data-view="overview">◫ &nbsp; Overview</button>
+      <button class="nav" data-view="pdfs">▤ &nbsp; Study Materials</button>
+      <button class="nav" data-view="testbuilder">☷ &nbsp; Create Test Series</button>
+      <button class="nav" data-view="tests">✓ &nbsp; Manage Tests</button>
+    </nav>
+    <div class="sidebottom mt-auto">
+      <div class="rounded-xl bg-white/5 p-4 mt-8">
+        <p class="text-white text-sm font-bold">Admin Workspace</p>
+        <p class="text-xs text-slate-400 mt-2">Manage your learning content from one place.</p>
+      </div>
+      <button id="logoutBtn" class="nav mt-5">↪ &nbsp; Sign out</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar bg-white border-b border-slate-200 px-8 py-5 flex justify-between items-center gap-4">
+      <div><p class="text-xs muted">EDUPATH / ADMINISTRATION</p><h2 id="pageTitle" class="text-xl font-extrabold mt-1">Overview</h2></div>
+      <div class="flex items-center gap-3"><div class="hidden sm:block text-right"><p class="text-sm font-bold">Administrator</p><p id="adminEmail" class="text-xs muted"></p></div><div class="w-10 h-10 rounded-full bg-violet-100 text-violet-700 font-bold flex items-center justify-center">A</div></div>
+    </header>
+
+    <div class="content p-8 max-w-7xl mx-auto">
+
+      <section id="overview" class="view active">
+        <div class="mb-7"><h1 class="text-2xl font-extrabold">Content overview</h1><p class="muted text-sm mt-2">Manage your library and test series.</p></div>
+        <div class="grid sm:grid-cols-3 gap-4 mb-6">
+          <div class="card p-5"><p class="text-sm muted">Study materials</p><p id="pdfCount" class="text-3xl font-extrabold mt-3">0</p><p class="text-xs muted mt-2">Published resources</p></div>
+          <div class="card p-5"><p class="text-sm muted">Test series</p><p id="testCount" class="text-3xl font-extrabold mt-3">0</p><p class="text-xs muted mt-2">Published tests</p></div>
+          <div class="card p-5"><p class="text-sm muted">Admin status</p><p class="text-xl font-extrabold mt-3 text-emerald-600">Authenticated</p><p class="text-xs muted mt-2">Firebase session active</p></div>
+        </div>
+        <div class="card p-6">
+          <h3 class="font-bold text-lg">Quick actions</h3>
+          <p class="muted text-sm mt-1 mb-5">Add new learning content to your portal.</p>
+          <div class="flex flex-wrap gap-3"><button class="btn primary" onclick="showView('pdfs')">＋ Upload Study PDF</button><button class="btn secondary" onclick="showView('testbuilder')">＋ Create Test Series</button></div>
+        </div>
+        <div class="mt-6 card p-5"><h3 class="font-bold">Setup status</h3><p id="setupStatus" class="text-sm muted mt-2">Checking Firebase connection…</p></div>
+      </section>
+
+      <section id="pdfs" class="view">
+        <div class="mb-6"><h1 class="text-2xl font-extrabold">Study Materials</h1><p class="muted text-sm mt-2">Upload a PDF and publish it to the student portal.</p></div>
+        <form id="pdfForm" class="card p-5 sm:p-7 space-y-5">
+          <div class="grid sm:grid-cols-2 gap-4">
+            <div><label class="text-sm font-semibold block mb-2">Material title *</label><input id="pdfTitle" class="field" required maxlength="160" placeholder="e.g. Indian Polity Notes"></div>
+            <div><label class="text-sm font-semibold block mb-2">Subject *</label><input id="pdfSubject" class="field" required maxlength="80" placeholder="e.g. General Studies"></div>
+            <div><label class="text-sm font-semibold block mb-2">Topic / Category</label><input id="pdfTopic" class="field" maxlength="100" placeholder="e.g. Constitution"></div>
+            <div><label class="text-sm font-semibold block mb-2">Exam</label><select id="pdfExam" class="field"><option>All Exams</option><option>SSC</option><option>Banking</option><option>Railway</option><option>UPSC</option><option>State Exams</option><option>Other</option></select></div>
+          </div>
+          <div><label class="text-sm font-semibold block mb-2">Short description</label><textarea id="pdfDescription" class="field" maxlength="500" rows="3" placeholder="Describe this material..."></textarea></div>
+          <div class="rounded-xl border-2 border-dashed border-slate-200 p-5">
+            <label class="text-sm font-semibold block mb-3">Select PDF file * (maximum 20 MB)</label>
+            <input id="pdfFile" class="block w-full text-sm" type="file" accept=".pdf,application/pdf" required>
+            <p id="fileInfo" class="text-xs muted mt-3">PDF format only.</p>
+          </div>
+          <label class="flex items-center gap-3 text-sm"><input id="pdfPublished" type="checkbox" checked class="w-4 h-4 accent-violet-600"> Publish immediately to Student Portal</label>
+          <div class="flex flex-wrap gap-3"><button id="pdfSubmit" class="btn primary" type="submit">Upload & Publish PDF</button><button class="btn border border-slate-200" type="reset">Reset form</button></div>
+          <p id="pdfMessage" class="text-sm"></p>
+        </form>
+        <div class="card mt-6 overflow-hidden"><div class="p-5 font-bold">Uploaded materials</div><div id="pdfList"><p class="p-5 text-sm muted">Loading…</p></div></div>
+      </section>
+
+      <section id="testbuilder" class="view">
+        <div class="mb-6"><h1 class="text-2xl font-extrabold">Test Series Builder</h1><p class="muted text-sm mt-2">Create MCQ tests with automatic score calculation.</p></div>
+        <form id="testForm" class="card p-5 sm:p-7 space-y-5">
+          <div class="grid sm:grid-cols-2 gap-4">
+            <div><label class="text-sm font-semibold block mb-2">Test title *</label><input id="testTitle" class="field" required maxlength="160" placeholder="e.g. SSC CGL Mock Test 01"></div>
+            <div><label class="text-sm font-semibold block mb-2">Subject *</label><input id="testSubject" class="field" required maxlength="80" placeholder="e.g. Reasoning"></div>
+            <div><label class="text-sm font-semibold block mb-2">Exam category</label><select id="testExam" class="field"><option>SSC</option><option>Banking</option><option>Railway</option><option>UPSC</option><option>State Exams</option><option>General</option></select></div>
+            <div><label class="text-sm font-semibold block mb-2">Duration (minutes) *</label><input id="testDuration" class="field" type="number" min="1" max="300" value="30" required></div>
+            <div><label class="text-sm font-semibold block mb-2">Marks per question</label><input id="testMarks" class="field" type="number" min="1" max="20" value="1" required></div>
+            <div><label class="text-sm font-semibold block mb-2">Negative marks per wrong answer</label><input id="testNegative" class="field" type="number" min="0" max="20" step="0.25" value="0"></div>
+          </div>
+          <div><label class="text-sm font-semibold block mb-2">Instructions</label><textarea id="testInstructions" class="field" rows="2" maxlength="1000" placeholder="Instructions for students..."></textarea></div>
+          <div class="flex justify-between items-center gap-3"><h3 class="font-bold text-lg">Questions</h3><button type="button" id="addQuestion" class="btn secondary">＋ Add question</button></div>
+          <div id="questionsContainer" class="space-y-4"></div>
+          <label class="flex items-center gap-3 text-sm"><input id="testPublished" type="checkbox" checked class="w-4 h-4 accent-violet-600"> Publish test immediately</label>
+          <div class="flex flex-wrap gap-3"><button id="testSubmit" class="btn primary" type="submit">Save Test Series</button><button type="button" id="clearQuestions" class="btn border border-slate-200">Clear questions</button></div>
+          <p id="testMessage" class="text-sm"></p>
+        </form>
+      </section>
+
+      <section id="tests" class="view">
+        <div class="mb-6"><h1 class="text-2xl font-extrabold">Manage Test Series</h1><p class="muted text-sm mt-2">Review, unpublish or delete your tests.</p></div>
+        <div class="card overflow-hidden"><div id="testList"><p class="p-5 text-sm muted">Loading…</p></div></div>
+      </section>
+    </div>
+  </main>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script>
-function showErr(m){var d=document.getElementById('errbar');if(!d){d=document.createElement('div');d.id='errbar';d.style.cssText='position:fixed;left:0;right:0;bottom:0;background:#b91c1c;color:#fff;padding:10px;font:13px sans-serif;z-index:99999;white-space:pre-wrap';document.body.appendChild(d)}d.textContent='Error: '+m}
-window.addEventListener('error',function(e){showErr(e.message)});
-window.addEventListener('unhandledrejection',function(e){showErr((e.reason&&e.reason.message)||String(e.reason))});
-</script>
-</head>
-<body class="bg-slate-50 text-slate-900"><div id="app"><p style="padding:20px;font-family:sans-serif">Loading…</p></div>
-<script>
-if(typeof firebase==='undefined')throw new Error('Firebase library load nahi hui. Internet ya ad-blocker check karo.');
-firebase.initializeApp({apiKey:"AIzaSyB5vN74NfP-Tx1tIxMDSmOwjhvkgp06Soo",authDomain:"edutest-admin.firebaseapp.com",projectId:"edutest-admin",storageBucket:"edutest-admin.firebasestorage.app",appId:"1:785312729550:web:d9cc16fee38afdc88b839f"});
-const auth=firebase.auth(),db=firebase.firestore(),st=firebase.storage(),root=document.getElementById('app');
-const $=i=>document.getElementById(i),v=i=>$(i).value;
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const btn='rounded-lg bg-indigo-600 px-4 py-2 text-white font-medium',inp='w-full rounded-lg border p-2',card='bg-white p-4 rounded-xl shadow';
-let me=null,tab='dash',U=[],MT=[],TT=[];
-const log=(action,target)=>db.collection('audit').add({by:me.id,action,target:String(target),at:Date.now()}).catch(()=>{});
+/* Use the same Firebase project as your Student Portal */
+const firebaseConfig = {
+  apiKey: "AIzaSyB5vN74NfP-Tx1tIxMDSmOwjhvkgp06Soo",
+  authDomain: "edutest-admin.firebaseapp.com",
+  projectId: "edutest-admin",
+  storageBucket: "edutest-admin.firebasestorage.app",
+  messagingSenderId: "785312729550",
+  appId: "1:785312729550:web:d9cc16fee38afdc88b839f",
+  measurementId: "G-83B1SDVYKF"
+};
 
-auth.onAuthStateChanged(async u=>{
-  try{
-    if(!u){me=null;return loginView()}
-    const d=await db.collection('users').doc(u.uid).get();
-    if(!d.exists||d.data().role!=='admin'){await auth.signOut();alert('Not an admin account');return}
-    me={id:u.uid,...d.data()};go('dash');
-  }catch(e){showErr(e.message);loginView()}
-});
-function loginView(){
-  root.innerHTML=`<div class="mx-auto max-w-sm p-6 pt-16"><h1 class="text-2xl font-bold text-indigo-600 mb-4">Admin Login</h1><div class="${card} space-y-3">
-  <input id=em class="${inp}" placeholder="Admin email"><input id=pw type=password class="${inp}" placeholder="Password">
-  <p id=err class="text-sm text-red-600"></p><button onclick="login()" class="${btn} w-full">Login</button></div></div>`;
-}
-async function login(){try{await auth.signInWithEmailAndPassword(v('em').trim(),v('pw'))}catch(e){$('err').textContent='Incorrect credentials'}}
+/* IMPORTANT: use the exact Admin email in your Firestore/Storage Rules */
+const ADMIN_EMAIL = "YOUR_ADMIN_EMAIL";
+const MAX_PDF_BYTES = 20 * 1024 * 1024;
 
-const tabs=[['dash','Dashboard'],['stu','Students'],['con','Content'],['tst','Tests']];
-function go(t){tab=t;shell('<p>Loading…</p>');({dash,stu,con,tst})[t]().catch(e=>showErr(e.message))}
-function shell(h){root.innerHTML=`<div class="min-h-screen pb-16 md:pb-0"><header class="sticky top-0 z-10 bg-white border-b flex items-center justify-between px-4 py-3"><b class="text-indigo-600">Admin Panel</b>
-<nav class="hidden md:flex gap-2">${tabs.map(([k,l])=>`<button onclick="go('${k}')" class="px-3 py-1 rounded ${k==tab?'bg-indigo-600 text-white':''}">${l}</button>`).join('')}</nav>
-<button onclick="auth.signOut()" class="text-sm text-slate-600">Logout</button></header><main class="mx-auto max-w-4xl p-4">${h}</main>
-<nav class="md:hidden fixed bottom-0 inset-x-0 bg-white border-t flex justify-around py-3 text-xs">${tabs.map(([k,l])=>`<button onclick="go('${k}')" class="px-2 ${k==tab?'text-indigo-600 font-bold':'text-slate-500'}">${l}</button>`).join('')}</nav></div>`}
+let auth, db, storage;
+let unsubscribeMaterials = null, unsubscribeTests = null;
+let questionCount = 0;
+const $ = id => document.getElementById(id);
+const safe = value => String(value ?? '').replace(/[&<>"']/g, c => ({
+  '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+}[c]));
 
-async function dash(){
-  const [u,m,t,a,l]=await Promise.all(['users','materials','tests','attempts'].map(c=>db.collection(c).get()).concat(db.collection('audit').orderBy('at','desc').limit(8).get()));
-  const us=u.docs.map(d=>d.data()).filter(x=>x.role!=='admin'),now=Date.now();
-  const prem=us.filter(x=>x.premium&&(!x.expiry||x.expiry>now)).length;
-  const avg=a.size?a.docs.reduce((s,d)=>s+d.data().pct,0)/a.size:0;
-  shell(`<div class="grid grid-cols-2 md:grid-cols-4 gap-3">${[['Students',us.length],['Premium',prem],['Free',us.length-prem],['Suspended/Locked',us.filter(x=>x.status!=='active').length],['PDFs',m.size],['Tests',t.size],['Attempts',a.size],['Avg score',avg.toFixed(1)+'%']].map(([k,x])=>`<div class="${card}"><p class="text-xs text-slate-500">${k}</p><p class="text-xl font-bold">${x}</p></div>`).join('')}</div>
-  <h3 class="mt-5 mb-2 font-semibold">Recent admin activity</h3>${l.docs.map(d=>{const x=d.data();return `<div class="bg-white p-2 rounded mb-1 text-sm">${esc(x.action)} · ${esc(x.target)} · ${new Date(x.at).toLocaleString()}</div>`}).join('')||'<p class="text-slate-500">None yet.</p>'}`);
+function message(id, text, ok=false) {
+  $(id).textContent = text;
+  $(id).className = 'text-sm ' + (ok ? 'text-emerald-600' : 'text-rose-600');
 }
-
-/* ---------- STUDENTS ---------- */
-async function stu(){
-  U=(await db.collection('users').limit(500).get()).docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.role!=='admin');
-  shell(`<input id=sq class="${inp} mb-3" placeholder="Search name, username, mobile, ID" oninput="drawStu()"><div id=sl></div>`);drawStu();
-}
-function drawStu(){
-  const q=v('sq').toLowerCase();
-  $('sl').innerHTML=U.filter(x=>[x.name,x.username,x.mobile,x.sid].join(' ').toLowerCase().includes(q)).map(x=>{
-    const p=x.premium&&(!x.expiry||x.expiry>Date.now());
-    return `<div class="${card} mb-2 text-sm"><b>${esc(x.name)}</b> <span class="text-slate-500">${esc(x.sid)} · @${esc(x.username)} · ${esc(x.mobile)}</span>
-    <p>Plan: ${p?'Premium'+(x.expiry?' till '+new Date(x.expiry).toLocaleDateString():' (permanent)'):'Free'} · Status: ${esc(x.status)} · Joined ${new Date(x.createdAt).toLocaleDateString()}</p>
-    <div class="mt-2 flex gap-2 flex-wrap"><button onclick="togPrem('${x.id}')" class="px-3 py-1 border rounded">${p?'Revoke Premium':'Grant Premium'}</button>
-    <button onclick="setStatus('${x.id}','${x.status==='active'?'suspended':'active'}')" class="px-3 py-1 border rounded">${x.status==='active'?'Suspend':'Reactivate'}</button>
-    <button onclick="setStatus('${x.id}','${x.status==='locked'?'active':'locked'}')" class="px-3 py-1 border rounded">${x.status==='locked'?'Unlock':'Lock'}</button></div></div>`}).join('')||'<p class="text-slate-500">No students.</p>';
-}
-async function togPrem(id){
-  const x=U.find(u=>u.id==id),p=x.premium&&(!x.expiry||x.expiry>Date.now());let upd;
-  if(p){if(!confirm('Revoke premium?'))return;upd={premium:false,expiry:null}}
-  else{const d=prompt('Premium days (leave blank for permanent):');if(d===null)return;upd={premium:true,expiry:d.trim()?Date.now()+(+d)*864e5:null}}
-  const reason=prompt('Reason (recorded in audit log):')||'';
-  await db.collection('users').doc(id).update(upd);log((p?'revoke':'grant')+' premium '+reason,x.username);stu();
-}
-async function setStatus(id,s){
-  const x=U.find(u=>u.id==id);if(!confirm('Set '+x.username+' to '+s+'?'))return;
-  await db.collection('users').doc(id).update({status:s});log('status '+s,x.username);stu();
-}
-
-/* ---------- CONTENT ---------- */
-async function con(){
-  MT=(await db.collection('materials').get()).docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.createdAt-a.createdAt);
-  shell(`<div class="${card} space-y-2"><h3 class="font-semibold">Upload PDF</h3>
-  <input id=sj class="${inp}" placeholder="Subject"><input id=tp class="${inp}" placeholder="Topic"><input id=ti class="${inp}" placeholder="PDF title">
-  <input id=fl type=file accept="application/pdf"><label class="block text-sm"><input id=pr type=checkbox> Premium only</label>
-  <button onclick="upload()" class="${btn}">Upload</button><p id=pg class="text-sm"></p></div>
-  <h3 class="mt-5 mb-2 font-semibold">All PDFs (${MT.length})</h3>
-  ${MT.map(x=>`<div class="bg-white p-3 rounded-lg mb-2 text-sm flex justify-between gap-2"><span><b>${esc(x.title)}</b> ${x.premium?'👑':''}<br><span class="text-slate-500">${esc(x.subject)} › ${esc(x.topic)} · ${(x.size/1048576).toFixed(1)} MB</span></span><button onclick="delMat('${x.id}')" class="text-red-600">Delete</button></div>`).join('')}`);
-}
-function upload(){
-  const f=$('fl').files[0],s=v('sj').trim(),t=v('tp').trim(),ti=v('ti').trim();
-  if(!f||!s||!t||!ti)return alert('Fill all fields and choose a PDF');
-  if(f.type!=='application/pdf'||f.size>20*1048576)return alert('PDF only, max 20 MB');
-  const path='pdfs/'+Date.now()+'_'+f.name.replace(/[^\w.]/g,'_'),task=st.ref(path).put(f);
-  task.on('state_changed',x=>$('pg').textContent='Uploading '+Math.round(x.bytesTransferred/x.totalBytes*100)+'%',e=>alert(e.message),async()=>{
-    const url=await task.snapshot.ref.getDownloadURL();
-    await db.collection('materials').add({subject:s,topic:t,title:ti,url,path,size:f.size,premium:$('pr').checked,createdAt:Date.now()});
-    log('upload pdf',ti);con();
+function initFirebase() {
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  auth = firebase.auth();
+  db = firebase.firestore();
+  storage = firebase.storage();
+  auth.onAuthStateChanged(user => {
+    if (!user) {
+      stopListeners();
+      $('loginScreen').classList.remove('hidden');
+      $('adminApp').classList.add('hidden');
+      return;
+    }
+    if (!user.email || user.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+      auth.signOut();
+      message('loginMessage','This account is not authorized as an administrator.');
+      return;
+    }
+    $('loginScreen').classList.add('hidden');
+    $('adminApp').classList.remove('hidden');
+    $('adminEmail').textContent = user.email;
+    $('setupStatus').textContent = 'Firebase initialized. Admin session verified.';
+    startListeners();
   });
 }
-async function delMat(id){
-  const x=MT.find(m=>m.id==id);if(!confirm('Delete "'+x.title+'"?'))return;
-  await db.collection('materials').doc(id).delete();st.ref(x.path).delete().catch(()=>{});log('delete pdf',x.title);con();
+$('loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  $('loginBtn').disabled = true;
+  message('loginMessage','Signing in…',true);
+  try {
+    await auth.signInWithEmailAndPassword($('email').value.trim(),$('password').value);
+  } catch(err) {
+    message('loginMessage',err.message || 'Login failed.');
+  } finally { $('loginBtn').disabled = false; }
+});
+$('logoutBtn').addEventListener('click', () => auth.signOut());
+
+const titles = {
+  overview:'Overview',pdfs:'Study Materials',
+  testbuilder:'Create Test Series',tests:'Manage Tests'
+};
+function showView(id) {
+  document.querySelectorAll('.view').forEach(el=>el.classList.toggle('active',el.id===id));
+  document.querySelectorAll('.nav').forEach(el=>el.classList.toggle('active',el.dataset.view===id));
+  $('pageTitle').textContent=titles[id] || id;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.querySelectorAll('[data-view]').forEach(el=>el.addEventListener('click',()=>showView(el.dataset.view)));
+
+function stopListeners() {
+  if(unsubscribeMaterials) unsubscribeMaterials();
+  if(unsubscribeTests) unsubscribeTests();
+  unsubscribeMaterials=unsubscribeTests=null;
+}
+function startListeners() {
+  stopListeners();
+  unsubscribeMaterials=db.collection('study_materials').onSnapshot(snap=>{
+    $('pdfCount').textContent=snap.size;
+    renderPdfList(snap);
+  },err=>{$('pdfList').textContent='Could not load materials: '+err.message;});
+  unsubscribeTests=db.collection('tests').onSnapshot(snap=>{
+    $('testCount').textContent=snap.size;
+    renderTestList(snap);
+  },err=>{$('testList').textContent='Could not load tests: '+err.message;});
 }
 
-/* ---------- TESTS ---------- */
-async function tst(){
-  TT=(await db.collection('tests').get()).docs.map(d=>({id:d.id,...d.data()}));
-  shell(`<div class="${card} space-y-2"><h3 class="font-semibold">Create test</h3>
-  <input id=tt class="${inp}" placeholder="Test title"><input id=ts class="${inp}" placeholder="Subject / topic">
-  <div class="grid grid-cols-3 gap-2"><input id=td type=number class="${inp}" placeholder="Minutes"><input id=tm type=number class="${inp}" placeholder="Marks/Q"><input id=tn type=number step=0.01 class="${inp}" placeholder="Negative"></div>
-  <label class="block text-sm"><input id=tpm type=checkbox> Premium only</label>
-  <textarea id=tq rows=7 class="${inp}" placeholder="One question per line:&#10;Question | Option A | Option B | Option C | Option D | CorrectNumber(1-4) | Explanation (optional)"></textarea>
-  <button onclick="saveTest()" class="${btn}">Save &amp; publish</button></div>
-  <h3 class="mt-5 mb-2 font-semibold">All tests (${TT.length})</h3>
-  ${TT.map(t=>`<div class="bg-white p-3 rounded-lg mb-2 text-sm"><b>${esc(t.title)}</b> ${t.premium?'👑':''} · ${t.questions.length} Qs · ${t.published?'Published':'Draft'}
-  <div class="mt-1 flex gap-3"><button onclick="pubTest('${t.id}',${!t.published})" class="text-indigo-600">${t.published?'Unpublish':'Publish'}</button><button onclick="delTest('${t.id}')" class="text-red-600">Delete</button></div></div>`).join('')}`);
-}
-async function saveTest(){
-  try{
-    const title=v('tt').trim(),subject=v('ts').trim(),duration=+v('td'),marks=+v('tm'),neg=+v('tn')||0;
-    if(!title||!subject||!(duration>0)||!(marks>0))throw Error('Fill title, subject, minutes and marks');
-    const questions=v('tq').split('\n').map(l=>l.trim()).filter(Boolean).map((l,i)=>{
-      const p=l.split('|').map(x=>x.trim()),ans=+p[5]-1;
-      if(p.length<6||p.slice(0,5).some(x=>!x)||!(ans>=0&&ans<4))throw Error('Line '+(i+1)+' is invalid (needs question, 4 options, answer 1-4)');
-      return {q:p[0],o:p.slice(1,5),ans,exp:p[6]||''};
+$('pdfFile').addEventListener('change',()=>{
+  const f=$('pdfFile').files[0];
+  $('fileInfo').textContent=f ? `${f.name} · ${(f.size/1024/1024).toFixed(2)} MB` : 'PDF format only.';
+});
+$('pdfForm').addEventListener('reset',()=>setTimeout(()=>message('pdfMessage',''),0));
+$('pdfForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const user=auth.currentUser, file=$('pdfFile').files[0];
+  if(!user || user.email.toLowerCase()!==ADMIN_EMAIL.toLowerCase()) return message('pdfMessage','Admin authentication required.');
+  if(!file) return message('pdfMessage','Please select a PDF file.');
+  if(file.type!=='application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) return message('pdfMessage','Only PDF files are allowed.');
+  if(file.size>MAX_PDF_BYTES) return message('pdfMessage','File exceeds 20 MB.');
+  const btn=$('pdfSubmit'); btn.disabled=true; btn.textContent='Uploading…';
+  let uploadedRef=null;
+  try {
+    const docRef=db.collection('study_materials').doc();
+    uploadedRef=storage.ref(`study_materials/${user.uid}/${docRef.id}.pdf`);
+    await uploadedRef.put(file,{contentType:'application/pdf'});
+    const url=await uploadedRef.getDownloadURL();
+    await docRef.set({
+      title:$('pdfTitle').value.trim(),
+      subject:$('pdfSubject').value.trim(),
+      topic:$('pdfTopic').value.trim(),
+      exam:$('pdfExam').value,
+      description:$('pdfDescription').value.trim(),
+      fileName:file.name, fileUrl:url,
+      published:$('pdfPublished').checked,
+      createdAt:firebase.firestore.FieldValue.serverTimestamp(),
+      createdBy:user.uid
     });
-    if(!questions.length)throw Error('Add at least one question');
-    await db.collection('tests').add({title,subject,duration,marks,neg,premium:$('tpm').checked,questions,published:true,createdAt:Date.now()});
-    log('create test',title);tst();
-  }catch(e){alert(e.message)}
+    message('pdfMessage','PDF uploaded and saved successfully.',true);
+    $('pdfForm').reset();
+  } catch(err) {
+    if(uploadedRef) { try { await uploadedRef.delete(); } catch(_) {} }
+    message('pdfMessage','Upload failed: '+err.message);
+  } finally { btn.disabled=false; btn.textContent='Upload & Publish PDF'; }
+});
+
+function addQuestion(data={}) {
+  questionCount++;
+  const n=questionCount;
+  const div=document.createElement('div');
+  div.className='rounded-xl border border-slate-200 p-4 sm:p-5';
+  div.dataset.question='1';
+  div.innerHTML=`
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="font-bold">Question ${n}</h3>
+      <button type="button" class="text-xs font-bold text-rose-600 remove-question">Remove</button>
+    </div>
+    <textarea class="field question-text" rows="2" maxlength="2000" required placeholder="Write your question...">${safe(data.text||'')}</textarea>
+    <div class="grid sm:grid-cols-2 gap-3 mt-3">
+      ${[0,1,2,3].map(i=>`<div><label class="text-xs muted block mb-1">Option ${String.fromCharCode(65+i)}</label><input class="field option" maxlength="500" required value="${safe((data.options||[])[i]||'')}" placeholder="Enter option ${String.fromCharCode(65+i)}"></div>`).join('')}
+    </div>
+    <div class="grid sm:grid-cols-2 gap-3 mt-4">
+      <div><label class="text-xs muted block mb-1">Correct answer</label>
+        <select class="field correct-answer">${[0,1,2,3].map(i=>`<option value="${i}" ${Number(data.correctIndex||0)===i?'selected':''}>Option ${String.fromCharCode(65+i)}</option>`).join('')}</select>
+      </div>
+      <div><label class="text-xs muted block mb-1">Explanation (optional)</label><input class="field explanation" maxlength="1000" value="${safe(data.explanation||'')}" placeholder="Explain the correct answer"></div>
+    </div>`;
+  div.querySelector('.remove-question').addEventListener('click',()=>div.remove());
+  $('questionsContainer').appendChild(div);
 }
-async function pubTest(id,p){await db.collection('tests').doc(id).update({published:p});log(p?'publish test':'unpublish test',id);tst()}
-async function delTest(id){if(!confirm('Delete this test? Past results are kept.'))return;await db.collection('tests').doc(id).delete();log('delete test',id);tst()}
-</script></body></html>
+$('addQuestion').addEventListener('click',()=>addQuestion());
+$('clearQuestions').addEventListener('click',()=>{$('questionsContainer').innerHTML='';questionCount=0;});
+
+$('testForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const user=auth.currentUser;
+  if(!user || user.email.toLowerCase()!==ADMIN_EMAIL.toLowerCase()) return message('testMessage','Admin authentication required.');
+  const cards=[...$('questionsContainer').querySelectorAll('[data-question]')];
+  if(!cards.length) return message('testMessage','Add at least one question.');
+  const questions=[];
+  for(let i=0;i<cards.length;i++){
+    const card=cards[i];
+    const text=card.querySelector('.question-text').value.trim();
+    const options=[...card.querySelectorAll('.option')].map(x=>x.value.trim());
+    if(!text || options.some(x=>!x)) return message('testMessage',`Complete question ${i+1} and all four options.`);
+    questions.push({
+      text,options,
+      correctIndex:Number(card.querySelector('.correct-answer').value),
+      explanation:card.querySelector('.explanation').value.trim()
+    });
+  }
+  const btn=$('testSubmit');btn.disabled=true;btn.textContent='Saving test…';
+  try{
+    await db.collection('tests').add({
+      title:$('testTitle').value.trim(),
+      subject:$('testSubject').value.trim(),
+      exam:$('testExam').value,
+      durationMinutes:Number($('testDuration').value),
+      marksPerQuestion:Number($('testMarks').value),
+      negativeMarks:Number($('testNegative').value),
+      instructions:$('testInstructions').value.trim(),
+      questions,
+      totalQuestions:questions.length,
+      totalMarks:questions.length*Number($('testMarks').value),
+      published:$('testPublished').checked,
+      createdAt:firebase.firestore.FieldValue.serverTimestamp(),
+      createdBy:user.uid
+    });
+    message('testMessage','Test series saved successfully.',true);
+    $('testForm').reset();$('questionsContainer').innerHTML='';questionCount=0;addQuestion();
+  }catch(err){message('testMessage','Could not save test: '+err.message);}
+  finally{btn.disabled=false;btn.textContent='Save Test Series';}
+});
+
+function renderPdfList(snap) {
+  const list=$('pdfList');
+  if(snap.empty){list.innerHTML='<p class="p-5 text-sm muted">No study materials added yet.</p>';return;}
+  list.innerHTML=snap.docs.map(doc=>{
+    const d=doc.data();
+    return `<div class="p-4 sm:p-5 border-t border-slate-100 flex flex-wrap items-center gap-3 justify-between">
+      <div class="min-w-0 flex-1"><p class="font-bold text-sm break-words">${safe(d.title)}</p><p class="text-xs muted mt-1">${safe(d.subject)} · ${safe(d.topic||'General')}</p></div>
+      <span class="text-xs font-bold ${d.published?'text-emerald-600':'text-amber-600'}">${d.published?'Published':'Draft'}</span>
+      <div class="flex gap-2"><button class="btn secondary" data-pdf-toggle="${doc.id}" data-published="${!!d.published}">${d.published?'Unpublish':'Publish'}</button><button class="btn danger" data-pdf-delete="${doc.id}" data-path="${safe(d.filePath||'')}">Delete</button></div>
+    </div>`;
+  }).join('');
+}
+function renderTestList(snap) {
+  const list=$('testList');
+  if(snap.empty){list.innerHTML='<p class="p-5 text-sm muted">No test series created yet.</p>';return;}
+  list.innerHTML=snap.docs.map(doc=>{
+    const d=doc.data();
+    return `<div class="p-4 sm:p-5 border-t border-slate-100 flex flex-wrap items-center gap-3 justify-between">
+      <div class="min-w-0 flex-1"><p class="font-bold text-sm">${safe(d.title)}</p><p class="text-xs muted mt-1">${safe(d.subject)} · ${Number(d.totalQuestions||d.questions?.length||0)} questions · ${Number(d.durationMinutes||0)} min</p></div>
+      <span class="text-xs font-bold ${d.published?'text-emerald-600':'text-amber-600'}">${d.published?'Published':'Draft'}</span>
+      <div class="flex gap-2"><button class="btn secondary" data-test-toggle="${doc.id}" data-published="${!!d.published}">${d.published?'Unpublish':'Publish'}</button><button class="btn danger" data-test-delete="${doc.id}">Delete</button></div>
+    </div>`;
+  }).join('');
+}
+document.addEventListener('click',async e=>{
+  const t=e.target.closest('button');if(!t)return;
+  try{
+    if(t.dataset.pdfToggle){
+      const published=t.dataset.published==='true';
+      await db.collection('study_materials').doc(t.dataset.pdfToggle).update({published:!published});
+    }
+    if(t.dataset.testToggle){
+      const published=t.dataset.published==='true';
+      await db.collection('tests').doc(t.dataset.testToggle).update({published:!published});
+    }
+    if(t.dataset.pdfDelete){
+      if(!confirm('Delete this material and its uploaded PDF?'))return;
+      const ref=db.collection('study_materials').doc(t.dataset.pdfDelete);
+      const snap=await ref.get(),d=snap.data();
+      await ref.delete();
+      if(d?.filePath){try{await storage.ref(d.filePath).delete();}catch(err){console.warn('Storage file cleanup:',err.message);}}
+    }
+    if(t.dataset.testDelete){
+      if(!confirm('Delete this test series?'))return;
+      await db.collection('tests').doc(t.dataset.testDelete).delete();
+    }
+  }catch(err){alert('Action failed: '+err.message);}
+});
+initFirebase();
+addQuestion();
+</script>
+</body>
+</html>
