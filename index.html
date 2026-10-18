@@ -1,277 +1,369 @@
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EduPath — Learning Dashboard</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/lucide@latest"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EduTest - Student Portal</title>
+
 <style>
-:root {
-  --ink:#172033;
-  --muted:#7B8497;
-  --line:#EAECF2;
-  --purple:#6558E8;
-  --bg:#F7F8FC;
-}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif}
-h1,h2,h3,.brand{font-family:'Plus Jakarta Sans',sans-serif}
-.sidebar{width:250px;background:#fff;border-right:1px solid var(--line);position:fixed;inset:0 auto 0 0;padding:26px 18px;z-index:30;display:flex;flex-direction:column}
-.main{margin-left:250px;min-height:100vh}
-.navitem{display:flex;align-items:center;gap:13px;padding:12px 14px;border-radius:11px;color:#737D91;font-weight:600;font-size:14px;cursor:pointer;transition:.2s;width:100%;text-align:left}
-.navitem:hover{background:#F5F4FF;color:var(--purple)}
-.navitem.active{background:#F0EEFF;color:var(--purple)}
-.navitem svg{width:19px;height:19px}
-.card{background:white;border:1px solid var(--line);border-radius:17px}
-.muted{color:var(--muted)}
-.page{display:none}.page.active{display:block}
-.progress{height:6px;background:#EEF0F6;border-radius:20px;overflow:hidden}
-.progress span{display:block;height:100%;border-radius:20px}
-.tag{font-size:11px;font-weight:700;padding:5px 9px;border-radius:7px;display:inline-flex;align-items:center;gap:5px}
-.table-row{display:grid;grid-template-columns:minmax(180px,2fr) 1fr 1fr 90px;gap:12px;align-items:center;padding:16px 20px;border-top:1px solid #F0F1F5;font-size:13px}
-.mobilebar{display:none}
-@media(max-width:1000px){.sidebar{width:215px}.main{margin-left:215px}.table-row{grid-template-columns:minmax(150px,2fr) 1fr 90px}.hide-tablet{display:none}}
-@media(max-width:700px){
- .sidebar{display:none}.main{margin:0;padding-bottom:75px}
- .mobilebar{display:flex;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);z-index:40;justify-content:space-around;padding:10px 4px calc(10px + env(safe-area-inset-bottom))}
- .mobilebar button{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;color:#8991A2;font-weight:600}
- .mobilebar button.active{color:var(--purple)}
- .table-row{grid-template-columns:minmax(130px,2fr) 1fr;gap:8px;padding:14px}
- .hide-mobile{display:none!important}
-}
+body{margin:0;font-family:Arial,sans-serif;background:#f3f6fc;color:#172033}
+header{background:#155eef;color:white;padding:22px 16px}
+header h1{margin:0 0 7px;font-size:27px}
+header p{margin:0;opacity:.9}
+main{max-width:1000px;margin:auto;padding:15px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:15px 0}
+button,.btn{border:0;border-radius:9px;padding:11px 15px;background:#155eef;color:white;font-size:15px;font-weight:bold;cursor:pointer;text-decoration:none;display:inline-block}
+.tab{background:#dbe6ff;color:#1746a2}
+.tab.active{background:#155eef;color:white}
+.card{background:white;border-radius:14px;padding:17px;margin:13px 0;box-shadow:0 3px 14px #0000000b}
+.card h3{margin-top:0}
+.meta{color:#667085;font-size:14px}
+.badge{display:inline-block;background:#e8efff;color:#1746a2;padding:5px 9px;border-radius:20px;font-size:12px;margin:3px 0}
+input[type="text"],input[type="search"]{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:9px;font-size:16px}
+.question{padding:14px 0;border-bottom:1px solid #e4e7ec}
+.option{display:block;padding:10px;margin:7px 0;border:1px solid #d0d5dd;border-radius:8px;cursor:pointer}
+.option input{margin-right:8px}
+.status{padding:12px;border-radius:9px;background:#eff8ff;color:#175cd3;white-space:pre-wrap}
+.error{background:#fee4e2;color:#912018}
+.result{background:#dcfae6;color:#05603a;padding:15px;border-radius:10px;margin:12px 0}
+.hidden{display:none!important}
+footer{text-align:center;color:#667085;padding:25px 10px;font-size:13px}
+@media(min-width:700px){.cards{display:grid;grid-template-columns:1fr 1fr;gap:12px}.cards .card{margin:0}}
 </style>
 </head>
+
 <body>
+<header>
+  <h1>EduTest</h1>
+  <p>Study Materials · Online Test Series</p>
+</header>
 
-<aside class="sidebar">
-  <div class="flex items-center gap-3 px-3 mb-10">
-    <div class="w-10 h-10 rounded-xl bg-violet-600 text-white flex items-center justify-center shadow-lg shadow-violet-200">
-      <i data-lucide="graduation-cap"></i>
-    </div>
-    <div>
-      <div class="brand text-xl font-extrabold tracking-tight">EduPath<span class="text-violet-600">.</span></div>
-      <div class="text-xs muted mt-0.5">LEARNING PLATFORM</div>
-    </div>
+<main>
+  <div class="tabs">
+    <button id="materialsTab" class="tab active" onclick="showTab('materials')">📚 Study Materials</button>
+    <button id="testsTab" class="tab" onclick="showTab('tests')">📝 Test Series</button>
+    <button class="tab" onclick="loadData()">↻ Refresh</button>
   </div>
 
-  <div class="px-3 text-[10px] font-bold tracking-[.15em] muted mb-3">WORKSPACE</div>
-  <nav class="space-y-1">
-    <button class="navitem active" data-page="dashboard"><i data-lucide="layout-dashboard"></i>Overview</button>
-    <button class="navitem" data-page="materials"><i data-lucide="book-open"></i>Study materials</button>
-    <button class="navitem" data-page="tests"><i data-lucide="clipboard-check"></i>Practice tests</button>
-    <button class="navitem" data-page="results"><i data-lucide="chart-no-axes-combined"></i>My performance</button>
-    <button class="navitem" data-page="bookmarks"><i data-lucide="bookmark"></i>Bookmarks</button>
-  </nav>
+  <div id="notice" class="status">Firebase से data लोड हो रहा है...</div>
 
-  <div class="px-3 text-[10px] font-bold tracking-[.15em] muted mt-9 mb-3">PERSONAL</div>
-  <nav class="space-y-1">
-    <button class="navitem" data-page="profile"><i data-lucide="user-round"></i>My profile</button>
-  </nav>
+  <section id="materialsSection">
+    <h2>📚 Study Materials</h2>
+    <input type="search" id="materialSearch" placeholder="PDF या subject खोजें..." oninput="renderMaterials()">
+    <div id="materialsList" class="cards"></div>
+  </section>
 
-  <div class="mt-auto p-4 rounded-2xl bg-[#F5F3FF] border border-[#E9E5FF]">
-    <div class="w-9 h-9 rounded-xl bg-white flex items-center justify-center text-violet-600 mb-3">
-      <i data-lucide="target"></i>
-    </div>
-    <h3 class="font-bold text-sm">Small steps. Big goals.</h3>
-    <p class="text-xs muted leading-5 mt-1">Stay consistent and make every study session count.</p>
-    <div class="h-1.5 bg-white rounded-full mt-4 overflow-hidden"><div class="h-full bg-violet-500 rounded-full w-3/4"></div></div>
-  </div>
-  <div class="flex items-center gap-3 px-3 mt-5">
-    <div class="w-10 h-10 rounded-full bg-[#E5E7FF] flex items-center justify-center text-violet-700 font-bold">S</div>
-    <div class="min-w-0 flex-1"><div class="font-bold text-sm">Student Portal</div><div class="text-xs muted">Learner account</div></div>
-    <i data-lucide="chevrons-up-down" class="w-4 muted"></i>
-  </div>
-</aside>
+  <section id="testsSection" class="hidden">
+    <h2>📝 Test Series</h2>
+    <input type="search" id="testSearch" placeholder="Test या subject खोजें..." oninput="renderTests()">
+    <div id="testsList" class="cards"></div>
+  </section>
 
-<main class="main">
-  <header class="h-[76px] bg-white border-b border-[#EAECF2] flex items-center justify-between px-5 sm:px-9">
-    <div class="flex items-center gap-3">
-      <div class="md:hidden w-9 h-9 rounded-xl bg-violet-600 text-white flex items-center justify-center"><i data-lucide="graduation-cap"></i></div>
-      <div>
-        <div class="font-bold text-sm">Student workspace</div>
-        <div class="text-xs muted mt-1">Learn. Practice. Improve.</div>
-      </div>
-    </div>
-    <div class="flex items-center gap-3 sm:gap-5">
-      <div class="hidden sm:flex items-center gap-2 text-xs muted bg-[#F7F8FC] border border-[#EAECF2] rounded-lg px-3 py-2"><i data-lucide="calendar" class="w-4"></i><span id="today"></span></div>
-      <button class="w-10 h-10 rounded-xl border border-[#EAECF2] bg-white flex items-center justify-center relative" aria-label="Notifications"><i data-lucide="bell" class="w-[18px]"></i><span class="absolute right-2 top-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></span></button>
-      <div class="w-10 h-10 rounded-full bg-[#E5E7FF] text-violet-700 flex items-center justify-center font-bold">S</div>
-    </div>
-  </header>
-
-  <div class="p-5 sm:p-8 max-w-[1500px] mx-auto">
-
-    <section id="dashboard" class="page active">
-      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-7">
-        <div>
-          <p class="text-sm muted mb-2">YOUR LEARNING SPACE</p>
-          <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Good to see you again <span class="text-violet-600">👋</span></h1>
-          <p class="muted text-sm mt-2">Pick up where you left off and keep your momentum going.</p>
-        </div>
-        <button onclick="openPage('materials')" class="bg-violet-600 hover:bg-violet-700 text-white rounded-xl px-5 py-3 text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-violet-100 transition"><i data-lucide="plus" class="w-4"></i> Explore materials</button>
-      </div>
-
-      <div class="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
-        <div class="card p-5">
-          <div class="flex justify-between items-start"><div class="w-10 h-10 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center"><i data-lucide="book-open"></i></div><span class="tag bg-slate-50 text-slate-500">Library</span></div>
-          <p class="text-sm muted mt-5">Available materials</p><div class="text-3xl font-extrabold mt-1" id="materialCount">—</div><p class="text-xs muted mt-2">Resources in your portal</p>
-        </div>
-        <div class="card p-5">
-          <div class="flex justify-between items-start"><div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center"><i data-lucide="clipboard-check"></i></div><span class="tag bg-emerald-50 text-emerald-700">Practice</span></div>
-          <p class="text-sm muted mt-5">Available tests</p><div class="text-3xl font-extrabold mt-1" id="testCount">—</div><p class="text-xs muted mt-2">Test your preparation</p>
-        </div>
-        <div class="card p-5">
-          <div class="flex justify-between items-start"><div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center"><i data-lucide="clock-3"></i></div><span class="tag bg-amber-50 text-amber-700">Your pace</span></div>
-          <p class="text-sm muted mt-5">Study sessions</p><div class="text-3xl font-extrabold mt-1">—</div><p class="text-xs muted mt-2">Connect activity tracking</p>
-        </div>
-        <div class="card p-5">
-          <div class="flex justify-between items-start"><div class="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center"><i data-lucide="trending-up"></i></div><span class="tag bg-sky-50 text-sky-700">Progress</span></div>
-          <p class="text-sm muted mt-5">Latest score</p><div class="text-3xl font-extrabold mt-1">—</div><p class="text-xs muted mt-2">Complete a test to begin</p>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-6">
-        <div class="card xl:col-span-2 overflow-hidden">
-          <div class="p-5 sm:p-6 flex items-center justify-between">
-            <div><h2 class="font-bold text-lg">Continue learning</h2><p class="text-sm muted mt-1">Your next step starts here.</p></div>
-            <button onclick="openPage('materials')" class="text-sm text-violet-600 font-bold">View all <span>→</span></button>
-          </div>
-          <div id="recentMaterials" class="px-5 sm:px-6 pb-6">
-            <div class="rounded-xl border border-dashed border-slate-200 p-8 text-center">
-              <div class="w-12 h-12 rounded-2xl bg-violet-50 text-violet-600 mx-auto flex items-center justify-center"><i data-lucide="book-open"></i></div>
-              <h3 class="font-bold mt-4">Your learning library is ready</h3>
-              <p class="text-sm muted mt-2">Study materials will appear here when added to your portal.</p>
-              <button onclick="openPage('materials')" class="mt-4 text-sm font-bold text-violet-600">Browse study materials →</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="card p-5 sm:p-6">
-          <div class="flex items-center justify-between"><div><h2 class="font-bold text-lg">Quick access</h2><p class="text-sm muted mt-1">Jump back into your work.</p></div><i data-lucide="command" class="muted"></i></div>
-          <div class="space-y-3 mt-6">
-            <button onclick="openPage('tests')" class="w-full flex items-center gap-3 p-3 rounded-xl border border-[#EAECF2] hover:border-violet-200 hover:bg-violet-50/50 text-left transition">
-              <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center"><i data-lucide="file-check-2"></i></div>
-              <div class="flex-1"><div class="font-bold text-sm">Practice tests</div><div class="text-xs muted mt-1">Build exam confidence</div></div><i data-lucide="arrow-up-right" class="w-4 muted"></i>
-            </button>
-            <button onclick="openPage('results')" class="w-full flex items-center gap-3 p-3 rounded-xl border border-[#EAECF2] hover:border-violet-200 hover:bg-violet-50/50 text-left transition">
-              <div class="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center"><i data-lucide="chart-no-axes-combined"></i></div>
-              <div class="flex-1"><div class="font-bold text-sm">Performance</div><div class="text-xs muted mt-1">Review your results</div></div><i data-lucide="arrow-up-right" class="w-4 muted"></i>
-            </button>
-            <button onclick="openPage('bookmarks')" class="w-full flex items-center gap-3 p-3 rounded-xl border border-[#EAECF2] hover:border-violet-200 hover:bg-violet-50/50 text-left transition">
-              <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center"><i data-lucide="bookmark"></i></div>
-              <div class="flex-1"><div class="font-bold text-sm">Saved resources</div><div class="text-xs muted mt-1">Return to key topics</div></div><i data-lucide="arrow-up-right" class="w-4 muted"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div class="card overflow-hidden">
-        <div class="p-5 sm:p-6 flex items-center justify-between"><div><h2 class="font-bold text-lg">Recently added materials</h2><p class="text-sm muted mt-1">The latest resources in your library.</p></div><button onclick="openPage('materials')" class="text-sm font-bold text-violet-600">See library →</button></div>
-        <div id="recentTable" class="text-center py-8 text-sm muted border-t border-[#EAECF2]">Materials added by your portal administrator will appear here.</div>
-      </div>
-    </section>
-
-    <section id="materials" class="page">
-      <div class="mb-7"><p class="text-sm muted mb-2">YOUR RESOURCE HUB</p><h1 class="text-3xl font-extrabold">Study materials</h1><p class="muted text-sm mt-2">Your notes, PDFs and learning resources in one place.</p></div>
-      <div class="card p-4 sm:p-5 mb-5 flex flex-col sm:flex-row gap-3">
-        <div class="relative flex-1"><i data-lucide="search" class="w-4 absolute left-3 top-3 muted"></i><input id="materialSearch" oninput="filterMaterials()" placeholder="Search subjects or resources..." class="w-full border border-[#EAECF2] rounded-xl py-2.5 pl-10 pr-3 text-sm outline-none focus:border-violet-400"></div>
-        <select id="subjectFilter" onchange="filterMaterials()" class="border border-[#EAECF2] rounded-xl px-3 py-2.5 text-sm bg-white"><option value="">All subjects</option></select>
-      </div>
-      <div id="materialsList" class="grid sm:grid-cols-2 xl:grid-cols-3 gap-4"></div>
-    </section>
-
-    <section id="tests" class="page">
-      <div class="mb-7"><p class="text-sm muted mb-2">TEST YOUR KNOWLEDGE</p><h1 class="text-3xl font-extrabold">Practice tests</h1><p class="muted text-sm mt-2">Prepare at your own pace and track your progress.</p></div>
-      <div id="testsList" class="grid sm:grid-cols-2 xl:grid-cols-3 gap-4"></div>
-    </section>
-
-    <section id="results" class="page">
-      <div class="mb-7"><p class="text-sm muted mb-2">YOUR GROWTH</p><h1 class="text-3xl font-extrabold">My performance</h1><p class="muted text-sm mt-2">Your completed test results will be shown here.</p></div>
-      <div class="card p-10 text-center"><div class="w-14 h-14 rounded-2xl bg-sky-50 text-sky-600 mx-auto flex items-center justify-center"><i data-lucide="chart-no-axes-combined" class="w-7 h-7"></i></div><h2 class="font-bold text-lg mt-4">Your progress starts here</h2><p class="muted text-sm mt-2">Complete a practice test to see your results and performance.</p><button onclick="openPage('tests')" class="mt-5 bg-violet-600 text-white rounded-xl px-5 py-3 text-sm font-bold">Explore tests</button></div>
-    </section>
-
-    <section id="bookmarks" class="page">
-      <div class="mb-7"><p class="text-sm muted mb-2">SAVED FOR LATER</p><h1 class="text-3xl font-extrabold">Bookmarks</h1><p class="muted text-sm mt-2">Keep useful study resources close at hand.</p></div>
-      <div id="bookmarksList" class="grid sm:grid-cols-2 xl:grid-cols-3 gap-4"></div>
-    </section>
-
-    <section id="profile" class="page">
-      <div class="mb-7"><p class="text-sm muted mb-2">PERSONAL SPACE</p><h1 class="text-3xl font-extrabold">My profile</h1><p class="muted text-sm mt-2">Your student portal information.</p></div>
-      <div class="card p-6 sm:p-8 max-w-2xl">
-        <div class="flex items-center gap-4 pb-6 border-b border-[#EAECF2]"><div class="w-16 h-16 rounded-2xl bg-violet-100 text-violet-700 flex items-center justify-center text-2xl font-bold">S</div><div><h2 class="font-bold text-lg">Student Portal</h2><p class="text-sm muted mt-1">Welcome to EduPath</p></div></div>
-        <div class="py-5"><div class="text-xs muted uppercase tracking-wider font-bold">Portal status</div><div class="flex items-center gap-2 mt-2 text-sm font-semibold"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Portal is available</div></div>
-        <p class="text-sm muted leading-6">This portal currently opens without a sign-in page. Personal details and private student records should only be added after secure authentication is configured.</p>
-      </div>
-    </section>
-
-    <footer class="text-xs muted text-center py-8">EduPath Learning Platform <span class="mx-2">·</span> Keep learning, keep growing.</footer>
-  </div>
+  <section id="testScreen" class="card hidden">
+    <button class="tab" onclick="closeTest()">← वापस</button>
+    <h2 id="activeTestTitle"></h2>
+    <p id="activeTestInfo" class="meta"></p>
+    <div id="testQuestions"></div>
+    <button id="submitTestBtn" onclick="submitTest()">Submit Test</button>
+    <div id="testResult"></div>
+  </section>
 </main>
 
-<nav class="mobilebar">
-  <button data-page="dashboard" class="active"><i data-lucide="layout-dashboard" class="w-5 h-5"></i>Home</button>
-  <button data-page="materials"><i data-lucide="book-open" class="w-5 h-5"></i>Materials</button>
-  <button data-page="tests"><i data-lucide="clipboard-check" class="w-5 h-5"></i>Tests</button>
-  <button data-page="results"><i data-lucide="chart-no-axes-combined" class="w-5 h-5"></i>Results</button>
-  <button data-page="profile"><i data-lucide="user-round" class="w-5 h-5"></i>Profile</button>
-</nav>
+<footer>EduTest Student Portal</footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
 <script>
-document.getElementById('today').textContent = new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+const firebaseConfig = {
+  apiKey: "AIzaSyB5vN74NfP-Tx1tIxMDSmOwjhvkgp06Soo",
+  authDomain: "edutest-admin.firebaseapp.com",
+  databaseURL: "https://edutest-admin-default-rtdb.firebaseio.com",
+  projectId: "edutest-admin",
+  storageBucket: "edutest-admin.firebasestorage.app",
+  messagingSenderId: "785312729550",
+  appId: "1:785312729550:web:d9cc16fee38afdc88b839f",
+  measurementId: "G-83B1SDVYKF"
+};
 
-function openPage(id){
-  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));
-  document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===id));
-  window.scrollTo({top:0,behavior:'smooth'});
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+let materials = [];
+let tests = [];
+let currentTest = null;
+let submitted = false;
+
+function setNotice(text,isError=false){
+  const el=document.getElementById("notice");
+  el.textContent=text;
+  el.className=isError?"status error":"status";
 }
-document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>openPage(b.dataset.page)));
 
-const materials=[];
-const tests=[];
-let bookmarks=JSON.parse(localStorage.getItem('edupath_bookmarks')||'[]');
-
-function emptyCard(icon,title,description){
-  return `<div class="card p-7 text-center sm:col-span-2 xl:col-span-3">
-    <div class="w-12 h-12 rounded-2xl bg-violet-50 text-violet-600 mx-auto flex items-center justify-center"><i data-lucide="${icon}"></i></div>
-    <h3 class="font-bold mt-4">${title}</h3><p class="text-sm muted mt-2">${description}</p>
-  </div>`;
+function safeText(value){
+  return String(value==null?"":value);
 }
-function renderMaterials(){
-  const list=document.getElementById('materialsList');
-  if(!materials.length){list.innerHTML=emptyCard('book-open','No materials available yet','Study PDFs and resources will appear here once connected to your Firebase database.');}
-  else {
-    const q=(document.getElementById('materialSearch').value||'').toLowerCase();
-    const subject=document.getElementById('subjectFilter').value;
-    const filtered=materials.filter(m=>(m.title+' '+m.subject).toLowerCase().includes(q)&&(!subject||m.subject===subject));
-    list.innerHTML=filtered.length?filtered.map(m=>`<div class="card p-5"><div class="flex items-start justify-between"><div class="w-11 h-11 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center"><i data-lucide="file-text"></i></div><button onclick="toggleBookmark('${m.id}')" class="muted"><i data-lucide="bookmark"></i></button></div><div class="tag bg-violet-50 text-violet-700 mt-4">${m.subject}</div><h3 class="font-bold mt-3">${m.title}</h3><p class="text-sm muted mt-2">${m.description||'Study resource'}</p><a href="${m.url}" target="_blank" rel="noopener noreferrer" class="mt-5 inline-flex items-center gap-2 text-sm text-violet-600 font-bold">Open resource <i data-lucide="arrow-up-right" class="w-4"></i></a></div>`).join(''):emptyCard('search','No matching resources','Try another search or subject.');
+
+function showTab(tab){
+  document.getElementById("materialsSection").classList.toggle("hidden",tab!=="materials");
+  document.getElementById("testsSection").classList.toggle("hidden",tab!=="tests");
+  document.getElementById("testScreen").classList.add("hidden");
+
+  document.getElementById("materialsTab").classList.toggle("active",tab==="materials");
+  document.getElementById("testsTab").classList.toggle("active",tab==="tests");
+}
+
+async function loadData(){
+  setNotice("Firebase से data लोड हो रहा है...");
+  try{
+    const [materialsSnap,testsSnap]=await Promise.all([
+      db.ref("study_materials").once("value"),
+      db.ref("tests").once("value")
+    ]);
+
+    materials=[];
+    tests=[];
+
+    materialsSnap.forEach(child=>{
+      const d=child.val()||{};
+      if(d.published===true){
+        materials.push({id:child.key,...d});
+      }
+    });
+
+    testsSnap.forEach(child=>{
+      const d=child.val()||{};
+      if(d.published===true){
+        tests.push({id:child.key,...d});
+      }
+    });
+
+    materials.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    tests.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+
+    renderMaterials();
+    renderTests();
+    setNotice("Data लोड हो गया। "+materials.length+
+      " PDF और "+tests.length+" published tests मिले।");
+  }catch(error){
+    setNotice("Data लोड नहीं हुआ: "+error.message+
+      "\nRealtime Database Rules में read access नहीं है या database connection में समस्या है।",true);
   }
-  document.getElementById('materialCount').textContent=materials.length;
-  document.getElementById('recentMaterials').innerHTML=materials.length?materials.slice(0,3).map(m=>`<div class="flex items-center gap-3 py-3 border-b border-slate-100 last:border-0"><div class="w-10 h-10 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center"><i data-lucide="file-text"></i></div><div class="flex-1 min-w-0"><div class="font-bold text-sm truncate">${m.title}</div><div class="text-xs muted mt-1">${m.subject}</div></div><a class="text-sm text-violet-600 font-bold" target="_blank" rel="noopener noreferrer" href="${m.url}">Open</a></div>`).join(''):emptyCard('book-open','Your learning library is ready','Materials will appear here when added.');
-  document.getElementById('recentTable').innerHTML=materials.length?materials.slice(0,5).map(m=>`<div class="table-row"><div class="font-semibold">${m.title}</div><div class="muted hide-tablet">${m.subject}</div><div class="muted hide-tablet">Resource</div><div><a class="text-violet-600 font-bold" href="${m.url}" target="_blank" rel="noopener noreferrer">Open ↗</a></div></div>`).join(''):'Materials added by your portal administrator will appear here.';
-  lucide.createIcons();
 }
-function filterMaterials(){renderMaterials()}
+
+function renderMaterials(){
+  const list=document.getElementById("materialsList");
+  list.innerHTML="";
+  const query=document.getElementById("materialSearch").value.toLowerCase();
+
+  const filtered=materials.filter(m=>
+    [m.title,m.subject,m.topic,m.description]
+      .some(v=>safeText(v).toLowerCase().includes(query))
+  );
+
+  if(!filtered.length){
+    list.textContent="कोई published PDF नहीं मिला।";
+    return;
+  }
+
+  filtered.forEach(m=>{
+    const card=document.createElement("article");
+    card.className="card";
+
+    const title=document.createElement("h3");
+    title.textContent=m.title||"Study Material";
+
+    const subject=document.createElement("span");
+    subject.className="badge";
+    subject.textContent=m.subject||"General";
+
+    const topic=document.createElement("p");
+    topic.className="meta";
+    topic.textContent=m.topic||"";
+
+    const description=document.createElement("p");
+    description.textContent=m.description||"";
+
+    card.append(title,subject,topic,description);
+
+    if(m.url){
+      const link=document.createElement("a");
+      link.className="btn";
+      link.href=m.url;
+      link.target="_blank";
+      link.rel="noopener noreferrer";
+      link.textContent="Open PDF";
+      card.appendChild(link);
+    }
+
+    list.appendChild(card);
+  });
+}
+
 function renderTests(){
- document.getElementById('testCount').textContent=tests.length;
- document.getElementById('testsList').innerHTML=tests.length?tests.map(t=>`<div class="card p-5"><div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center"><i data-lucide="clipboard-check"></i></div><div class="tag bg-emerald-50 text-emerald-700 mt-4">Practice test</div><h3 class="font-bold mt-3">${t.title}</h3><p class="text-sm muted mt-2">${t.description||'Test your knowledge'}</p><a href="${t.url}" target="_blank" rel="noopener noreferrer" class="mt-5 inline-flex items-center gap-2 text-sm text-violet-600 font-bold">Start test <i data-lucide="arrow-up-right" class="w-4"></i></a></div>`).join(''):emptyCard('clipboard-check','No tests published yet','New practice tests will appear here when connected to your database.');
- lucide.createIcons();
+  const list=document.getElementById("testsList");
+  list.innerHTML="";
+  const query=document.getElementById("testSearch").value.toLowerCase();
+
+  const filtered=tests.filter(t=>
+    [t.title,t.subject]
+      .some(v=>safeText(v).toLowerCase().includes(query))
+  );
+
+  if(!filtered.length){
+    list.textContent="कोई published test नहीं मिला।";
+    return;
+  }
+
+  filtered.forEach(t=>{
+    const card=document.createElement("article");
+    card.className="card";
+
+    const title=document.createElement("h3");
+    title.textContent=t.title||"Test Series";
+
+    const subject=document.createElement("p");
+    subject.className="meta";
+    subject.textContent="Subject: "+(t.subject||"General");
+
+    const info=document.createElement("p");
+    info.textContent=(t.totalQuestions||((t.questions||[]).length))+
+      " Questions · "+(t.duration||30)+" Minutes · "+
+      (t.totalMarks||0)+" Marks";
+
+    const button=document.createElement("button");
+    button.textContent="Start Test";
+    button.onclick=()=>startTest(t.id);
+
+    card.append(title,subject,info,button);
+    list.appendChild(card);
+  });
 }
-function toggleBookmark(id){
- const index=bookmarks.indexOf(id);
- if(index>=0)bookmarks.splice(index,1);else bookmarks.push(id);
- localStorage.setItem('edupath_bookmarks',JSON.stringify(bookmarks));
- renderBookmarks();renderMaterials();
+
+function startTest(testId){
+  currentTest=tests.find(t=>t.id===testId);
+  if(!currentTest)return;
+
+  const questions=Array.isArray(currentTest.questions)
+    ? currentTest.questions
+    : Object.values(currentTest.questions||{});
+
+  if(!questions.length){
+    alert("इस test में questions नहीं हैं।");
+    return;
+  }
+
+  currentTest._questions=questions;
+  submitted=false;
+
+  document.getElementById("materialsSection").classList.add("hidden");
+  document.getElementById("testsSection").classList.add("hidden");
+  document.getElementById("testScreen").classList.remove("hidden");
+  document.getElementById("activeTestTitle").textContent=currentTest.title||"Test";
+  document.getElementById("activeTestInfo").textContent=
+    "Duration: "+(currentTest.duration||30)+" minutes · Questions: "+questions.length;
+
+  document.getElementById("testResult").innerHTML="";
+  document.getElementById("submitTestBtn").classList.remove("hidden");
+
+  const container=document.getElementById("testQuestions");
+  container.innerHTML="";
+
+  questions.forEach((q,index)=>{
+    const section=document.createElement("div");
+    section.className="question";
+
+    const title=document.createElement("h3");
+    title.textContent=(index+1)+". "+(q.question||"");
+
+    section.appendChild(title);
+
+    const options=Array.isArray(q.options)?q.options:Object.values(q.options||{});
+
+    options.forEach((option,optIndex)=>{
+      const label=document.createElement("label");
+      label.className="option";
+
+      const radio=document.createElement("input");
+      radio.type="radio";
+      radio.name="question_"+index;
+      radio.value=String(optIndex);
+
+      label.append(radio,document.createTextNode(" "+safeText(option)));
+      section.appendChild(label);
+    });
+
+    container.appendChild(section);
+  });
+
+  window.scrollTo({top:0,behavior:"smooth"});
 }
-function renderBookmarks(){
- const saved=materials.filter(m=>bookmarks.includes(m.id));
- document.getElementById('bookmarksList').innerHTML=saved.length?saved.map(m=>`<div class="card p-5"><div class="tag bg-violet-50 text-violet-700">${m.subject}</div><h3 class="font-bold mt-3">${m.title}</h3><a href="${m.url}" target="_blank" rel="noopener noreferrer" class="text-sm text-violet-600 font-bold mt-4 inline-block">Open resource ↗</a><button onclick="toggleBookmark('${m.id}')" class="block text-xs muted mt-3">Remove bookmark</button></div>`).join(''):emptyCard('bookmark','Nothing saved yet','Bookmark a resource to find it quickly later.');
- lucide.createIcons();
+
+function submitTest(){
+  if(!currentTest||submitted)return;
+
+  const questions=currentTest._questions||[];
+  let correct=0,wrong=0,unanswered=0,score=0;
+
+  questions.forEach((q,index)=>{
+    const selected=document.querySelector('input[name="question_'+index+'"]:checked');
+    const answer=Number(q.correctAnswer);
+    const marks=Number(q.marks)||1;
+
+    if(!selected){
+      unanswered++;
+      return;
+    }
+
+    if(Number(selected.value)===answer){
+      correct++;
+      score+=marks;
+    }else{
+      wrong++;
+      score-=Number(currentTest.negativeMarks)||0;
+    }
+  });
+
+  submitted=true;
+
+  const result=document.getElementById("testResult");
+  result.className="result";
+  result.textContent=
+    "Test Result\n"+
+    "Correct: "+correct+"\n"+
+    "Wrong: "+wrong+"\n"+
+    "Unanswered: "+unanswered+"\n"+
+    "Score: "+Math.max(0,score).toFixed(2)+
+    " / "+(currentTest.totalMarks||questions.reduce((s,q)=>s+(Number(q.marks)||1),0));
+
+  document.getElementById("submitTestBtn").classList.add("hidden");
+
+  // Answer explanations shown after submission.
+  questions.forEach((q,index)=>{
+    const section=document.querySelectorAll(".question")[index];
+    const explanation=document.createElement("p");
+    explanation.className="meta";
+
+    const answerLetters=["A","B","C","D"];
+    explanation.textContent=
+      "Correct answer: "+(answerLetters[Number(q.correctAnswer)]||"")+
+      (q.explanation?" · "+q.explanation:"");
+
+    section.appendChild(explanation);
+  });
+
+  window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"});
 }
-renderMaterials();renderTests();renderBookmarks();lucide.createIcons();
+
+function closeTest(){
+  currentTest=null;
+  document.getElementById("testScreen").classList.add("hidden");
+  document.getElementById("testsSection").classList.remove("hidden");
+}
+
+loadData();
 </script>
 </body>
 </html>
