@@ -7,11 +7,17 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-</head>
-<body class="bg-slate-50 text-slate-900"><div id="app"></div>
 <script>
-firebase.initializeApp({apiKey:"AIzaSyCQNx2kDU8Q-ajXn2MKhkOQN2NPRkSBUbI",authDomain:"edutest-48ed5.firebaseapp.com",projectId:"edutest-48ed5",storageBucket:"edutest-48ed5.firebasestorage.app",appId:"1:586107516022:web:fc6a34982803ab58bc1b57"});
-const auth=firebase.auth(),db=firebase.firestore(),st=firebase.storage(),app=document.getElementById('app');
+function showErr(m){var d=document.getElementById('errbar');if(!d){d=document.createElement('div');d.id='errbar';d.style.cssText='position:fixed;left:0;right:0;bottom:0;background:#b91c1c;color:#fff;padding:10px;font:13px sans-serif;z-index:99999;white-space:pre-wrap';document.body.appendChild(d)}d.textContent='Error: '+m}
+window.addEventListener('error',function(e){showErr(e.message)});
+window.addEventListener('unhandledrejection',function(e){showErr((e.reason&&e.reason.message)||String(e.reason))});
+</script>
+</head>
+<body class="bg-slate-50 text-slate-900"><div id="app"><p style="padding:20px;font-family:sans-serif">Loading…</p></div>
+<script>
+if(typeof firebase==='undefined')throw new Error('Firebase library load nahi hui. Internet ya ad-blocker check karo.');
+firebase.initializeApp({apiKey:"AIzaSyB5vN74NfP-Tx1tIxMDSmOwjhvkgp06Soo",authDomain:"edutest-admin.firebaseapp.com",projectId:"edutest-admin",storageBucket:"edutest-admin.firebasestorage.app",appId:"1:785312729550:web:d9cc16fee38afdc88b839f"});
+const auth=firebase.auth(),db=firebase.firestore(),st=firebase.storage(),root=document.getElementById('app');
 const $=i=>document.getElementById(i),v=i=>$(i).value;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const btn='rounded-lg bg-indigo-600 px-4 py-2 text-white font-medium',inp='w-full rounded-lg border p-2',card='bg-white p-4 rounded-xl shadow';
@@ -19,21 +25,23 @@ let me=null,tab='dash',U=[],MT=[],TT=[];
 const log=(action,target)=>db.collection('audit').add({by:me.id,action,target:String(target),at:Date.now()}).catch(()=>{});
 
 auth.onAuthStateChanged(async u=>{
-  if(!u){me=null;return loginView()}
-  const d=await db.collection('users').doc(u.uid).get();
-  if(!d.exists||d.data().role!=='admin'){await auth.signOut();alert('Not an admin account');return}
-  me={id:u.uid,...d.data()};go('dash');
+  try{
+    if(!u){me=null;return loginView()}
+    const d=await db.collection('users').doc(u.uid).get();
+    if(!d.exists||d.data().role!=='admin'){await auth.signOut();alert('Not an admin account');return}
+    me={id:u.uid,...d.data()};go('dash');
+  }catch(e){showErr(e.message);loginView()}
 });
 function loginView(){
-  app.innerHTML=`<div class="mx-auto max-w-sm p-6 pt-16"><h1 class="text-2xl font-bold text-indigo-600 mb-4">Admin Login</h1><div class="${card} space-y-3">
+  root.innerHTML=`<div class="mx-auto max-w-sm p-6 pt-16"><h1 class="text-2xl font-bold text-indigo-600 mb-4">Admin Login</h1><div class="${card} space-y-3">
   <input id=em class="${inp}" placeholder="Admin email"><input id=pw type=password class="${inp}" placeholder="Password">
   <p id=err class="text-sm text-red-600"></p><button onclick="login()" class="${btn} w-full">Login</button></div></div>`;
 }
 async function login(){try{await auth.signInWithEmailAndPassword(v('em').trim(),v('pw'))}catch(e){$('err').textContent='Incorrect credentials'}}
 
 const tabs=[['dash','Dashboard'],['stu','Students'],['con','Content'],['tst','Tests']];
-function go(t){tab=t;shell('<p>Loading…</p>');({dash,stu,con,tst})[t]()}
-function shell(h){app.innerHTML=`<div class="min-h-screen pb-16 md:pb-0"><header class="sticky top-0 z-10 bg-white border-b flex items-center justify-between px-4 py-3"><b class="text-indigo-600">Admin Panel</b>
+function go(t){tab=t;shell('<p>Loading…</p>');({dash,stu,con,tst})[t]().catch(e=>showErr(e.message))}
+function shell(h){root.innerHTML=`<div class="min-h-screen pb-16 md:pb-0"><header class="sticky top-0 z-10 bg-white border-b flex items-center justify-between px-4 py-3"><b class="text-indigo-600">Admin Panel</b>
 <nav class="hidden md:flex gap-2">${tabs.map(([k,l])=>`<button onclick="go('${k}')" class="px-3 py-1 rounded ${k==tab?'bg-indigo-600 text-white':''}">${l}</button>`).join('')}</nav>
 <button onclick="auth.signOut()" class="text-sm text-slate-600">Logout</button></header><main class="mx-auto max-w-4xl p-4">${h}</main>
 <nav class="md:hidden fixed bottom-0 inset-x-0 bg-white border-t flex justify-around py-3 text-xs">${tabs.map(([k,l])=>`<button onclick="go('${k}')" class="px-2 ${k==tab?'text-indigo-600 font-bold':'text-slate-500'}">${l}</button>`).join('')}</nav></div>`}
