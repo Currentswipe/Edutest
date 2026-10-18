@@ -1,0 +1,170 @@
+
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduTest Admin Login</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: #101827;
+      color: white;
+    }
+    .card {
+      width: 100%;
+      max-width: 390px;
+      padding: 28px;
+      border-radius: 18px;
+      background: #1e293b;
+      box-shadow: 0 10px 35px #0005;
+    }
+    h2 { margin-top: 0; }
+    p { color: #cbd5e1; line-height: 1.5; }
+    input, button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 12px;
+      border-radius: 9px;
+      font-size: 16px;
+    }
+    input {
+      background: #0f172a;
+      color: white;
+      border: 1px solid #475569;
+    }
+    button {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:disabled { opacity: .6; }
+    #message { overflow-wrap: anywhere; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>EduTest Admin Login</h2>
+    <p>Admin Panel खोलने के लिए Firebase ईमेल और पासवर्ड से लॉगिन करें।</p>
+
+    <form id="loginForm">
+      <input
+        id="email"
+        type="email"
+        placeholder="Firebase Admin Email"
+        autocomplete="username"
+        required
+      >
+
+      <input
+        id="password"
+        type="password"
+        placeholder="Firebase Password"
+        autocomplete="current-password"
+        required
+      >
+
+      <button id="loginBtn" type="submit">Login</button>
+    </form>
+
+    <p id="message" role="status"></p>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB5vN74NfP-Tx1tIxMDSmOwjhvkgp06Soo",
+      authDomain: "edutest-admin.firebaseapp.com",
+      databaseURL: "https://edutest-admin-default-rtdb.firebaseio.com",
+      projectId: "edutest-admin",
+      storageBucket: "edutest-admin.firebasestorage.app",
+      messagingSenderId: "785312729550",
+      appId: "1:785312729550:web:d9cc16fee38afdc88b839f",
+      measurementId: "G-83B1SDVYKF"
+    };
+
+    // Firebase Authentication में अपने Admin UID से मिलान करें।
+    const ADMIN_UID = "PrPTW6JuDlgwgsna9k7J8FFEP5j7";
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    const form = document.getElementById("loginForm");
+    const message = document.getElementById("message");
+    const button = document.getElementById("loginBtn");
+
+    auth.onAuthStateChanged(function(user) {
+      if (user && user.uid === ADMIN_UID) {
+        window.location.replace("admin.html");
+      }
+    });
+
+    form.addEventListener("submit", async function(event) {
+      event.preventDefault();
+
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+
+      button.disabled = true;
+      message.textContent = "लॉगिन हो रहा है...";
+
+      try {
+        const result = await auth.signInWithEmailAndPassword(
+          email,
+          password
+        );
+
+        if (result.user.uid !== ADMIN_UID) {
+          await auth.signOut();
+          throw new Error(
+            "UID_MISMATCH: Firebase में Admin UID जाँचें।"
+          );
+        }
+
+        message.textContent = "लॉगिन सफल! Admin Panel खुल रहा है...";
+        window.location.replace("admin.html");
+
+      } catch (error) {
+        console.error(error);
+        const messages = {
+          "auth/invalid-credential":
+            "ईमेल या पासवर्ड गलत है।",
+          "auth/wrong-password":
+            "पासवर्ड गलत है।",
+          "auth/user-not-found":
+            "यह Firebase यूज़र नहीं मिला।",
+          "auth/invalid-email":
+            "ईमेल का प्रारूप गलत है।",
+          "auth/unauthorized-domain":
+            "Firebase Authentication में currentswipe.github.io डोमेन जोड़ें।",
+          "auth/too-many-requests":
+            "कई प्रयास हुए हैं। कुछ समय बाद दोबारा प्रयास करें।"
+        };
+
+        if (error.message.startsWith("UID_MISMATCH")) {
+          message.textContent =
+            "यह यूज़र Admin UID से मेल नहीं खाता। Firebase Authentication में पूरा UID जाँचें।";
+        } else {
+          message.textContent =
+            messages[error.code] ||
+            "लॉगिन असफल: " + error.message;
+        }
+
+      } finally {
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
