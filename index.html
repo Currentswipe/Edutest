@@ -1,9 +1,10 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="hi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EduPath | Student Portal</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EduPath — Student Portal</title>
+<meta name="description" content="Education Web App student portal">
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -11,134 +12,156 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <style>
-body{font-family:Arial,sans-serif;background:#f5f7fb;color:#172033}
-.card{background:white;border:1px solid #e5e7eb;border-radius:18px;box-shadow:0 5px 20px #00000008}
-.btn{padding:11px 15px;border-radius:10px;font-weight:bold;cursor:pointer}
-.primary{background:#4f46e5;color:white}
-.secondary{background:#eef2ff;color:#4338ca}
-.field{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:10px;outline:none;background:white}
-.field:focus{border-color:#6366f1}
-.nav{display:block;width:100%;text-align:left;padding:12px;border-radius:10px;color:#64748b;font-weight:bold}
-.nav.active,.nav:hover{background:#eef2ff;color:#4338ca}
+:root{--brand:#4f46e5;--ink:#172033;--muted:#667085;--line:#e7eaf1;--bg:#f6f7fb}
+body{font-family:Inter,ui-sans-serif,system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+.card{background:white;border:1px solid var(--line);border-radius:18px;box-shadow:0 4px 18px #17203308}
+.btn{border-radius:11px;padding:10px 14px;font-weight:700;transition:.15s}
+.primary{background:var(--brand);color:white}
+.primary:hover{background:#4338ca}
+.soft{background:#eef2ff;color:#4338ca}
+.outline{border:1px solid var(--line);background:white}
+.field{width:100%;border:1px solid #d9deea;border-radius:11px;padding:11px 12px;background:#fff;outline:none}
+.field:focus{border-color:#818cf8;box-shadow:0 0 0 3px #c7d2fe66}
+.navitem{display:flex;gap:12px;align-items:center;width:100%;padding:12px;border-radius:12px;color:#667085;text-align:left;font-weight:650}
+.navitem.active,.navitem:hover{background:#eef2ff;color:#4338ca}
 .hide{display:none!important}
+.pill{font-size:11px;font-weight:800;padding:4px 8px;border-radius:99px;background:#eef2ff;color:#4338ca}
+.progress{height:7px;background:#edf0f6;border-radius:99px;overflow:hidden}
+.progress>div{height:100%;background:var(--brand);border-radius:99px}
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN / REGISTRATION -->
+<!-- LOGIN / REGISTER -->
 <div id="authScreen" class="min-h-screen flex items-center justify-center p-4">
-<div class="card w-full max-w-4xl grid md:grid-cols-2 overflow-hidden">
+<div class="grid md:grid-cols-2 max-w-4xl w-full card overflow-hidden">
 
-<div class="p-8 md:p-10 text-white" style="background:linear-gradient(135deg,#312e81,#6366f1)">
-<p class="font-bold text-sm">EDUPATH LEARNING PORTAL</p>
-<h1 class="text-4xl font-black mt-8">सीखिए आज,<br>बढ़िए कल।</h1>
-<p class="mt-4 text-indigo-100">Study Material, Test Series और अपनी तैयारी की प्रगति एक जगह।</p>
-<div class="grid grid-cols-2 gap-3 mt-8">
-<div class="bg-white/10 rounded-xl p-4"><b class="text-2xl">PDF</b><p>Study Material</p></div>
-<div class="bg-white/10 rounded-xl p-4"><b class="text-2xl">MCQ</b><p>Test Series</p></div>
+<div class="p-8 md:p-10 text-white" style="background:linear-gradient(145deg,#312e81,#6366f1)">
+<div class="text-sm font-bold opacity-80">EDUPATH • LEARNING PORTAL</div>
+<h1 class="text-4xl font-black mt-8 leading-tight">सीखिए आज,<br>बढ़िए कल।</h1>
+<p class="mt-4 text-indigo-100 leading-7">Study Material, Test Series और अपनी तैयारी की प्रगति — सब एक जगह।</p>
+<div class="mt-10 grid grid-cols-2 gap-3">
+<div class="rounded-2xl bg-white/10 p-4">
+<div class="text-2xl font-black">PDF</div>
+<div class="text-sm text-indigo-100">Study Material</div>
+</div>
+<div class="rounded-2xl bg-white/10 p-4">
+<div class="text-2xl font-black">MCQ</div>
+<div class="text-sm text-indigo-100">Test Series</div>
 </div>
 </div>
+</div>
 
-<div class="p-8">
-<h2 class="text-2xl font-black">Student Account</h2>
-<p class="text-gray-500 mt-2">Login करें या नया अकाउंट बनाएँ।</p>
+<div class="p-8 md:p-10">
+<div class="text-2xl font-black">Student Login</div>
+<p class="text-sm text-slate-500 mt-2">अपने अकाउंट में लॉगिन करें या नया अकाउंट बनाएँ।</p>
 
 <div class="flex gap-2 mt-6">
-<button class="btn primary flex-1" onclick="authTab('login')">Login</button>
-<button class="btn secondary flex-1" onclick="authTab('register')">Register</button>
+<button id="loginTab" class="btn primary flex-1" onclick="showAuthTab('login')">Login</button>
+<button id="registerTab" class="btn outline flex-1" onclick="showAuthTab('register')">Register</button>
 </div>
 
-<form id="loginForm" class="space-y-3 mt-5">
-<label class="block text-sm font-bold">Email
-<input id="loginEmail" class="field mt-1" type="email" required autocomplete="username" placeholder="आपका Email">
+<form id="loginForm" class="mt-5 space-y-3">
+<label class="block text-sm font-semibold">Email address
+<input class="field mt-1" id="loginEmail" type="email" autocomplete="username" required placeholder="you@example.com">
 </label>
-<label class="block text-sm font-bold">Password
-<input id="loginPassword" class="field mt-1" type="password" required autocomplete="current-password" placeholder="आपका Password">
+<label class="block text-sm font-semibold">Password
+<input class="field mt-1" id="loginPassword" type="password" autocomplete="current-password" required placeholder="आपका पासवर्ड">
 </label>
 <button class="btn primary w-full" type="submit">Login करें</button>
-<button type="button" onclick="resetPassword()" class="text-indigo-700 text-sm font-bold">पासवर्ड भूल गए?</button>
+<button class="text-sm text-indigo-700 font-semibold" type="button" onclick="resetPassword()">पासवर्ड भूल गए?</button>
 </form>
 
-<form id="registerForm" class="space-y-3 mt-5 hide">
-<label class="block text-sm font-bold">पूरा नाम
-<input id="regName" class="field mt-1" required placeholder="अपना नाम">
+<form id="registerForm" class="mt-5 space-y-3 hide">
+<label class="block text-sm font-semibold">पूरा नाम
+<input class="field mt-1" id="regName" required placeholder="अपना नाम">
 </label>
-<label class="block text-sm font-bold">Email
-<input id="regEmail" class="field mt-1" type="email" required placeholder="Email address">
+<label class="block text-sm font-semibold">Email address
+<input class="field mt-1" id="regEmail" type="email" required placeholder="you@example.com">
 </label>
-<label class="block text-sm font-bold">मोबाइल नंबर
-<input id="regMobile" class="field mt-1" type="tel" inputmode="numeric" pattern="[0-9]{10}" required placeholder="10 अंकों का नंबर">
+<label class="block text-sm font-semibold">मोबाइल नंबर
+<input class="field mt-1" id="regMobile" inputmode="numeric" pattern="[0-9]{10}" required placeholder="10 अंकों का नंबर">
 </label>
-<label class="block text-sm font-bold">Password
-<input id="regPassword" class="field mt-1" type="password" minlength="8" required placeholder="कम से कम 8 अक्षर">
+<label class="block text-sm font-semibold">Password
+<input class="field mt-1" id="regPassword" type="password" minlength="8" required placeholder="कम से कम 8 अक्षर">
 </label>
 <button class="btn primary w-full" type="submit">अकाउंट बनाएँ</button>
 </form>
 
-<p id="authMessage" class="text-sm text-red-600 mt-4" role="status"></p>
+<p id="authMessage" class="text-sm mt-4 text-rose-600" role="status"></p>
 </div>
 </div>
 </div>
 
-<!-- STUDENT APP -->
+<!-- STUDENT DASHBOARD -->
 <div id="appScreen" class="hide min-h-screen">
-<header class="bg-white border-b sticky top-0 z-10">
-<div class="max-w-7xl mx-auto p-4 flex justify-between items-center">
+<header class="sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-slate-200">
+<div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-indigo-600 text-white grid place-items-center font-black">E</div>
 <div>
-<h1 class="text-xl font-black text-indigo-700">EduPath</h1>
-<p class="text-xs text-gray-500">Student Learning Portal</p>
+<div class="font-black text-lg">EduPath</div>
+<div class="text-xs text-slate-500">Student Learning Portal</div>
 </div>
-<div class="flex gap-3 items-center">
-<span id="headerName" class="font-bold text-sm"></span>
-<button class="btn secondary" onclick="logout()">Logout</button>
+</div>
+<div class="flex items-center gap-3">
+<div class="hidden sm:block text-right">
+<div id="topName" class="text-sm font-bold">Student</div>
+<div class="text-xs text-slate-500">Student Account</div>
+</div>
+<button class="btn outline text-sm" onclick="logout()">Logout</button>
 </div>
 </div>
 </header>
 
-<div class="max-w-7xl mx-auto p-4 grid lg:grid-cols-[220px_1fr] gap-5">
+<div class="max-w-7xl mx-auto p-4 md:p-6 grid lg:grid-cols-[230px_1fr] gap-6">
 <aside class="card p-3 h-fit">
-<p class="text-xs font-bold text-gray-400 p-3">STUDENT MENU</p>
-<button class="nav active" data-page="dashboard" onclick="navigate('dashboard')">🏠 Dashboard</button>
-<button class="nav" data-page="materials" onclick="navigate('materials')">📚 Study Material</button>
-<button class="nav" data-page="tests" onclick="navigate('tests')">📝 Test Series</button>
-<button class="nav" data-page="results" onclick="navigate('results')">📊 My Results</button>
-<button class="nav" data-page="bookmarks" onclick="navigate('bookmarks')">🔖 Bookmarks</button>
-<button class="nav" data-page="profile" onclick="navigate('profile')">👤 My Profile</button>
+<div class="px-3 pt-3 pb-2 text-xs font-black tracking-widest text-slate-400">LEARNING MENU</div>
+<button class="navitem active" data-page="dashboard" onclick="navigate('dashboard')">🏠 Dashboard</button>
+<button class="navitem" data-page="materials" onclick="navigate('materials')">📚 Study Material</button>
+<button class="navitem" data-page="tests" onclick="navigate('tests')">📝 Test Series</button>
+<button class="navitem" data-page="results" onclick="navigate('results')">📈 My Results</button>
+<button class="navitem" data-page="bookmarks" onclick="navigate('bookmarks')">🔖 Bookmarks</button>
+<button class="navitem" data-page="profile" onclick="navigate('profile')">👤 My Profile</button>
+<div class="border-t border-slate-100 mt-4 pt-4 px-3 text-xs text-slate-500">Consistency is the key to success.</div>
 </aside>
 
-<main class="min-w-0">
+<main>
 
-<!-- DASHBOARD -->
-<section id="page-dashboard" class="page space-y-5">
-<div class="rounded-3xl p-7 text-white" style="background:linear-gradient(110deg,#3730a3,#6366f1)">
-<p class="text-sm text-indigo-100">YOUR LEARNING SPACE</p>
-<h2 class="text-3xl font-black mt-2">नमस्ते, <span id="welcomeName">Student</span> 👋</h2>
-<p class="mt-2 text-indigo-100">आज पढ़ें और हर दिन बेहतर बनें।</p>
-<div class="flex gap-3 mt-5 flex-wrap">
-<button class="btn bg-white text-indigo-700" onclick="navigate('materials')">Material पढ़ें</button>
-<button class="btn bg-indigo-500 text-white" onclick="navigate('tests')">Test दें</button>
+<section id="page-dashboard" class="page space-y-6">
+<div class="rounded-3xl p-6 md:p-8 text-white" style="background:linear-gradient(110deg,#3730a3,#6366f1)">
+<div class="text-sm text-indigo-100">YOUR LEARNING SPACE</div>
+<h1 class="text-3xl font-black mt-2">नमस्ते, <span id="welcomeName">Student</span> 👋</h1>
+<p class="mt-2 text-indigo-100">आज थोड़ा पढ़ें, हर दिन बेहतर बनें।</p>
+<div class="flex flex-wrap gap-3 mt-6">
+<button class="btn bg-white text-indigo-700" onclick="navigate('materials')">Material पढ़ें →</button>
+<button class="btn bg-indigo-500 text-white" onclick="navigate('tests')">Test दें →</button>
 </div>
 </div>
 
 <div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
-<div class="card p-5"><p class="text-sm text-gray-500">Study Materials</p><b id="materialCount" class="text-3xl">0</b></div>
-<div class="card p-5"><p class="text-sm text-gray-500">Available Tests</p><b id="testCount" class="text-3xl">0</b></div>
-<div class="card p-5"><p class="text-sm text-gray-500">Tests Attempted</p><b id="attemptCount" class="text-3xl">0</b></div>
-<div class="card p-5"><p class="text-sm text-gray-500">Average Score</p><b id="averageScore" class="text-3xl">0%</b></div>
+<div class="card p-5"><div class="text-sm text-slate-500">Study Materials</div><div id="statMaterials" class="text-3xl font-black mt-2">0</div></div>
+<div class="card p-5"><div class="text-sm text-slate-500">Available Tests</div><div id="statTests" class="text-3xl font-black mt-2">0</div></div>
+<div class="card p-5"><div class="text-sm text-slate-500">Tests Attempted</div><div id="statAttempts" class="text-3xl font-black mt-2">0</div></div>
+<div class="card p-5"><div class="text-sm text-slate-500">Average Score</div><div id="statAverage" class="text-3xl font-black mt-2">0%</div></div>
 </div>
 
 <div class="grid lg:grid-cols-2 gap-5">
-<div class="card p-5"><h3 class="font-black text-lg">Recent Study Material</h3><div id="recentMaterials" class="mt-4 space-y-3"></div></div>
-<div class="card p-5"><h3 class="font-black text-lg">Practice Tests</h3><div id="recentTests" class="mt-4 space-y-3"></div></div>
+<div class="card p-5">
+<div class="flex items-center justify-between"><h2 class="font-black text-lg">Recent Study Material</h2><button class="text-sm text-indigo-700 font-bold" onclick="navigate('materials')">View all</button></div>
+<div id="recentMaterials" class="mt-4 space-y-3"></div>
+</div>
+<div class="card p-5">
+<div class="flex items-center justify-between"><h2 class="font-black text-lg">Practice Tests</h2><button class="text-sm text-indigo-700 font-bold" onclick="navigate('tests')">View all</button></div>
+<div id="recentTests" class="mt-4 space-y-3"></div>
+</div>
 </div>
 </section>
 
-<!-- MATERIALS -->
 <section id="page-materials" class="page hide space-y-5">
-<h2 class="text-2xl font-black">Study Material</h2>
-<p class="text-gray-500">Subject और Topic के अनुसार PDF खोजें।</p>
-<div class="card p-4 grid md:grid-cols-3 gap-3">
+<div><h1 class="text-2xl font-black">Study Material</h1><p class="text-slate-500 mt-1">Subject और topic के अनुसार PDFs खोजें।</p></div>
+<div class="card p-4 grid sm:grid-cols-3 gap-3">
 <input id="materialSearch" class="field" placeholder="Material खोजें..." oninput="renderMaterials()">
 <select id="subjectFilter" class="field" onchange="renderMaterials()"><option value="">सभी Subjects</option></select>
 <select id="topicFilter" class="field" onchange="renderMaterials()"><option value="">सभी Topics</option></select>
@@ -146,47 +169,47 @@ body{font-family:Arial,sans-serif;background:#f5f7fb;color:#172033}
 <div id="materialsList" class="grid md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
 </section>
 
-<!-- TESTS -->
 <section id="page-tests" class="page hide space-y-5">
-<h2 class="text-2xl font-black">Test Series</h2>
+<div><h1 class="text-2xl font-black">Test Series</h1><p class="text-slate-500 mt-1">अपनी तैयारी जाँचें और स्कोर बेहतर करें।</p></div>
+<div class="card p-4 flex flex-col sm:flex-row gap-3">
 <input id="testSearch" class="field" placeholder="Test खोजें..." oninput="renderTests()">
+<select id="testSubjectFilter" class="field" onchange="renderTests()"><option value="">सभी Subjects</option></select>
+</div>
 <div id="testsList" class="grid md:grid-cols-2 gap-4"></div>
 <div id="testRunner" class="card p-5 hide"></div>
 </section>
 
-<!-- RESULTS -->
 <section id="page-results" class="page hide space-y-5">
-<h2 class="text-2xl font-black">My Results</h2>
-<div id="resultsList" class="card p-5"></div>
+<div><h1 class="text-2xl font-black">My Results</h1><p class="text-slate-500 mt-1">आपके पिछले test attempts और scores।</p></div>
+<div id="resultsList" class="card p-4"></div>
 </section>
 
-<!-- BOOKMARKS -->
 <section id="page-bookmarks" class="page hide space-y-5">
-<h2 class="text-2xl font-black">My Bookmarks</h2>
+<div><h1 class="text-2xl font-black">Bookmarks</h1><p class="text-slate-500 mt-1">बाद में पढ़ने के लिए सेव किए गए materials।</p></div>
 <div id="bookmarksList" class="grid md:grid-cols-2 gap-4"></div>
 </section>
 
-<!-- PROFILE -->
 <section id="page-profile" class="page hide space-y-5">
-<h2 class="text-2xl font-black">My Profile</h2>
+<div><h1 class="text-2xl font-black">My Profile</h1><p class="text-slate-500 mt-1">अपनी जानकारी देखें।</p></div>
 <div class="card p-6 max-w-2xl">
-<div class="grid sm:grid-cols-2 gap-5">
-<div><p class="text-sm text-gray-500">Name</p><b id="profileName"></b></div>
-<div><p class="text-sm text-gray-500">Email</p><b id="profileEmail" class="break-all"></b></div>
-<div><p class="text-sm text-gray-500">Mobile</p><b id="profileMobile"></b></div>
-<div><p class="text-sm text-gray-500">Account Type</p><b>Student</b></div>
+<div class="w-16 h-16 rounded-2xl bg-indigo-100 text-indigo-700 grid place-items-center text-2xl font-black">👤</div>
+<div class="mt-4 grid sm:grid-cols-2 gap-4">
+<div><div class="text-xs text-slate-500">Full name</div><div id="profileName" class="font-bold mt-1">—</div></div>
+<div><div class="text-xs text-slate-500">Email</div><div id="profileEmail" class="font-bold mt-1 break-all">—</div></div>
+<div><div class="text-xs text-slate-500">Mobile</div><div id="profileMobile" class="font-bold mt-1">—</div></div>
+<div><div class="text-xs text-slate-500">Account type</div><div class="font-bold mt-1">Student</div></div>
 </div>
-<button class="btn secondary mt-6" onclick="resetPassword()">Password Reset Email भेजें</button>
+<div class="mt-6"><button class="btn outline" onclick="resetPassword()">Password reset email भेजें</button></div>
 </div>
 </section>
 
-<p id="appMessage" class="text-sm text-gray-500" role="status"></p>
+<div id="globalMessage" class="text-sm text-slate-500 mt-4" role="status"></div>
 </main>
 </div>
 </div>
 
 <script>
-// FIREBASE CONFIGURATION
+// YOUR FIREBASE CONFIG
 const firebaseConfig = {
   apiKey: "AIzaSyB5vN74NfP-Tx1tIxMDSmOwjhvkgp06Soo",
   authDomain: "edutest-admin.firebaseapp.com",
@@ -197,149 +220,204 @@ const firebaseConfig = {
   measurementId: "G-83B1SDVYKF"
 };
 
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+let auth = null, db = null, currentUser = null, currentProfile = null;
+let materials = [], tests = [], attempts = [], activeTest = null, answers = {}, testStartedAt = 0;
 
-let currentUser = null;
-let profile = {};
-let materials = [];
-let tests = [];
-let attempts = [];
-let activeTest = null;
-let answers = {};
-let testStarted = 0;
+try {
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  auth = firebase.auth();
+  db = firebase.firestore();
 
-auth.onAuthStateChanged(async user => {
-  currentUser = user;
-  if (!user) {
-    document.getElementById('authScreen').classList.remove('hide');
-    document.getElementById('appScreen').classList.add('hide');
-    return;
-  }
-  try {
-    const snap = await db.collection('users').doc(user.uid).get();
-    profile = snap.exists ? snap.data() : {
-      name: user.displayName || 'Student',
-      email: user.email || '',
-      mobile: ''
-    };
-  } catch (e) {
-    profile = {name:user.displayName||'Student',email:user.email||'',mobile:''};
-  }
-  showApp();
-  await loadData();
-});
+  auth.onAuthStateChanged(async user => {
+    if (user) {
+      currentUser = user;
+      await loadProfile();
+      showApp();
+      await loadData();
+    } else {
+      currentUser = null;
+      document.getElementById('authScreen').classList.remove('hide');
+      document.getElementById('appScreen').classList.add('hide');
+    }
+  });
+} catch (error) {
+  console.error(error);
+  authMsg('Firebase शुरू नहीं हो पाया: ' + (error.message || error.code));
+}
 
-function authTab(tab) {
-  document.getElementById('loginForm').classList.toggle('hide',tab!=='login');
-  document.getElementById('registerForm').classList.toggle('hide',tab!=='register');
-  document.getElementById('authMessage').textContent = '';
+function showAuthTab(tab) {
+  document.getElementById('loginForm').classList.toggle('hide', tab !== 'login');
+  document.getElementById('registerForm').classList.toggle('hide', tab !== 'register');
+  document.getElementById('loginTab').className = 'btn flex-1 ' + (tab === 'login' ? 'primary' : 'outline');
+  document.getElementById('registerTab').className = 'btn flex-1 ' + (tab === 'register' ? 'primary' : 'outline');
+  authMsg('');
 }
 
 document.getElementById('loginForm').addEventListener('submit', async e => {
   e.preventDefault();
+  if (!auth) return authMsg('Firebase initialize नहीं हुआ। Config जाँचें।');
+
+  const button = e.submitter;
   try {
-    await auth.signInWithEmailAndPassword(
-      document.getElementById('loginEmail').value.trim(),
-      document.getElementById('loginPassword').value
-    );
-  } catch(err) {
-    showAuthError(err);
+    if (button) button.disabled = true;
+    authMsg('Login हो रहा है…');
+    await auth.signInWithEmailAndPassword(val('loginEmail'), val('loginPassword'));
+    authMsg('Login सफल।');
+  } catch (err) {
+    console.error('Login error:', err);
+    authMsg(friendly(err));
+  } finally {
+    if (button) button.disabled = false;
   }
 });
 
 document.getElementById('registerForm').addEventListener('submit', async e => {
   e.preventDefault();
+  if (!auth || !db) return authMsg('Firebase initialize नहीं हुआ। Config जाँचें।');
+
+  const button = e.submitter;
   try {
-    const name = document.getElementById('regName').value.trim();
-    const email = document.getElementById('regEmail').value.trim();
-    const mobile = document.getElementById('regMobile').value.trim();
-    const password = document.getElementById('regPassword').value;
-    const credential = await auth.createUserWithEmailAndPassword(email,password);
-    await credential.user.updateProfile({displayName:name});
-    await db.collection('users').doc(credential.user.uid).set({
-      name, email, mobile, role:'student', premium:false,
-      createdAt:firebase.firestore.FieldValue.serverTimestamp()
+    if (button) button.disabled = true;
+    authMsg('Account बनाया जा रहा है…');
+
+    const name = val('regName');
+    const email = val('regEmail');
+    const mobile = val('regMobile');
+    const password = val('regPassword');
+
+    const cred = await auth.createUserWithEmailAndPassword(email, password);
+    await cred.user.updateProfile({ displayName: name });
+
+    await db.collection('users').doc(cred.user.uid).set({
+      name: name,
+      email: email,
+      mobile: mobile,
+      role: 'student',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-    await credential.user.sendEmailVerification();
-    document.getElementById('authMessage').textContent =
-      'Account बन गया। अपने Email को verify करें।';
-  } catch(err) {
-    showAuthError(err);
+
+    try {
+      await cred.user.sendEmailVerification();
+      authMsg('Registration सफल! Verification email भेजा गया है। Inbox/Spam जाँचें।');
+    } catch (mailError) {
+      console.error(mailError);
+      authMsg('Account बन गया है, लेकिन verification email नहीं भेजा जा सका।');
+    }
+  } catch (err) {
+    console.error('Registration error:', err);
+    authMsg(friendly(err));
+  } finally {
+    if (button) button.disabled = false;
   }
 });
 
-function showAuthError(err) {
+function val(id) {
+  return document.getElementById(id).value.trim();
+}
+
+function authMsg(message) {
+  document.getElementById('authMessage').textContent = message;
+}
+
+function msg(message) {
+  document.getElementById('globalMessage').textContent = message;
+}
+
+function friendly(e) {
   const messages = {
-    'auth/email-already-in-use':'यह Email पहले से registered है।',
-    'auth/invalid-email':'Email सही नहीं है।',
-    'auth/weak-password':'Password कम से कम 8 अक्षर का रखें।',
-    'auth/invalid-credential':'Email या Password गलत है।',
-    'auth/network-request-failed':'Internet connection जाँचें।'
+    'auth/invalid-credential': 'Email या password सही नहीं है।',
+    'auth/wrong-password': 'Password सही नहीं है।',
+    'auth/user-not-found': 'इस email से account नहीं मिला। पहले Register करें।',
+    'auth/email-already-in-use': 'यह email पहले से registered है। Login करें।',
+    'auth/weak-password': 'कम से कम 6 अक्षर का password रखें।',
+    'auth/invalid-email': 'Email सही format में लिखें।',
+    'auth/operation-not-allowed': 'Firebase Console में Authentication → Sign-in method → Email/Password enable करें।',
+    'auth/unauthorized-domain': 'Firebase Authentication → Settings → Authorized domains में GitHub Pages domain जोड़ें।',
+    'auth/network-request-failed': 'Internet connection जाँचें और फिर कोशिश करें।',
+    'permission-denied': 'Firestore Rules ने request रोक दी। Rules जाँचें।',
+    'firestore/permission-denied': 'Firestore Rules ने request रोक दी। Rules जाँचें।',
+    'auth/too-many-requests': 'बहुत बार कोशिश हुई है। कुछ देर बाद प्रयास करें।'
   };
-  document.getElementById('authMessage').textContent =
-    messages[err.code] || err.message;
+  return messages[e.code] || e.message || 'कुछ समस्या हुई: ' + (e.code || 'unknown');
 }
 
 async function resetPassword() {
-  const email = document.getElementById('loginEmail').value.trim()
-    || document.getElementById('regEmail').value.trim()
-    || currentUser?.email;
-  if (!email) {
-    document.getElementById('authMessage').textContent =
-      'पहले Email address भरें।';
-    return;
-  }
+  if (!auth) return authMsg('Firebase initialize नहीं हुआ।');
+  const email = val('loginEmail') || val('regEmail');
+  if (!email) return authMsg('पहले Email भरें।');
+
   try {
     await auth.sendPasswordResetEmail(email);
-    document.getElementById('authMessage').textContent =
-      'Password reset email भेज दिया गया है।';
-  } catch(err) {
-    document.getElementById('authMessage').textContent = err.message;
+    authMsg('Password reset email भेज दिया गया है।');
+  } catch (e) {
+    authMsg(friendly(e));
   }
 }
 
-async function logout() {
-  await auth.signOut();
+async function loadProfile() {
+  try {
+    const snap = await db.collection('users').doc(currentUser.uid).get();
+    currentProfile = snap.exists ? snap.data() : {
+      name: currentUser.displayName || 'Student',
+      email: currentUser.email,
+      mobile: ''
+    };
+  } catch (e) {
+    console.error(e);
+    currentProfile = {
+      name: currentUser.displayName || 'Student',
+      email: currentUser.email,
+      mobile: ''
+    };
+  }
 }
 
 function showApp() {
   document.getElementById('authScreen').classList.add('hide');
   document.getElementById('appScreen').classList.remove('hide');
-  const name = profile.name || currentUser.displayName || 'Student';
-  document.getElementById('headerName').textContent = name;
+
+  const name = currentProfile?.name || currentUser.displayName || 'Student';
+  document.getElementById('topName').textContent = name;
   document.getElementById('welcomeName').textContent = name;
   document.getElementById('profileName').textContent = name;
-  document.getElementById('profileEmail').textContent = currentUser.email || '';
-  document.getElementById('profileMobile').textContent = profile.mobile || '—';
+  document.getElementById('profileEmail').textContent = currentUser.email || '—';
+  document.getElementById('profileMobile').textContent = currentProfile?.mobile || '—';
+}
+
+async function logout() {
+  if (auth) await auth.signOut();
 }
 
 function navigate(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.add('hide'));
-  document.getElementById('page-'+page).classList.remove('hide');
-  document.querySelectorAll('.nav').forEach(b =>
-    b.classList.toggle('active',b.dataset.page===page)
-  );
-  if(page==='materials') renderMaterials();
-  if(page==='tests') renderTests();
-  if(page==='results') renderResults();
-  if(page==='bookmarks') renderBookmarks();
+  document.getElementById('page-' + page).classList.remove('hide');
+  document.querySelectorAll('.navitem').forEach(b => b.classList.toggle('active', b.dataset.page === page));
+
+  if (page === 'materials') renderMaterials();
+  if (page === 'tests') renderTests();
+  if (page === 'results') renderResults();
+  if (page === 'bookmarks') renderBookmarks();
 }
 
 async function loadData() {
   try {
-    const results = await Promise.all([
-      db.collection('study_materials').where('published','==',true).get(),
-      db.collection('tests').where('published','==',true).get(),
-      db.collection('test_attempts').where('userId','==',currentUser.uid).get()
+    const [ms, ts, as] = await Promise.all([
+      db.collection('study_materials').where('published', '==', true).get(),
+      db.collection('tests').where('published', '==', true).get(),
+      db.collection('test_attempts').where('userId', '==', currentUser.uid).get()
     ]);
-    materials = results[0].docs.map(d=>({id:d.id,...d.data()}));
-    tests = results[1].docs.map(d=>({id:d.id,...d.data()}));
-    attempts = results[2].docs.map(d=>({id:d.id,...d.data()}));
-  } catch(err) {
-    showMessage('Data load नहीं हुआ। Firestore Rules जाँचें: '+err.message);
+
+    materials = ms.docs.map(d => ({ id: d.id, ...d.data() }));
+    tests = ts.docs.map(d => ({ id: d.id, ...d.data() }));
+    attempts = as.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (e) {
+    console.error(e);
+    msg('Data load नहीं हुआ। Firestore Rules और collections जाँचें: ' + e.message);
+    materials = [];
+    tests = [];
+    attempts = [];
   }
+
   updateDashboard();
   populateFilters();
   renderMaterials();
@@ -349,133 +427,34 @@ async function loadData() {
 }
 
 function updateDashboard() {
-  document.getElementById('materialCount').textContent = materials.length;
-  document.getElementById('testCount').textContent = tests.length;
-  document.getElementById('attemptCount').textContent = attempts.length;
-  const avg = attempts.length
-    ? Math.round(attempts.reduce((sum,a)=>sum+(Number(a.percentage)||0),0)/attempts.length)
+  document.getElementById('statMaterials').textContent = materials.length;
+  document.getElementById('statTests').textContent = tests.length;
+  document.getElementById('statAttempts').textContent = attempts.length;
+
+  const average = attempts.length
+    ? Math.round(attempts.reduce((sum, a) => sum + (Number(a.percentage) || 0), 0) / attempts.length)
     : 0;
-  document.getElementById('averageScore').textContent = avg+'%';
+
+  document.getElementById('statAverage').textContent = average + '%';
   document.getElementById('recentMaterials').innerHTML =
-    materials.slice(0,3).map(materialRow).join('') || empty('अभी कोई Material नहीं है।');
+    materials.slice(0, 3).map(materialRow).join('') || empty('अभी कोई material उपलब्ध नहीं है।');
   document.getElementById('recentTests').innerHTML =
-    tests.slice(0,3).map(testRow).join('') || empty('अभी कोई Test नहीं है।');
+    tests.slice(0, 3).map(testRow).join('') || empty('अभी कोई test उपलब्ध नहीं है।');
 }
 
 function populateFilters() {
-  const subjects = [...new Set(materials.map(m=>m.subject).filter(Boolean))];
-  const topics = [...new Set(materials.map(m=>m.topic).filter(Boolean))];
-  const s = document.getElementById('subjectFilter');
-  const t = document.getElementById('topicFilter');
-  s.innerHTML = '<option value="">सभी Subjects</option>' +
-    subjects.map(x=>`<option>${esc(x)}</option>`).join('');
-  t.innerHTML = '<option value="">सभी Topics</option>' +
-    topics.map(x=>`<option>${esc(x)}</option>`).join('');
-}
+  const subjects = [...new Set([...materials, ...tests].map(x => x.subject).filter(Boolean))];
 
-function renderMaterials() {
-  const q = (document.getElementById('materialSearch')?.value||'').toLowerCase();
-  const sub = document.getElementById('subjectFilter')?.value||'';
-  const topic = document.getElementById('topicFilter')?.value||'';
-  const list = materials.filter(m =>
-    (`${m.title||''} ${m.subject||''} ${m.topic||''}`).toLowerCase().includes(q) &&
-    (!sub || m.subject===sub) && (!topic || m.topic===topic)
-  );
-  document.getElementById('materialsList').innerHTML = list.map(m=>`
-    <article class="card p-5">
-      <span class="text-xs font-bold text-indigo-700">${esc(m.subject||'General')}</span>
-      <h3 class="text-lg font-black mt-3">${esc(m.title||'Study Material')}</h3>
-      <p class="text-sm text-gray-500 mt-1">${esc(m.topic||'General Topic')}</p>
-      <p class="text-xs mt-3">${m.premium?'Premium Material':'Free Material'}</p>
-      <div class="flex gap-2 mt-4">
-        <button class="btn primary flex-1" onclick="openMaterial('${m.id}')">PDF खोलें</button>
-        <button class="btn secondary" onclick="toggleBookmark('${m.id}')">☆ Save</button>
-      </div>
-    </article>`).join('') || empty('कोई Material नहीं मिला।');
-}
+  ['subjectFilter', 'testSubjectFilter'].forEach(id => {
+    const el = document.getElementById(id);
+    const old = el.value;
+    el.innerHTML = '<option value="">सभी Subjects</option>' +
+      subjects.map(s => `<option>${esc(s)}</option>`).join('');
+    el.value = old;
+  });
 
-function materialRow(m) {
-  return `<div class="border rounded-xl p-3 flex gap-3 items-center">
-    <div class="text-2xl">📄</div>
-    <div class="flex-1 min-w-0">
-      <b class="block truncate">${esc(m.title||'Material')}</b>
-      <p class="text-xs text-gray-500">${esc(m.subject||'General')} · ${esc(m.topic||'')}</p>
-    </div>
-    <button class="btn secondary text-sm" onclick="openMaterial('${m.id}')">Open</button>
-  </div>`;
-}
-
-function openMaterial(id) {
-  const m = materials.find(x=>x.id===id);
-  if(!m) return;
-  if(m.premium && !profile.premium) {
-    showMessage('यह Premium Material है। Admin से access enable करवाएँ।');
-    return;
-  }
-  if(!m.fileUrl) {
-    showMessage('इस Material की PDF URL उपलब्ध नहीं है।');
-    return;
-  }
-  window.open(m.fileUrl,'_blank','noopener');
-}
-
-function renderTests() {
-  const q = (document.getElementById('testSearch')?.value||'').toLowerCase();
-  const list = tests.filter(t =>
-    (`${t.title||''} ${t.subject||''}`).toLowerCase().includes(q)
-  );
-  document.getElementById('testsList').innerHTML = list.map(t=>`
-    <article class="card p-5">
-      <span class="text-xs font-bold text-indigo-700">${esc(t.subject||'General')}</span>
-      <h3 class="text-lg font-black mt-3">${esc(t.title||'Practice Test')}</h3>
-      <p class="text-sm text-gray-500 mt-2">${(t.questions||[]).length} Questions · ${Number(t.durationMinutes)||15} Minutes</p>
-      <button class="btn primary w-full mt-4" onclick="startTest('${t.id}')">Start Test</button>
-    </article>`).join('') || empty('अभी कोई Test उपलब्ध नहीं है।');
-}
-
-function testRow(t) {
-  return `<div class="border rounded-xl p-3 flex gap-3 items-center">
-    <div class="text-2xl">📝</div><div class="flex-1 min-w-0">
-    <b class="block truncate">${esc(t.title||'Practice Test')}</b>
-    <p class="text-xs text-gray-500">${esc(t.subject||'General')}</p></div>
-    <button class="btn secondary text-sm" onclick="navigate('tests');startTest('${t.id}')">Start</button>
-  </div>`;
-}
-
-function startTest(id) {
-  activeTest = tests.find(t=>t.id===id);
-  if(!activeTest) return;
-  answers = {};
-  testStarted = Date.now();
-  const questions = activeTest.questions||[];
-  const runner = document.getElementById('testRunner');
-  runner.classList.remove('hide');
-  runner.innerHTML = `
-    <div class="flex justify-between gap-3 items-center">
-      <h3 class="text-xl font-black">${esc(activeTest.title||'Test')}</h3>
-      <button class="btn secondary" onclick="closeTest()">Close</button>
-    </div>
-    <div id="questionList" class="space-y-5 mt-5"></div>
-    <button class="btn primary mt-6" onclick="submitTest()">Submit Test</button>`;
-  document.getElementById('questionList').innerHTML = questions.map((q,i)=>`
-    <div class="border rounded-xl p-4">
-      <b>${i+1}. ${esc(q.text||'Question')}</b>
-      <div class="grid gap-2 mt-3">
-      ${(q.options||[]).map((o,j)=>`
-        <label class="border rounded-lg p-3 flex gap-2 items-center">
-          <input type="radio" name="q${i}" onchange="answers[${i}]=${j}">
-          <span>${esc(o)}</span>
-        </label>`).join('')}
-      </div>
-    </div>`).join('') || empty('इस Test में Questions नहीं हैं।');
-  runner.scrollIntoView({behavior:'smooth'});
-}
-
-function closeTest() {
-  activeTest = null;
-  document.getElementById('testRunner').classList.add('hide');
-}
-
-async function submitTest() {
-  if(!activeTest) return;
-  const questions = activeTes
+  const topics = [...new Set(materials.map(x => x.topic).filter(Boolean))];
+  const topicSelect = document.getElementById('topicFilter');
+  const oldTopic = topicSelect.value;
+  topicSelect.innerHTML = '<option value="">सभी Topics</option>' +
+    topics.map(s => `<option>
