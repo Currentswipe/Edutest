@@ -5,84 +5,198 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>EduPath Admin Panel</title>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<style>
+body{font-family:Arial,sans-serif;background:#f5f7fb;color:#172033}
+.card{background:white;border:1px solid #e5e7eb;border-radius:16px;padding:20px}
+.btn{padding:10px 14px;border-radius:9px;font-weight:bold;cursor:pointer}
+.primary{background:#4f46e5;color:white}
+.outline{border:1px solid #ddd;background:white}
+.field{width:100%;padding:11px;border:1px solid #d1d5db;border-radius:9px;margin-top:5px}
+.hide{display:none!important}
+.navitem{display:block;width:100%;text-align:left;padding:12px;border-radius:9px}
+.navitem.active{background:#eef2ff;color:#4338ca;font-weight:bold}
+</style>
 </head>
-<body class="bg-slate-100 text-slate-800">
-<main class="max-w-5xl mx-auto p-4 sm:p-8">
-  <section id="login" class="bg-white rounded-2xl p-6 max-w-md mx-auto mt-12 shadow">
-    <h1 class="text-2xl font-black text-indigo-700">EduPath Admin</h1>
-    <p class="text-sm text-slate-500 mt-2">Admin password दर्ज करें।</p>
-    <form id="loginForm">
-      <input id="password" type="password" class="border rounded-xl p-3 w-full mt-4" placeholder="Admin Password" required>
-      <button class="bg-indigo-600 text-white rounded-xl p-3 w-full mt-3 font-bold">Login</button>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
+  <div class="card w-full max-w-md">
+    <div class="text-3xl font-black text-indigo-600">EduPath</div>
+    <h1 class="text-2xl font-bold mt-4">Admin Panel</h1>
+    <p class="text-gray-500 mt-2">Admin password डालकर लॉगिन करें।</p>
+    <form id="loginForm" class="mt-5">
+      <input id="password" type="password" class="field"
+        placeholder="Enter Admin Password" required>
+      <button class="btn primary w-full mt-4">Login</button>
     </form>
     <p id="loginMsg" class="text-red-600 text-sm mt-3"></p>
-    <p class="text-xs text-slate-500 mt-4">यह पासवर्ड स्क्रीन अकेले Firebase की सुरक्षा नहीं करती। नीचे नोट देखें।</p>
-  </section>
+  </div>
+</div>
 
-  <section id="panel" class="hidden">
-    <header class="flex flex-wrap justify-between items-center gap-3 mb-6">
-      <div><h1 class="text-3xl font-black text-indigo-700">EduPath Admin</h1><p class="text-slate-500">Study Material और Test Management</p></div>
-      <button id="logout" class="bg-slate-700 text-white rounded-lg px-4 py-2">Logout</button>
-    </header>
+<!-- ADMIN DASHBOARD -->
+<div id="adminApp" class="hide">
+<header class="bg-white border-b p-4 flex justify-between items-center">
+  <div>
+    <h1 class="text-xl font-black">EduPath Admin</h1>
+    <p class="text-sm text-gray-500">Learning Portal Management</p>
+  </div>
+  <div class="flex gap-2">
+    <a href="./index.html" class="btn outline">Student Portal</a>
+    <button onclick="logout()" class="btn outline">Logout</button>
+  </div>
+</header>
 
-    <div class="grid sm:grid-cols-2 gap-4 mb-6">
-      <div class="bg-white rounded-2xl p-5 shadow-sm"><div class="text-slate-500">Study Materials</div><div id="materialCount" class="text-3xl font-black">0</div></div>
-      <div class="bg-white rounded-2xl p-5 shadow-sm"><div class="text-slate-500">Tests</div><div id="testCount" class="text-3xl font-black">0</div></div>
-    </div>
+<div class="max-w-7xl mx-auto p-4 grid md:grid-cols-[210px_1fr] gap-5">
+  <aside class="card">
+    <button class="navitem active" data-page="overview"
+      onclick="navigate('overview')">📊 Dashboard</button>
+    <button class="navitem" data-page="materials"
+      onclick="navigate('materials')">📚 Study Materials</button>
+    <button class="navitem" data-page="tests"
+      onclick="navigate('tests')">📝 Test Series</button>
+    <button class="navitem" data-page="users"
+      onclick="navigate('users')">👥 Students</button>
+    <button class="navitem" data-page="settings"
+      onclick="navigate('settings')">⚙️ Settings</button>
+  </aside>
 
-    <div class="bg-white rounded-2xl p-5 mb-6">
-      <h2 class="text-xl font-bold mb-4">Study Material जोड़ें / अपडेट करें</h2>
-      <form id="materialForm" class="grid sm:grid-cols-2 gap-3">
-        <input id="mid" type="hidden">
-        <input id="title" class="border rounded-lg p-3" placeholder="Material का नाम" required>
-        <input id="subject" class="border rounded-lg p-3" placeholder="Subject" required>
-        <input id="topic" class="border rounded-lg p-3" placeholder="Topic">
-        <input id="fileUrl" type="url" class="border rounded-lg p-3" placeholder="Google Drive PDF Link" required>
-        <textarea id="description" class="border rounded-lg p-3 sm:col-span-2" placeholder="Description"></textarea>
-        <label class="flex gap-2 items-center"><input id="premium" type="checkbox"> Premium material</label>
-        <label class="flex gap-2 items-center"><input id="published" type="checkbox" checked> Publish to students</label>
-        <div class="sm:col-span-2 flex flex-wrap gap-2">
-          <button class="bg-indigo-600 text-white rounded-lg px-5 py-3 font-bold">Save Material</button>
-          <button type="button" id="clearMaterial" class="bg-slate-200 rounded-lg px-5 py-3">Clear</button>
+  <main class="space-y-5">
+
+    <!-- DASHBOARD -->
+    <section id="page-overview" class="page space-y-4">
+      <h2 class="text-2xl font-black">Dashboard Overview</h2>
+      <div class="grid sm:grid-cols-3 gap-4">
+        <div class="card">
+          <p>Students</p><h3 id="countUsers" class="text-3xl font-bold">0</h3>
         </div>
+        <div class="card">
+          <p>Study Materials</p><h3 id="countMaterials" class="text-3xl font-bold">0</h3>
+        </div>
+        <div class="card">
+          <p>Tests</p><h3 id="countTests" class="text-3xl font-bold">0</h3>
+        </div>
+      </div>
+      <div class="card">
+        <h3 class="font-bold text-lg">Quick Actions</h3>
+        <div class="flex flex-wrap gap-3 mt-4">
+          <button class="btn primary" onclick="navigate('materials')">Add Material</button>
+          <button class="btn primary" onclick="navigate('tests')">Create Test</button>
+          <button class="btn outline" onclick="navigate('users')">Manage Students</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- STUDY MATERIALS -->
+    <section id="page-materials" class="page hide space-y-5">
+      <h2 class="text-2xl font-black">Study Materials</h2>
+      <form id="materialForm" class="card grid md:grid-cols-2 gap-3">
+        <h3 class="font-bold text-lg md:col-span-2">Add New Material</h3>
+        <label>Material Title
+          <input id="mTitle" class="field" required placeholder="Chapter Notes">
+        </label>
+        <label>Subject
+          <input id="mSubject" class="field" required placeholder="General Studies">
+        </label>
+        <label>Topic
+          <input id="mTopic" class="field" required placeholder="Indian Polity">
+        </label>
+        <label>PDF File (optional)
+          <input id="mFile" type="file" class="field" accept="application/pdf">
+        </label>
+        <label class="md:col-span-2">PDF Link
+          <input id="mUrl" type="url" class="field" placeholder="https://...">
+        </label>
+        <label>Access Type
+          <select id="mPremium" class="field">
+            <option value="false">Free</option>
+            <option value="true">Premium</option>
+          </select>
+        </label>
+        <label class="flex items-center gap-2">
+          <input id="mPublished" type="checkbox" checked> Publish Material
+        </label>
+        <button class="btn primary md:col-span-2">Save Material</button>
       </form>
-    </div>
 
-    <div class="bg-white rounded-2xl p-5 mb-6">
-      <h2 class="text-xl font-bold mb-4">Materials की सूची</h2>
-      <div id="materials" class="space-y-3"></div>
-    </div>
+      <div class="card">
+        <div class="flex justify-between items-center">
+          <h3 class="font-bold text-lg">All Materials</h3>
+          <button class="btn outline" onclick="loadData()">Refresh</button>
+        </div>
+        <div id="materialsTable" class="overflow-x-auto mt-4"></div>
+      </div>
+    </section>
 
-    <div class="bg-white rounded-2xl p-5 mb-6">
-      <h2 class="text-xl font-bold mb-4">MCQ Test बनाएं</h2>
-      <form id="testForm" class="space-y-3">
-        <input id="testTitle" class="border rounded-lg p-3 w-full" placeholder="Test का नाम" required>
-        <input id="testSubject" class="border rounded-lg p-3 w-full" placeholder="Subject" required>
+    <!-- TEST SERIES -->
+    <section id="page-tests" class="page hide space-y-5">
+      <h2 class="text-2xl font-black">Test Series</h2>
+      <form id="testForm" class="card space-y-4">
+        <h3 class="font-bold text-lg">Create MCQ Test</h3>
+        <label>Test Title
+          <input id="tTitle" class="field" required placeholder="SSC Practice Test 1">
+        </label>
+        <label>Subject
+          <input id="tSubject" class="field" required placeholder="Reasoning">
+        </label>
         <div class="grid sm:grid-cols-3 gap-3">
-          <input id="duration" type="number" min="1" value="15" class="border rounded-lg p-3" placeholder="Minutes">
-          <input id="marks" type="number" min="1" value="1" class="border rounded-lg p-3" placeholder="Marks/question">
-          <input id="negative" type="number" min="0" step="0.25" value="0" class="border rounded-lg p-3" placeholder="Negative marks">
+          <label>Duration (minutes)
+            <input id="tDuration" type="number" min="1" value="15" class="field" required>
+          </label>
+          <label>Marks per Question
+            <input id="tMarks" type="number" min="1" value="1" class="field" required>
+          </label>
+          <label>Negative Marks
+            <input id="tNegative" type="number" min="0" step="0.25" value="0" class="field">
+          </label>
         </div>
-        <div id="questions" class="space-y-4"></div>
-        <button type="button" id="addQuestion" class="bg-slate-200 rounded-lg px-4 py-2">+ Add Question</button>
-        <label class="flex gap-2 items-center"><input id="testPublished" type="checkbox" checked> Publish test</label>
-        <button class="bg-indigo-600 text-white rounded-lg p-3 w-full font-bold">Save Test</button>
+        <label class="flex items-center gap-2">
+          <input id="tPublished" type="checkbox" checked> Publish Test
+        </label>
+        <div class="border-t pt-4">
+          <div class="flex justify-between items-center">
+            <h3 class="font-bold">Questions</h3>
+            <button type="button" class="btn outline" onclick="addQuestion()">+ Add Question</button>
+          </div>
+          <div id="questionBuilder" class="space-y-4 mt-4"></div>
+        </div>
+        <button class="btn primary">Save Test</button>
       </form>
-    </div>
+      <div class="card">
+        <h3 class="font-bold text-lg">All Tests</h3>
+        <div id="testsTable" class="overflow-x-auto mt-4"></div>
+      </div>
+    </section>
 
-    <div class="bg-white rounded-2xl p-5">
-      <h2 class="text-xl font-bold mb-4">Test सूची</h2>
-      <div id="tests" class="space-y-3"></div>
-    </div>
-    <p id="status" class="mt-5 text-sm whitespace-pre-wrap"></p>
-  </section>
-</main>
+    <!-- STUDENTS -->
+    <section id="page-users" class="page hide space-y-4">
+      <h2 class="text-2xl font-black">Students & Premium Access</h2>
+      <div class="card">
+        <div id="usersTable" class="overflow-x-auto"></div>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="page-settings" class="page hide">
+      <h2 class="text-2xl font-black mb-4">Settings</h2>
+      <div class="card space-y-3">
+        <p>Student Portal: <a class="text-indigo-700 underline" href="./index.html">index.html</a></p>
+        <p>Admin File: <b>admin.html</b></p>
+        <p class="text-amber-700">ध्यान दें: यह password-only login केवल panel खोलता है। Firebase Rules database access को अलग से नियंत्रित करती हैं।</p>
+      </div>
+    </section>
+
+    <p id="adminMessage" class="text-sm text-gray-600" role="status"></p>
+  </main>
+</div>
+</div>
 
 <script>
+// FIREBASE CONFIGURATION
 const firebaseConfig = {
   apiKey: "AIzaSyB5vN74NfP-Tx1tIxMDSmOwjhvkgp06Soo",
   authDomain: "edutest-admin.firebaseapp.com",
@@ -93,221 +207,297 @@ const firebaseConfig = {
   measurementId: "G-83B1SDVYKF"
 };
 
-// यह पासवर्ड ब्राउज़र के source code में देखा जा सकता है।
+// ADMIN PASSWORD
 const ADMIN_PASSWORD = "79051";
 
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
-let materials = [], tests = [];
+let db = null, storage = null;
+let adminUser = {uid:"password-only-admin"};
+let allMaterials = [], allTests = [], allUsers = [];
 
-const $ = id => document.getElementById(id);
-const say = text => $("status").textContent = text;
-const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({
-  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-}[c]));
+try {
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.firestore();
+  storage = firebase.storage();
+} catch (error) {
+  document.getElementById("loginMsg").textContent =
+    "Firebase initialization error: " + error.message;
+}
 
-$("loginForm").addEventListener("submit", async e => {
+// LOGIN
+document.getElementById("loginForm").addEventListener("submit", async function(e) {
   e.preventDefault();
-  if ($("password").value !== ADMIN_PASSWORD) {
-    $("loginMsg").textContent = "गलत पासवर्ड।";
+
+  const entered = document.getElementById("password").value;
+  const msg = document.getElementById("loginMsg");
+
+  if (entered !== ADMIN_PASSWORD) {
+    msg.textContent = "गलत पासवर्ड। कृपया दोबारा प्रयास करें।";
     return;
   }
-  $("loginMsg").textContent =
-    "पासवर्ड सही है, लेकिन Firebase में सुरक्षित admin authentication भी जरूरी है।";
-  // केवल password match होने से Firestore write permission नहीं मिलती।
+
+  msg.textContent = "";
+  document.getElementById("loginScreen").classList.add("hide");
+  document.getElementById("adminApp").classList.remove("hide");
+  document.getElementById("password").value = "";
+
+  await loadData();
 });
 
-$("logout").onclick = () => {
-  $("panel").classList.add("hidden");
-  $("login").classList.remove("hidden");
-  $("password").value = "";
-};
-
-function resetMaterial() {
-  $("materialForm").reset();
-  $("mid").value = "";
-  $("published").checked = true;
-}
-$("clearMaterial").onclick = resetMaterial;
-
-function driveUrlValid(value) {
-  try {
-    const u = new URL(value);
-    return u.protocol === "https:" &&
-      ["drive.google.com","docs.google.com"].includes(u.hostname);
-  } catch { return false; }
+function logout() {
+  document.getElementById("loginScreen").classList.remove("hide");
+  document.getElementById("adminApp").classList.add("hide");
+  document.getElementById("password").value = "";
 }
 
-$("materialForm").addEventListener("submit", async e => {
-  e.preventDefault();
-  if (!auth.currentUser) {
-    say("Firestore में सेव करने के लिए Firebase Admin Authentication आवश्यक है।");
+function navigate(page) {
+  document.querySelectorAll(".page").forEach(p => p.classList.add("hide"));
+  document.getElementById("page-" + page).classList.remove("hide");
+  document.querySelectorAll(".navitem").forEach(b =>
+    b.classList.toggle("active", b.dataset.page === page)
+  );
+}
+
+function say(message) {
+  document.getElementById("adminMessage").textContent = message;
+}
+
+function esc(value) {
+  return String(value ?? "").replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[c]));
+}
+
+// LOAD FIRESTORE DATA
+async function loadData() {
+  if (!db) {
+    say("Firebase configure नहीं है।");
     return;
   }
-  const url = $("fileUrl").value.trim();
-  if (!driveUrlValid(url)) {
-    say("सही Google Drive PDF लिंक डालें।");
-    return;
-  }
-  const data = {
-    title: $("title").value.trim(),
-    subject: $("subject").value.trim(),
-    topic: $("topic").value.trim(),
-    description: $("description").value.trim(),
-    fileUrl: url,
-    premium: $("premium").checked,
-    published: $("published").checked,
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  };
+
   try {
-    if ($("mid").value) {
-      await db.collection("study_materials").doc($("mid").value).update(data);
-    } else {
-      data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-      await db.collection("study_materials").add(data);
-    }
-    say("Material सेव हो गया।");
-    resetMaterial();
-    await loadContent();
-  } catch (err) {
-    say("Save नहीं हुआ: " + err.message);
-  }
-});
-
-function editMaterial(id) {
-  const m = materials.find(x => x.id === id);
-  if (!m) return;
-  $("mid").value = id;
-  $("title").value = m.title || "";
-  $("subject").value = m.subject || "";
-  $("topic").value = m.topic || "";
-  $("fileUrl").value = m.fileUrl || "";
-  $("description").value = m.description || "";
-  $("premium").checked = !!m.premium;
-  $("published").checked = !!m.published;
-  window.scrollTo({top:0,behavior:"smooth"});
-}
-
-async function deleteMaterial(id) {
-  if (!confirm("इस material को हटाएँ?")) return;
-  try {
-    await db.collection("study_materials").doc(id).delete();
-    await loadContent();
-    say("Material हटा दिया गया।");
-  } catch (e) { say("Delete नहीं हुआ: " + e.message); }
-}
-
-function renderMaterials() {
-  $("materialCount").textContent = materials.length;
-  $("materials").innerHTML = materials.map(m => `
-    <article class="border rounded-xl p-4">
-      <div class="font-bold">${esc(m.title)}</div>
-      <div class="text-sm text-slate-500">${esc(m.subject)} · ${esc(m.topic)}</div>
-      <div class="text-xs mt-1">${m.published ? "Published" : "Draft"} · ${m.premium ? "Premium" : "Free"}</div>
-      <div class="flex flex-wrap gap-2 mt-3">
-        <button class="bg-indigo-100 text-indigo-700 rounded-lg px-3 py-2" onclick="editMaterial('${m.id}')">Edit</button>
-        <a class="bg-slate-100 rounded-lg px-3 py-2" target="_blank" rel="noopener" href="${esc(m.fileUrl)}">Open PDF</a>
-        <button class="bg-red-100 text-red-700 rounded-lg px-3 py-2" onclick="deleteMaterial('${m.id}')">Delete</button>
-      </div>
-    </article>`).join("") || "<p>अभी कोई सामग्री नहीं है।</p>";
-}
-
-function addQuestion() {
-  const n = $("questions").children.length;
-  const div = document.createElement("div");
-  div.className = "border rounded-xl p-4 space-y-2";
-  div.innerHTML = `
-    <div class="flex justify-between"><b>Question ${n+1}</b>
-    <button type="button" class="text-red-600" onclick="this.closest('.border').remove()">Remove</button></div>
-    <input class="qtext border rounded-lg p-3 w-full" placeholder="Question" required>
-    <div class="grid sm:grid-cols-2 gap-2">
-      <input class="qopt border rounded-lg p-3" placeholder="Option A" required>
-      <input class="qopt border rounded-lg p-3" placeholder="Option B" required>
-      <input class="qopt border rounded-lg p-3" placeholder="Option C" required>
-      <input class="qopt border rounded-lg p-3" placeholder="Option D" required>
-    </div>
-    <label class="text-sm">Correct answer
-      <select class="qcorrect border rounded-lg p-2 ml-2">
-        <option value="0">A</option><option value="1">B</option>
-        <option value="2">C</option><option value="3">D</option>
-      </select>
-    </label>`;
-  $("questions").appendChild(div);
-}
-$("addQuestion").onclick = addQuestion;
-addQuestion();
-
-$("testForm").addEventListener("submit", async e => {
-  e.preventDefault();
-  if (!auth.currentUser) {
-    say("Test सेव करने के लिए Firebase Admin Authentication आवश्यक है।");
-    return;
-  }
-  const questionBlocks = [...$("questions").children];
-  const questions = questionBlocks.map(b => ({
-    text: b.querySelector(".qtext").value.trim(),
-    options: [...b.querySelectorAll(".qopt")].map(x => x.value.trim()),
-    correctIndex: Number(b.querySelector(".qcorrect").value)
-  }));
-  if (!questions.length || questions.some(q => !q.text || q.options.some(o => !o))) {
-    say("हर प्रश्न और उसके चारों विकल्प भरें।");
-    return;
-  }
-  const data = {
-    title: $("testTitle").value.trim(),
-    subject: $("testSubject").value.trim(),
-    durationMinutes: Number($("duration").value) || 15,
-    marksPerQuestion: Number($("marks").value) || 1,
-    negativeMarks: Number($("negative").value) || 0,
-    questions,
-    published: $("testPublished").checked,
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  };
-  try {
-    data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-    await db.collection("tests").add(data);
-    $("testForm").reset();
-    $("questions").innerHTML = "";
-    addQuestion();
-    await loadContent();
-    say("Test सेव हो गया।");
-  } catch (err) { say("Test सेव नहीं हुआ: " + err.message); }
-});
-
-async function deleteTest(id) {
-  if (!confirm("यह test हटाएँ?")) return;
-  try {
-    await db.collection("tests").doc(id).delete();
-    await loadContent();
-    say("Test हटा दिया गया।");
-  } catch (e) { say("Delete नहीं हुआ: " + e.message); }
-}
-
-function renderTests() {
-  $("testCount").textContent = tests.length;
-  $("tests").innerHTML = tests.map(t => `
-    <article class="border rounded-xl p-4">
-      <b>${esc(t.title)}</b>
-      <div class="text-sm text-slate-500">${esc(t.subject)} · ${(t.questions||[]).length} questions</div>
-      <div class="text-xs mt-1">${t.published ? "Published" : "Draft"}</div>
-      <button class="bg-red-100 text-red-700 rounded-lg px-3 py-2 mt-3" onclick="deleteTest('${t.id}')">Delete</button>
-    </article>`).join("") || "<p>अभी कोई test नहीं है।</p>";
-}
-
-async function loadContent() {
-  try {
-    const [m,t] = await Promise.all([
+    const [materials, tests, users] = await Promise.all([
       db.collection("study_materials").get(),
-      db.collection("tests").get()
+      db.collection("tests").get(),
+      db.collection("users").get()
     ]);
-    materials = m.docs.map(d => ({id:d.id,...d.data()}));
-    tests = t.docs.map(d => ({id:d.id,...d.data()}));
+
+    allMaterials = materials.docs.map(d => ({id:d.id,...d.data()}));
+    allTests = tests.docs.map(d => ({id:d.id,...d.data()}));
+    allUsers = users.docs.map(d => ({id:d.id,...d.data()}));
+
+    document.getElementById("countUsers").textContent =
+      allUsers.filter(u => u.role !== "admin").length;
+    document.getElementById("countMaterials").textContent = allMaterials.length;
+    document.getElementById("countTests").textContent = allTests.length;
+
     renderMaterials();
     renderTests();
-  } catch (e) {
-    say("Firebase permission error: " + e.message);
+    renderUsers();
+  } catch (error) {
+    say("Data load नहीं हुआ: " + error.message +
+      " | Firebase Firestore Rules जाँचें।");
   }
+}
+
+// SAVE MATERIAL
+document.getElementById("materialForm").addEventListener("submit", async function(e) {
+  e.preventDefault();
+  const btn = e.submitter;
+  btn.disabled = true;
+
+  try {
+    let fileUrl = document.getElementById("mUrl").value.trim();
+    const file = document.getElementById("mFile").files[0];
+
+    if (file) {
+      if (file.type !== "application/pdf") throw new Error("केवल PDF file चुनें।");
+      if (file.size > 20 * 1024 * 1024) throw new Error("PDF अधिकतम 20 MB होनी चाहिए।");
+
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+      const ref = storage.ref("study_materials/" + Date.now() + "_" + safeName);
+      await ref.put(file);
+      fileUrl = await ref.getDownloadURL();
+    }
+
+    await db.collection("study_materials").add({
+      title: document.getElementById("mTitle").value.trim(),
+      subject: document.getElementById("mSubject").value.trim(),
+      topic: document.getElementById("mTopic").value.trim(),
+      fileUrl,
+      premium: document.getElementById("mPremium").value === "true",
+      published: document.getElementById("mPublished").checked,
+      createdBy: adminUser.uid,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    this.reset();
+    document.getElementById("mPublished").checked = true;
+    say("Material save हो गया।");
+    await loadData();
+  } catch (error) {
+    say("Material save नहीं हुआ: " + error.message);
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// SHOW MATERIALS
+function renderMaterials() {
+  document.getElementById("materialsTable").innerHTML = `
+  <table class="min-w-full text-sm">
+    <thead><tr class="text-left border-b">
+      <th class="p-2">Title</th><th class="p-2">Subject / Topic</th>
+      <th class="p-2">Access</th><th class="p-2">Published</th><th class="p-2">Action</th>
+    </tr></thead><tbody>
+    ${allMaterials.map(m => `<tr class="border-b">
+      <td class="p-2">${esc(m.title)}</td>
+      <td class="p-2">${esc(m.subject)} / ${esc(m.topic)}</td>
+      <td class="p-2">${m.premium ? "Premium" : "Free"}</td>
+      <td class="p-2">${m.published ? "Yes" : "No"}</td>
+      <td class="p-2 whitespace-nowrap">
+        <button class="btn outline" onclick="togglePublish('study_materials','${m.id}',${!!m.published})">${m.published ? "Unpublish" : "Publish"}</button>
+        <button class="btn outline text-red-600" onclick="deleteDoc('study_materials','${m.id}')">Delete</button>
+      </td></tr>`).join("")}
+    </tbody></table>`;
+}
+
+// ADD QUESTION
+function addQuestion() {
+  const wrap = document.createElement("div");
+  wrap.className = "border rounded-xl p-4";
+  wrap.innerHTML = `
+    <div class="flex justify-between items-center">
+      <b>Question <span class="q-number"></span></b>
+      <button type="button" class="text-red-600" onclick="this.closest('.border').remove();renumberQuestions()">Remove</button>
+    </div>
+    <textarea class="field q-text" rows="2" required placeholder="Question लिखें"></textarea>
+    <div class="grid sm:grid-cols-2 gap-2 mt-3">
+      ${[0,1,2,3].map(i => `<input class="field q-option" required placeholder="Option ${i+1}">`).join("")}
+    </div>
+    <label class="block mt-3">Correct Option
+      <select class="field q-correct">
+        <option value="0">Option 1</option><option value="1">Option 2</option>
+        <option value="2">Option 3</option><option value="3">Option 4</option>
+      </select>
+    </label>`;
+  document.getElementById("questionBuilder").appendChild(wrap);
+  renumberQuestions();
+}
+
+function renumberQuestions() {
+  document.querySelectorAll(".q-number").forEach((n,i) => n.textContent = i+1);
+}
+addQuestion();
+
+// SAVE TEST
+document.getElementById("testForm").addEventListener("submit", async function(e) {
+  e.preventDefault();
+  const btn = e.submitter;
+  btn.disabled = true;
+
+  try {
+    const blocks = [...document.querySelectorAll("#questionBuilder > .border")];
+    const questions = blocks.map(b => ({
+      text: b.querySelector(".q-text").value.trim(),
+      options: [...b.querySelectorAll(".q-option")].map(x => x.value.trim()),
+      correctIndex: Number(b.querySelector(".q-correct").value)
+    }));
+
+    if (!questions.length) throw new Error("कम से कम एक question जोड़ें।");
+
+    await db.collection("tests").add({
+      title: document.getElementById("tTitle").value.trim(),
+      subject: document.getElementById("tSubject").value.trim(),
+      durationMinutes: Number(document.getElementById("tDuration").value),
+      marksPerQuestion: Number(document.getElementById("tMarks").value),
+      negativeMarks: Number(document.getElementById("tNegative").value),
+      published: document.getElementById("tPublished").checked,
+      questions,
+      createdBy: adminUser.uid,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    this.reset();
+    document.getElementById("questionBuilder").innerHTML = "";
+    addQuestion();
+    say("Test save हो गया।");
+    await loadData();
+  } catch (error) {
+    say("Test save नहीं हुआ: " + error.message);
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// SHOW TESTS
+function renderTests() {
+  document.getElementById("testsTable").innerHTML = `
+  <table class="min-w-full text-sm">
+    <thead><tr class="text-left border-b">
+      <th class="p-2">Test</th><th class="p-2">Subject</th>
+      <th class="p-2">Questions</th><th class="p-2">Published</th><th class="p-2">Action</th>
+    </tr></thead><tbody>
+    ${allTests.map(t => `<tr class="border-b">
+      <td class="p-2">${esc(t.title)}</td>
+      <td class="p-2">${esc(t.subject)}</td>
+      <td class="p-2">${(t.questions || []).length}</td>
+      <td class="p-2">${t.published ? "Yes" : "No"}</td>
+      <td class="p-2 whitespace-nowrap">
+        <button class="btn outline" onclick="togglePublish('tests','${t.id}',${!!t.published})">${t.published ? "Unpublish" : "Publish"}</button>
+        <button class="btn outline text-red-600" onclick="deleteDoc('tests','${t.id}')">Delete</button>
+      </td></tr>`).join("")}
+    </tbody></table>`;
+}
+
+// SHOW STUDENTS
+function renderUsers() {
+  document.getElementById("usersTable").innerHTML = `
+  <table class="min-w-full text-sm">
+    <thead><tr class="text-left border-b">
+      <th class="p-2">Name</th><th class="p-2">Email</th>
+      <th class="p-2">Mobile</th><th class="p-2">Role</th>
+      <th class="p-2">Premium</th><th class="p-2">Action</th>
+    </tr></thead><tbody>
+    ${allUsers.map(u => `<tr class="border-b">
+      <td class="p-2">${esc(u.name || "—")}</td>
+      <td class="p-2">${esc(u.email || "—")}</td>
+      <td class="p-2">${esc(u.mobile || "—")}</td>
+      <td class="p-2">${esc(u.role || "student")}</td>
+      <td class="p-2">${u.premium ? "Enabled" : "Disabled"}</td>
+      <td class="p-2">${u.role === "admin" ? "—" :
+        `<button class="btn outline" onclick="togglePremium('${u.id}',${!!u.premium})">${u.premium ? "Disable" : "Enable"}</button>`}</td>
+    </tr>`).join("")}
+    </tbody></table>`;
+}
+
+// ACTIONS
+async function togglePublish(collection,id,current) {
+  try {
+    await db.collection(collection).doc(id).update({published:!current});
+    await loadData();
+    say("Publish status update हो गया।");
+  } catch(e) { say("Error: " + e.message); }
+}
+
+async function deleteDoc(collection,id) {
+  if (!confirm("क्या आप यह record delete करना चाहते हैं?")) return;
+  try {
+    await db.collection(collection).doc(id).delete();
+    await loadData();
+    say("Record delete हो गया।");
+  } catch(e) { say("Error: " + e.message); }
+}
+
+async function togglePremium(id,current) {
+  try {
+    await db.collection("users").doc(id).update({
+      premium:!current,
+      premiumUpdatedAt:firebase.firestore.FieldValue.serverTimestamp(),
+      premiumUpdatedBy:adminUser.uid
+    });
+    await loadData();
+    say("Premium access update हो गया।");
+  } catch(e) { say("Error: " + e.message); }
 }
 </script>
 </body>
