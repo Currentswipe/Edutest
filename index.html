@@ -27,7 +27,7 @@ input[type="text"],input[type="search"]{width:100%;padding:12px;border:1px solid
 .option input{margin-right:8px}
 .status{padding:12px;border-radius:9px;background:#eff8ff;color:#175cd3;white-space:pre-wrap}
 .error{background:#fee4e2;color:#912018}
-.result{background:#dcfae6;color:#05603a;padding:15px;border-radius:10px;margin:12px 0}
+.result{background:#dcfae6;color:#05603a;padding:15px;border-radius:10px;margin:12px 0;white-space:pre-line}
 .hidden{display:none!important}
 footer{text-align:center;color:#667085;padding:25px 10px;font-size:13px}
 @media(min-width:700px){.cards{display:grid;grid-template-columns:1fr 1fr;gap:12px}.cards .card{margin:0}}
@@ -117,10 +117,19 @@ function showTab(tab){
 
 async function loadData(){
   setNotice("Firebase से data लोड हो रहा है...");
+
   try{
+    // केवल published:true वाले रिकॉर्ड पढ़ें
     const [materialsSnap,testsSnap]=await Promise.all([
-      db.ref("study_materials").once("value"),
-      db.ref("tests").once("value")
+      db.ref("study_materials")
+        .orderByChild("published")
+        .equalTo(true)
+        .once("value"),
+
+      db.ref("tests")
+        .orderByChild("published")
+        .equalTo(true)
+        .once("value")
     ]);
 
     materials=[];
@@ -145,17 +154,21 @@ async function loadData(){
 
     renderMaterials();
     renderTests();
+
     setNotice("Data लोड हो गया। "+materials.length+
       " PDF और "+tests.length+" published tests मिले।");
+
   }catch(error){
+    console.error("Firebase error:",error);
     setNotice("Data लोड नहीं हुआ: "+error.message+
-      "\nRealtime Database Rules में read access नहीं है या database connection में समस्या है।",true);
+      "\nFirebase Rules और database connection जाँचें।",true);
   }
 }
 
 function renderMaterials(){
   const list=document.getElementById("materialsList");
   list.innerHTML="";
+
   const query=document.getElementById("materialSearch").value.toLowerCase();
 
   const filtered=materials.filter(m=>
@@ -205,6 +218,7 @@ function renderMaterials(){
 function renderTests(){
   const list=document.getElementById("testsList");
   list.innerHTML="";
+
   const query=document.getElementById("testSearch").value.toLowerCase();
 
   const filtered=tests.filter(t=>
@@ -228,8 +242,11 @@ function renderTests(){
     subject.className="meta";
     subject.textContent="Subject: "+(t.subject||"General");
 
+    const questions=Array.isArray(t.questions)
+      ?t.questions:Object.values(t.questions||{});
+
     const info=document.createElement("p");
-    info.textContent=(t.totalQuestions||((t.questions||[]).length))+
+    info.textContent=(t.totalQuestions||questions.length)+
       " Questions · "+(t.duration||30)+" Minutes · "+
       (t.totalMarks||0)+" Marks";
 
@@ -247,8 +264,8 @@ function startTest(testId){
   if(!currentTest)return;
 
   const questions=Array.isArray(currentTest.questions)
-    ? currentTest.questions
-    : Object.values(currentTest.questions||{});
+    ?currentTest.questions
+    :Object.values(currentTest.questions||{});
 
   if(!questions.length){
     alert("इस test में questions नहीं हैं।");
@@ -261,6 +278,7 @@ function startTest(testId){
   document.getElementById("materialsSection").classList.add("hidden");
   document.getElementById("testsSection").classList.add("hidden");
   document.getElementById("testScreen").classList.remove("hidden");
+
   document.getElementById("activeTestTitle").textContent=currentTest.title||"Test";
   document.getElementById("activeTestInfo").textContent=
     "Duration: "+(currentTest.duration||30)+" minutes · Questions: "+questions.length;
@@ -280,7 +298,8 @@ function startTest(testId){
 
     section.appendChild(title);
 
-    const options=Array.isArray(q.options)?q.options:Object.values(q.options||{});
+    const options=Array.isArray(q.options)
+      ?q.options:Object.values(q.options||{});
 
     options.forEach((option,optIndex)=>{
       const label=document.createElement("label");
@@ -308,7 +327,10 @@ function submitTest(){
   let correct=0,wrong=0,unanswered=0,score=0;
 
   questions.forEach((q,index)=>{
-    const selected=document.querySelector('input[name="question_'+index+'"]:checked');
+    const selected=document.querySelector(
+      'input[name="question_'+index+'"]:checked'
+    );
+
     const answer=Number(q.correctAnswer);
     const marks=Number(q.marks)||1;
 
@@ -336,11 +358,11 @@ function submitTest(){
     "Wrong: "+wrong+"\n"+
     "Unanswered: "+unanswered+"\n"+
     "Score: "+Math.max(0,score).toFixed(2)+
-    " / "+(currentTest.totalMarks||questions.reduce((s,q)=>s+(Number(q.marks)||1),0));
+    " / "+(currentTest.totalMarks||
+      questions.reduce((s,q)=>s+(Number(q.marks)||1),0));
 
   document.getElementById("submitTestBtn").classList.add("hidden");
 
-  // Answer explanations shown after submission.
   questions.forEach((q,index)=>{
     const section=document.querySelectorAll(".question")[index];
     const explanation=document.createElement("p");
