@@ -1,391 +1,59 @@
-
-<!DOCTYPE html>
-<html lang="hi">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>EduTest - Student Portal</title>
-
+<!doctype html>
+<html lang="hi"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#171832"><title>EduTest | Student Hub</title>
 <style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:#f3f6fc;color:#172033}
-header{background:#155eef;color:white;padding:22px 16px}
-header h1{margin:0 0 7px;font-size:27px}
-header p{margin:0;opacity:.9}
-main{max-width:1000px;margin:auto;padding:15px}
-.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:15px 0}
-button,.btn{border:0;border-radius:9px;padding:11px 15px;background:#155eef;color:white;font-size:15px;font-weight:bold;cursor:pointer;text-decoration:none;display:inline-block}
-.tab{background:#dbe6ff;color:#1746a2}
-.tab.active{background:#155eef;color:white}
-.card{background:white;border-radius:14px;padding:17px;margin:13px 0;box-shadow:0 3px 14px #0000000b}
-.card h3{margin-top:0}
-.meta{color:#667085;font-size:14px}
-.badge{display:inline-block;background:#e8efff;color:#1746a2;padding:5px 9px;border-radius:20px;font-size:12px;margin:3px 0}
-input[type="text"],input[type="search"]{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:9px;font-size:16px}
-.question{padding:14px 0;border-bottom:1px solid #e4e7ec}
-.option{display:block;padding:10px;margin:7px 0;border:1px solid #d0d5dd;border-radius:8px;cursor:pointer}
-.option input{margin-right:8px}
-.status{padding:12px;border-radius:9px;background:#eff8ff;color:#175cd3;white-space:pre-wrap}
-.error{background:#fee4e2;color:#912018}
-.result{background:#dcfae6;color:#05603a;padding:15px;border-radius:10px;margin:12px 0;white-space:pre-line}
-.hidden{display:none!important}
-footer{text-align:center;color:#667085;padding:25px 10px;font-size:13px}
-@media(min-width:700px){.cards{display:grid;grid-template-columns:1fr 1fr;gap:12px}.cards .card{margin:0}}
-</style>
-</head>
-
-<body>
-<header>
-  <h1>EduTest</h1>
-  <p>Study Materials · Online Test Series</p>
-</header>
-
-<main>
-  <div class="tabs">
-    <button id="materialsTab" class="tab active" onclick="showTab('materials')">📚 Study Materials</button>
-    <button id="testsTab" class="tab" onclick="showTab('tests')">📝 Test Series</button>
-    <button class="tab" onclick="loadData()">↻ Refresh</button>
-  </div>
-
-  <div id="notice" class="status">Firebase से data लोड हो रहा है...</div>
-
-  <section id="materialsSection">
-    <h2>📚 Study Materials</h2>
-    <input type="search" id="materialSearch" placeholder="PDF या subject खोजें..." oninput="renderMaterials()">
-    <div id="materialsList" class="cards"></div>
-  </section>
-
-  <section id="testsSection" class="hidden">
-    <h2>📝 Test Series</h2>
-    <input type="search" id="testSearch" placeholder="Test या subject खोजें..." oninput="renderTests()">
-    <div id="testsList" class="cards"></div>
-  </section>
-
-  <section id="testScreen" class="card hidden">
-    <button class="tab" onclick="closeTest()">← वापस</button>
-    <h2 id="activeTestTitle"></h2>
-    <p id="activeTestInfo" class="meta"></p>
-    <div id="testQuestions"></div>
-    <button id="submitTestBtn" onclick="submitTest()">Submit Test</button>
-    <div id="testResult"></div>
-  </section>
-</main>
-
-<footer>EduTest Student Portal</footer>
-
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-
+:root{--b:#5b5cf0;--ink:#171a2c;--muted:#737b90;--bg:#f5f6fb;--line:#e7e9f1}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;padding-bottom:86px}button,input,select{font:inherit}button{cursor:pointer}.wrap{max-width:1000px;margin:auto;padding:0 15px}.hero{background:linear-gradient(135deg,#171832,#3638a9 65%,#6869ff);color:#fff;padding:20px 0 28px;border-radius:0 0 27px 27px}.top{display:flex;justify-content:space-between;align-items:center}.brand{font-weight:850;font-size:22px;display:flex;align-items:center;gap:10px}.logo{display:grid;place-items:center;background:#ffffff20;border:1px solid #ffffff30;border-radius:13px;width:42px;height:42px}.avatar{border:1px solid #ffffff55;background:#ffffff20;color:#fff;width:42px;height:42px;border-radius:50%;font-weight:bold}.eyebrow{font-size:11px;letter-spacing:1.4px;opacity:.75;margin:25px 0 8px}.hero h1{font-size:clamp(27px,6vw,38px);letter-spacing:-1px;line-height:1.12;margin:0}.hero p{color:#e2e4ff;font-size:14px}.search{display:flex;align-items:center;gap:10px;background:#fff;color:#667085;border-radius:14px;padding:0 14px;margin-top:20px}.search input{width:100%;padding:15px 0;border:0;outline:0;background:transparent;color:#171a2c}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:17px}.stat{background:#ffffff18;border:1px solid #ffffff26;border-radius:15px;padding:12px}.stat b{display:block;font-size:22px}.stat span{font-size:11px;color:#e2e4ff}main{padding-top:18px}.page{display:none}.page.active{display:block}.head{display:flex;align-items:end;justify-content:space-between;gap:10px;margin:8px 0 15px}.head h2{font-size:22px;letter-spacing:-.5px;margin:0}.head p{font-size:13px;color:var(--muted);margin:5px 0 0}.btn{border:0;border-radius:11px;padding:11px 14px;font-size:13px;font-weight:750}.primary{background:var(--b);color:#fff}.secondary{background:#efefff;color:#4546b7}.light{background:white;border:1px solid var(--line);color:var(--ink)}.full{width:100%}.welcome,.profile,.testintro{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:18px}.welcome{background:linear-gradient(120deg,#eeedff,#fff)}.welcome h2{margin:0;font-size:20px}.muted{color:var(--muted);font-size:13px}.quick{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:12px 0 24px}.quick button{background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px 6px;box-shadow:0 5px 20px #10182808}.quick i{display:block;font-style:normal;font-size:23px;margin-bottom:7px}.quick b{display:block;font-size:12px}.quick span{display:block;color:var(--muted);font-size:10px;margin-top:4px}.filters{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0}.field{width:100%;border:1px solid #d7dbe6;background:#fff;border-radius:11px;padding:12px;color:var(--ink);outline:0}.field:focus{border-color:var(--b);box-shadow:0 0 0 3px #5b5cf018}.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.card{background:#fff;border:1px solid var(--line);border-radius:17px;padding:15px;display:flex;flex-direction:column;gap:10px;min-width:0;box-shadow:0 5px 20px #10182808}.ico{width:43px;height:43px;background:#efefff;border-radius:13px;display:grid;place-items:center;font-size:22px}.chips{display:flex;gap:6px;flex-wrap:wrap}.chip{font-size:10px;font-weight:750;background:#efefff;color:#4546b7;border-radius:20px;padding:5px 8px}.green{background:#e8fbf1;color:#087443}.orange{background:#fff2df;color:#9a4d00}.card h3{font-size:16px;line-height:1.35;margin:0;overflow-wrap:anywhere}.meta{font-size:12px;color:var(--muted);line-height:1.5}.cardfoot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto}.empty,.notice{padding:20px;border-radius:15px;background:#fff;border:1px dashed #d0d5dd;color:var(--muted);text-align:center;grid-column:1/-1;font-size:13px}.notice{margin:14px 0;background:#eef4ff;border:1px solid #dbe7ff;color:#3538cd;text-align:left}.notice.error{background:#fff0ef;color:#b42318;border-color:#ffd2cf}.notice.ok{background:#ecfdf3;color:#067647;border-color:#abefc6}.bar{height:7px;background:#e4e5f5;border-radius:9px;overflow:hidden;margin-top:12px}.bar span{display:block;height:100%;background:var(--b);width:0}.bottom{position:fixed;z-index:10;bottom:0;left:0;right:0;background:#ffffffed;backdrop-filter:blur(16px);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding:8px 6px calc(8px + env(safe-area-inset-bottom))}.nav{border:0;background:transparent;color:#858b9a;font-size:10px;font-weight:750;display:flex;flex-direction:column;align-items:center;gap:4px;padding:5px 0}.nav span{font-size:20px}.nav.active{color:var(--b)}.nav.active span{background:#efefff;padding:3px 14px;border-radius:9px}.formrow{margin:14px 0}.formrow label{display:block;font-weight:750;font-size:13px;margin-bottom:7px}.question{background:#fff;border:1px solid var(--line);border-radius:15px;padding:16px;margin:11px 0}.question h3{font-size:15px;line-height:1.5;margin:0 0 12px}.option{display:flex;gap:10px;padding:12px;border:1px solid var(--line);border-radius:11px;margin:7px 0;font-size:13px}.option:has(input:checked){background:#f5f5ff;border-color:var(--b)}.option input{accent-color:var(--b);margin-top:3px}.result{background:#ecfdf3;border:1px solid #abefc6;border-radius:16px;padding:20px;text-align:center;margin:14px 0}.result strong{font-size:34px;color:#067647;display:block}.hide{display:none!important}.foot{text-align:center;color:#98a2b3;font-size:11px;padding:24px 0}
+@media(max-width:480px){.cards{grid-template-columns:1fr}.filters{grid-template-columns:1fr}.stat{padding:10px}.stat b{font-size:20px}.quick{gap:6px}.head h2{font-size:20px}}
+</style></head><body>
+<header class="hero"><div class="wrap">
+<div class="top"><div class="brand"><div class="logo">✦</div>EduTest</div><button class="avatar" id="topAvatar" onclick="page('profile')">S</button></div>
+<div class="eyebrow">YOUR PERSONAL LEARNING SPACE</div><h1>Learn smarter.<br>Score higher.</h1><p id="heroSub">Study material, test series aur progress — sab ek jagah.</p>
+<div class="search">⌕ <input id="globalSearch" placeholder="Subject, topic ya test search karein…" oninput="globalSearch()"></div>
+<div class="stats"><div class="stat"><b id="statM">—</b><span>Study PDFs</span></div><div class="stat"><b id="statT">—</b><span>Available tests</span></div><div class="stat"><b id="statA">0</b><span>Tests attempted</span></div></div>
+</div></header>
+<main class="wrap"><div id="notice" class="notice">Firebase se data load ho raha hai…</div>
+<section class="page active" id="home">
+<div class="welcome"><h2 id="welcome">Welcome back 👋</h2><p class="muted">Roz thoda padhein, roz behtar banein. Apna daily target complete karein.</p><div class="bar"><span id="progressBar"></span></div><p class="muted" id="progressLabel">Apna pehla test complete karein.</p></div>
+<div class="head"><div><h2>Quick access</h2><p>Preparation shuru karein</p></div></div>
+<div class="quick"><button onclick="page('materials')"><i>📚</i><b>Study Material</b><span>PDF & notes</span></button><button onclick="page('tests')"><i>📝</i><b>Test Series</b><span>Practice MCQs</span></button><button onclick="page('profile')"><i>🎯</i><b>My Profile</b><span>Set your goal</span></button></div>
+<div class="head"><div><h2>Recently added</h2><p>Study material</p></div><button class="btn light" onclick="page('materials')">See all →</button></div><div class="cards" id="recent"></div>
+<div class="head" style="margin-top:24px"><div><h2>Practice zone</h2><p>Apni taiyari test karein</p></div><button class="btn light" onclick="page('tests')">All tests →</button></div><div class="cards" id="featured"></div>
+</section>
+<section class="page" id="materials"><div class="head"><div><h2>Study Library</h2><p>Subject aur topic ke hisaab se material khojein</p></div><button class="btn light" onclick="loadData()">↻ Refresh</button></div>
+<div class="filters"><select class="field" id="subjectFilter" onchange="renderMaterials()"><option value="">All subjects</option></select><select class="field" id="topicFilter" onchange="renderMaterials()"><option value="">All topics</option></select></div><input class="field" id="materialSearch" placeholder="Material, subject ya topic search…" oninput="renderMaterials()" style="margin-bottom:13px"><div class="cards" id="materialsList"></div></section>
+<section class="page" id="tests"><div class="head"><div><h2>Test Series</h2><p>Practice karein aur score dekhein</p></div><button class="btn light" onclick="loadData()">↻ Refresh</button></div>
+<div class="filters"><select class="field" id="testSubjectFilter" onchange="renderTests()"><option value="">All subjects</option></select><select class="field" id="testSort" onchange="renderTests()"><option value="new">Recently added</option><option value="title">Name A–Z</option></select></div><input class="field" id="testSearch" placeholder="Test name ya subject search…" oninput="renderTests()" style="margin-bottom:13px"><div class="cards" id="testsList"></div></section>
+<section class="page" id="takeTest"><div class="head"><div><h2 id="activeTitle">Test</h2><p id="activeInfo"></p></div><button class="btn light" onclick="page('tests')">← Back</button></div><div class="testintro"><b>Before you start</b><p class="muted">Har question ka ek answer select karein. Submit karne par score dikh jayega.</p></div><div id="questions"></div><button id="submitBtn" class="btn primary full" onclick="submitTest()">Submit test</button><div id="result"></div></section>
+<section class="page" id="profile"><div class="head"><div><h2>My Profile</h2><p>Learning preferences set karein</p></div></div><div class="profile"><div class="top" style="justify-content:flex-start;gap:13px"><div class="ico" id="profileIcon">S</div><div><h2 id="profileName">Student Profile</h2><p class="muted" id="profileExamLabel">Your learning dashboard</p></div></div>
+<div class="formrow"><label for="studentName">Your name</label><input class="field" id="studentName" maxlength="60" placeholder="Apna naam"></div>
+<div class="formrow"><label for="studentExam">Target exam</label><select class="field" id="studentExam"><option value="">Select target exam</option><option>SSC</option><option>Banking</option><option>Railway</option><option>UPSC</option><option>State Exams</option><option>Other</option></select></div>
+<div class="formrow"><label for="dailyGoal">Daily study goal</label><select class="field" id="dailyGoal"><option value="30">30 minutes</option><option value="60">1 hour</option><option value="120">2 hours</option><option value="180">3 hours</option><option value="240">4 hours</option></select></div><button class="btn primary full" onclick="saveProfile()">Save profile</button><p id="profileMessage" class="muted"></p></div>
+<div class="profile"><h3>Practice summary</h3><p class="muted">Tests attempted: <b id="profileAttempts">0</b></p><p class="muted">Best score: <b id="profileBest">—</b></p><button class="btn secondary" onclick="clearProgress()">Reset local progress</button><p class="muted">Profile aur practice history isi browser mein save hoti hai. Student login/cloud sync is version mein enabled nahi hai.</p></div></section>
+<div class="foot">EduTest • Keep learning, keep improving</div></main>
+<nav class="bottom"><button class="nav active" data-page="home" onclick="page('home')"><span>⌂</span>Home</button><button class="nav" data-page="materials" onclick="page('materials')"><span>▤</span>Materials</button><button class="nav" data-page="tests" onclick="page('tests')"><span>✎</span>Test Series</button><button class="nav" data-page="profile" onclick="page('profile')"><span>◉</span>Profile</button></nav>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyB5vN74NfP-Tx1tIxMDSmOwjhvkgp06Soo",
-  authDomain: "edutest-admin.firebaseapp.com",
-  databaseURL: "https://edutest-admin-default-rtdb.firebaseio.com",
-  projectId: "edutest-admin",
-  storageBucket: "edutest-admin.firebasestorage.app",
-  messagingSenderId: "785312729550",
-  appId: "1:785312729550:web:d9cc16fee38afdc88b839f",
-  measurementId: "G-83B1SDVYKF"
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-
-let materials = [];
-let tests = [];
-let currentTest = null;
-let submitted = false;
-
-function setNotice(text,isError=false){
-  const el=document.getElementById("notice");
-  el.textContent=text;
-  el.className=isError?"status error":"status";
-}
-
-function safeText(value){
-  return String(value==null?"":value);
-}
-
-function showTab(tab){
-  document.getElementById("materialsSection").classList.toggle("hidden",tab!=="materials");
-  document.getElementById("testsSection").classList.toggle("hidden",tab!=="tests");
-  document.getElementById("testScreen").classList.add("hidden");
-
-  document.getElementById("materialsTab").classList.toggle("active",tab==="materials");
-  document.getElementById("testsTab").classList.toggle("active",tab==="tests");
-}
-
-async function loadData(){
-  setNotice("Firebase से data लोड हो रहा है...");
-
-  try{
-    // केवल published:true वाले रिकॉर्ड पढ़ें
-    const [materialsSnap,testsSnap]=await Promise.all([
-      db.ref("study_materials")
-        .orderByChild("published")
-        .equalTo(true)
-        .once("value"),
-
-      db.ref("tests")
-        .orderByChild("published")
-        .equalTo(true)
-        .once("value")
-    ]);
-
-    materials=[];
-    tests=[];
-
-    materialsSnap.forEach(child=>{
-      const d=child.val()||{};
-      if(d.published===true){
-        materials.push({id:child.key,...d});
-      }
-    });
-
-    testsSnap.forEach(child=>{
-      const d=child.val()||{};
-      if(d.published===true){
-        tests.push({id:child.key,...d});
-      }
-    });
-
-    materials.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
-    tests.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
-
-    renderMaterials();
-    renderTests();
-
-    setNotice("Data लोड हो गया। "+materials.length+
-      " PDF और "+tests.length+" published tests मिले।");
-
-  }catch(error){
-    console.error("Firebase error:",error);
-    setNotice("Data लोड नहीं हुआ: "+error.message+
-      "\nFirebase Rules और database connection जाँचें।",true);
-  }
-}
-
-function renderMaterials(){
-  const list=document.getElementById("materialsList");
-  list.innerHTML="";
-
-  const query=document.getElementById("materialSearch").value.toLowerCase();
-
-  const filtered=materials.filter(m=>
-    [m.title,m.subject,m.topic,m.description]
-      .some(v=>safeText(v).toLowerCase().includes(query))
-  );
-
-  if(!filtered.length){
-    list.textContent="कोई published PDF नहीं मिला।";
-    return;
-  }
-
-  filtered.forEach(m=>{
-    const card=document.createElement("article");
-    card.className="card";
-
-    const title=document.createElement("h3");
-    title.textContent=m.title||"Study Material";
-
-    const subject=document.createElement("span");
-    subject.className="badge";
-    subject.textContent=m.subject||"General";
-
-    const topic=document.createElement("p");
-    topic.className="meta";
-    topic.textContent=m.topic||"";
-
-    const description=document.createElement("p");
-    description.textContent=m.description||"";
-
-    card.append(title,subject,topic,description);
-
-    if(m.url){
-      const link=document.createElement("a");
-      link.className="btn";
-      link.href=m.url;
-      link.target="_blank";
-      link.rel="noopener noreferrer";
-      link.textContent="Open PDF";
-      card.appendChild(link);
-    }
-
-    list.appendChild(card);
-  });
-}
-
-function renderTests(){
-  const list=document.getElementById("testsList");
-  list.innerHTML="";
-
-  const query=document.getElementById("testSearch").value.toLowerCase();
-
-  const filtered=tests.filter(t=>
-    [t.title,t.subject]
-      .some(v=>safeText(v).toLowerCase().includes(query))
-  );
-
-  if(!filtered.length){
-    list.textContent="कोई published test नहीं मिला।";
-    return;
-  }
-
-  filtered.forEach(t=>{
-    const card=document.createElement("article");
-    card.className="card";
-
-    const title=document.createElement("h3");
-    title.textContent=t.title||"Test Series";
-
-    const subject=document.createElement("p");
-    subject.className="meta";
-    subject.textContent="Subject: "+(t.subject||"General");
-
-    const questions=Array.isArray(t.questions)
-      ?t.questions:Object.values(t.questions||{});
-
-    const info=document.createElement("p");
-    info.textContent=(t.totalQuestions||questions.length)+
-      " Questions · "+(t.duration||30)+" Minutes · "+
-      (t.totalMarks||0)+" Marks";
-
-    const button=document.createElement("button");
-    button.textContent="Start Test";
-    button.onclick=()=>startTest(t.id);
-
-    card.append(title,subject,info,button);
-    list.appendChild(card);
-  });
-}
-
-function startTest(testId){
-  currentTest=tests.find(t=>t.id===testId);
-  if(!currentTest)return;
-
-  const questions=Array.isArray(currentTest.questions)
-    ?currentTest.questions
-    :Object.values(currentTest.questions||{});
-
-  if(!questions.length){
-    alert("इस test में questions नहीं हैं।");
-    return;
-  }
-
-  currentTest._questions=questions;
-  submitted=false;
-
-  document.getElementById("materialsSection").classList.add("hidden");
-  document.getElementById("testsSection").classList.add("hidden");
-  document.getElementById("testScreen").classList.remove("hidden");
-
-  document.getElementById("activeTestTitle").textContent=currentTest.title||"Test";
-  document.getElementById("activeTestInfo").textContent=
-    "Duration: "+(currentTest.duration||30)+" minutes · Questions: "+questions.length;
-
-  document.getElementById("testResult").innerHTML="";
-  document.getElementById("submitTestBtn").classList.remove("hidden");
-
-  const container=document.getElementById("testQuestions");
-  container.innerHTML="";
-
-  questions.forEach((q,index)=>{
-    const section=document.createElement("div");
-    section.className="question";
-
-    const title=document.createElement("h3");
-    title.textContent=(index+1)+". "+(q.question||"");
-
-    section.appendChild(title);
-
-    const options=Array.isArray(q.options)
-      ?q.options:Object.values(q.options||{});
-
-    options.forEach((option,optIndex)=>{
-      const label=document.createElement("label");
-      label.className="option";
-
-      const radio=document.createElement("input");
-      radio.type="radio";
-      radio.name="question_"+index;
-      radio.value=String(optIndex);
-
-      label.append(radio,document.createTextNode(" "+safeText(option)));
-      section.appendChild(label);
-    });
-
-    container.appendChild(section);
-  });
-
-  window.scrollTo({top:0,behavior:"smooth"});
-}
-
-function submitTest(){
-  if(!currentTest||submitted)return;
-
-  const questions=currentTest._questions||[];
-  let correct=0,wrong=0,unanswered=0,score=0;
-
-  questions.forEach((q,index)=>{
-    const selected=document.querySelector(
-      'input[name="question_'+index+'"]:checked'
-    );
-
-    const answer=Number(q.correctAnswer);
-    const marks=Number(q.marks)||1;
-
-    if(!selected){
-      unanswered++;
-      return;
-    }
-
-    if(Number(selected.value)===answer){
-      correct++;
-      score+=marks;
-    }else{
-      wrong++;
-      score-=Number(currentTest.negativeMarks)||0;
-    }
-  });
-
-  submitted=true;
-
-  const result=document.getElementById("testResult");
-  result.className="result";
-  result.textContent=
-    "Test Result\n"+
-    "Correct: "+correct+"\n"+
-    "Wrong: "+wrong+"\n"+
-    "Unanswered: "+unanswered+"\n"+
-    "Score: "+Math.max(0,score).toFixed(2)+
-    " / "+(currentTest.totalMarks||
-      questions.reduce((s,q)=>s+(Number(q.marks)||1),0));
-
-  document.getElementById("submitTestBtn").classList.add("hidden");
-
-  questions.forEach((q,index)=>{
-    const section=document.querySelectorAll(".question")[index];
-    const explanation=document.createElement("p");
-    explanation.className="meta";
-
-    const answerLetters=["A","B","C","D"];
-    explanation.textContent=
-      "Correct answer: "+(answerLetters[Number(q.correctAnswer)]||"")+
-      (q.explanation?" · "+q.explanation:"");
-
-    section.appendChild(explanation);
-  });
-
-  window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"});
-}
-
-function closeTest(){
-  currentTest=null;
-  document.getElementById("testScreen").classList.add("hidden");
-  document.getElementById("testsSection").classList.remove("hidden");
-}
-
-loadData();
-</script>
-</body>
-</html>
+const firebaseConfig={apiKey:"AIzaSyB5vN74NfP-Tx1tIxMDSmOwjhvkgp06Soo",authDomain:"edutest-admin.firebaseapp.com",databaseURL:"https://edutest-admin-default-rtdb.firebaseio.com",projectId:"edutest-admin",storageBucket:"edutest-admin.firebasestorage.app",messagingSenderId:"785312729550",appId:"1:785312729550:web:d9cc16fee38afdc88b839f",measurementId:"G-83B1SDVYKF"};
+let db,materials=[],tests=[],activeTest=null,submitted=false;const $=id=>document.getElementById(id);
+const str=v=>String(v==null?'':v),esc=v=>str(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function note(s,type=''){ $('notice').textContent=s;$('notice').className='notice '+type}
+function profile(){try{return JSON.parse(localStorage.getItem('edutest_profile')||'{}')}catch(e){return {}}}
+function history(){try{return JSON.parse(localStorage.getItem('edutest_history')||'[]')}catch(e){return []}}
+function page(p){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(p).classList.add('active');document.querySelectorAll('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page===p));window.scrollTo({top:0,behavior:'smooth'});if(p==='materials')renderMaterials();if(p==='tests')renderTests()}
+function globalSearch(){let q=$('globalSearch').value.trim();if(!q)return;page('materials');$('materialSearch').value=q;renderMaterials()}
+function get(d,keys,def=''){for(let k of keys)if(d&&d[k]!==undefined&&d[k]!==null&&d[k]!=='')return d[k];return def}
+function subj(m){return str(get(m,['subject','subjectName','category'],'General'))}function topic(m){return str(get(m,['topic','chapter','unit'],'General'))}function title(m){return str(get(m,['title','name','materialName'],'Untitled material'))}function url(m){return str(get(m,['url','pdfUrl','fileUrl','link','driveUrl','downloadUrl'],''))}
+function testTitle(t){return str(get(t,['title','name','testName'],'Practice Test'))}function testSub(t){return str(get(t,['subject','subjectName','category'],'General'))}
+function qs(t){let q=get(t,['questions','questionList','items'],[]);return Array.isArray(q)?q:(q&&typeof q==='object'?Object.keys(q).sort().map(k=>q[k]):[])}
+function opts(q){let o=get(q,['options','choices','answers'],[]);return Array.isArray(o)?o:(o&&typeof o==='object'?Object.keys(o).sort().map(k=>o[k]):[])}
+function answer(q){let a=get(q,['correctAnswer','answer','correctOption','correct'],null);if(a===null)return -1;if(typeof a==='number')return a;let s=str(a).trim();if(/^\d+$/.test(s))return +s;if(/^[A-D]$/i.test(s))return s.toUpperCase().charCodeAt(0)-65;return opts(q).findIndex(x=>str(x)===s)}
+function stamp(x){let d=get(x,['createdAt','timestamp','date','updatedAt'],0);return typeof d==='number'?d:(Date.parse(d)||0)}
+function materialCard(m){let u=url(m);return `<article class="card"><div class="ico">📘</div><div class="chips"><span class="chip">${esc(subj(m))}</span><span class="chip green">${esc(topic(m))}</span></div><h3>${esc(title(m))}</h3><div class="meta">${esc(get(m,['description','details','subtitle'],'Study notes / PDF material'))}</div><div class="cardfoot"><span class="meta">PDF / Notes</span>${u?`<a class="btn primary" href="${esc(u)}" target="_blank" rel="noopener">Open ↗</a>`:'<span class="meta">Link missing</span>'}</div></article>`}
+function testCard(t){let n=qs(t).length;return `<article class="card"><div class="ico">📝</div><div class="chips"><span class="chip">${esc(testSub(t))}</span><span class="chip orange">${n} Questions</span></div><h3>${esc(testTitle(t))}</h3><div class="meta">${esc(get(t,['description','details','subtitle'],'Practice test'))}</div><div class="cardfoot"><span class="meta">${esc(get(t,['duration','durationMinutes','time','—']))} min</span><button class="btn primary" onclick="startTest('${esc(t.id)}')">Start →</button></div></article>`}
+function fill(id,vals,label){let el=$(id),old=el.value;el.innerHTML=`<option value="">${label}</option>`+[...new Set(vals)].filter(Boolean).sort().map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');if([...el.options].some(o=>o.value===old))el.value=old}
+function renderMaterials(){let q=$('materialSearch').value.toLowerCase().trim(),s=$('subjectFilter').value,tp=$('topicFilter').value;let a=materials.filter(m=>(!s||subj(m)===s)&&(!tp||topic(m)===tp)&&(!q||[title(m),subj(m),topic(m),str(m.description)].join(' ').toLowerCase().includes(q))).sort((a,b)=>stamp(b)-stamp(a));$('materialsList').innerHTML=a.length?a.map(materialCard).join(''):'<div class="empty">Is filter mein material nahi mila.</div>'}
+function renderTests(){let q=$('testSearch').value.toLowerCase().trim(),s=$('testSubjectFilter').value,sort=$('testSort').value;let a=tests.filter(t=>(!s||testSub(t)===s)&&(!q||[testTitle(t),testSub(t),str(t.description)].join(' ').toLowerCase().includes(q)));a.sort(sort==='title'?((x,y)=>testTitle(x).localeCompare(testTitle(y))):((x,y)=>stamp(y)-stamp(x)));$('testsList').innerHTML=a.length?a.map(testCard).join(''):'<div class="empty">Abhi koi published test available nahi hai.</div>'}
+function renderHome(){ $('recent').innerHTML=materials.slice().sort((a,b)=>stamp(b)-stamp(a)).slice(0,2).map(materialCard).join('')||'<div class="empty">Published materials yahan dikhai denge.</div>';$('featured').innerHTML=tests.slice().sort((a,b)=>stamp(b)-stamp(a)).slice(0,2).map(testCard).join('')||'<div class="empty">Published tests yahan dikhai denge.</div>';$('statM').textContent=materials.length;$('statT').textContent=tests.length;let h=history(),p=profile(),name=p.name||'Student';$('statA').textContent=h.length;$('welcome').textContent='Welcome'+(p.name?', '+p.name:' back')+' 👋';$('heroSub').textContent=p.exam?p.exam+' preparation • Study, practice and improve':'Study material, test series aur progress — sab ek jagah.';$('topAvatar').textContent=name[0].toUpperCase();$('profileIcon').textContent=name[0].toUpperCase();$('profileName').textContent=p.name||'Student Profile';$('profileExamLabel').textContent=p.exam||'Your learning dashboard';$('profileAttempts').textContent=h.length;$('profileBest').textContent=h.length?Math.max(...h.map(x=>x.percent))+'%':'—';$('progressBar').style.width=Math.min(100,h.length*10)+'%';$('progressLabel').textContent=h.length?`${h.length} test attempts complete — practice jaari rakhein!`:'Apna pehla test complete karke progress shuru karein.'}
+function startTest(id){activeTest=tests.find(t=>t.id===id);if(!activeTest)return;submitted=false;$('result').innerHTML='';$('submitBtn').classList.remove('hide');let q=qs(activeTest);$('activeTitle').textContent=testTitle(activeTest);$('activeInfo').textContent=testSub(activeTest)+' • '+q.length+' questions';$('questions').innerHTML=q.length?q.map((x,i)=>`<article class="question"><h3>${i+1}. ${esc(get(x,['question','text','title','statement'],'Question '+(i+1)))}</h3>${opts(x).map((o,j)=>`<label class="option"><input type="radio" name="q${i}" value="${j}"><span>${esc(typeof o==='object'?get(o,['text','label','option'],JSON.stringify(o)):o)}</span></label>`).join('')||'<p class="meta">Options missing</p>'}</article>`).join(''):'<div class="empty">Questions nahi mile. Admin panel mein test data check karein.</div>';page('takeTest')}
+function submitTest(){if(!activeTest||submitted)return;let q=qs(activeTest);if(!q.length)return;let correct=0,answered=0;q.forEach((x,i)=>{let a=document.querySelector(`input[name="q${i}"]:checked`);if(a){answered++;if(+a.value===answer(x))correct++}});let percent=Math.round(correct/q.length*100);let h=history();h.push({id:activeTest.id,title:testTitle(activeTest),correct,total:q.length,answered,percent,at:Date.now()});localStorage.setItem('edutest_history',JSON.stringify(h));submitted=true;$('submitBtn').classList.add('hide');$('result').innerHTML=`<div class="result"><span>Test completed</span>
