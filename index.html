@@ -183,263 +183,334 @@ Continue with Google
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
-const config={
-apiKey:"AIzaSyB5vN74NfP-Tx1tIxMDSmOwjhvkgp06Soo",
-authDomain:"edutest-admin.firebaseapp.com",
-databaseURL:"https://edutest-admin-default-rtdb.firebaseio.com",
-projectId:"edutest-admin",
-storageBucket:"edutest-admin.firebasestorage.app",
-messagingSenderId:"785312729550",
-appId:"1:785312729550:web:d9cc16fee38afdc88b839f"
+const firebaseConfig={
+  apiKey:"AIzaSyB5vN74NfP-Tx1tIxMDSmOwjhvkgp06Soo",
+  authDomain:"edutest-admin.firebaseapp.com",
+  databaseURL:"https://edutest-admin-default-rtdb.firebaseio.com",
+  projectId:"edutest-admin",
+  storageBucket:"edutest-admin.firebasestorage.app",
+  messagingSenderId:"785312729550",
+  appId:"1:785312729550:web:d9cc16fee38afdc88b839f"
 };
 
-if(!firebase.apps.length)firebase.initializeApp(config);
-const auth=firebase.auth(),db=firebase.database();
+if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth();
+const db=firebase.database();
+
 let M=[],T=[],current=null,submitted=false,user=null;
+let redirecting=false;
+
 const $=id=>document.getElementById(id);
 const val=(o,keys,d="")=>{
-for(let k of keys)if(o&&o[k]!=null&&o[k]!=="")return o[k];
-return d;
+  for(const k of keys)if(o&&o[k]!=null&&o[k]!=="")return o[k];
+  return d;
 };
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({
-"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
 }[c]));
+
 const subject=o=>String(val(o,["subject","subjectName","category"],"General"));
 const topic=o=>String(val(o,["topic","chapter","unit"],"General"));
 const title=o=>String(val(o,["title","name","materialName","testName"],"Untitled"));
 const url=o=>String(val(o,["url","pdfUrl","fileUrl","link","driveUrl","downloadUrl"],""));
 
 function qs(t){
-let q=val(t,["questions","questionList","items"],[]);
-return Array.isArray(q)?q:Object.values(q||{});
+  const q=val(t,["questions","questionList","items"],[]);
+  return Array.isArray(q)?q:Object.values(q||{});
 }
 function opts(q){
-let a=val(q,["options","choices","answers"],[]);
-return Array.isArray(a)?a:Object.values(a||{});
+  const a=val(q,["options","choices","answers"],[]);
+  return Array.isArray(a)?a:Object.values(a||{});
 }
 function prof(){
-try{return JSON.parse(localStorage.getItem("et_profile")||"{}")}
-catch(e){return {}}
+  try{return JSON.parse(localStorage.getItem("et_profile")||"{}")}
+  catch(e){return {}}
 }
 function hist(){
-try{return JSON.parse(localStorage.getItem("et_history")||"[]")}
-catch(e){return []}
+  try{return JSON.parse(localStorage.getItem("et_history")||"[]")}
+  catch(e){return []}
 }
 function msg(s,type=""){
-const el=$("status");
-if(el){el.className="notice "+type;el.textContent=s}
+  const el=$("status");
+  if(el){el.className="notice "+type;el.textContent=s}
 }
 function show(id){
-document.querySelectorAll(".page").forEach(x=>x.classList.toggle("active",x.id===id));
-document.querySelectorAll(".nav").forEach(x=>x.classList.toggle("active",x.dataset.page===id));
-window.scrollTo(0,0);
-if(id==="materials")renderM();
-if(id==="tests")renderT();
+  document.querySelectorAll(".page").forEach(x=>x.classList.toggle("active",x.id===id));
+  document.querySelectorAll(".nav").forEach(x=>x.classList.toggle("active",x.dataset.page===id));
+  window.scrollTo(0,0);
+  if(id==="materials")renderM();
+  if(id==="tests")renderT();
 }
-async function googleLogin(){
-try{
-$("googleBtn").disabled=true;
-$("loginMsg").textContent="Opening Google Sign-In...";
-const p=new firebase.auth.GoogleAuthProvider();
-p.setCustomParameters({prompt:"select_account"});
-await auth.signInWithRedirect(p);
-}catch(e){
-$("loginMsg").textContent="Sign-in error: "+e.message;
-$("googleBtn").disabled=false;
-}
-}
-async function logout(){
-try{await auth.signOut();showLogin()}
-catch(e){alert("Sign out failed: "+e.message)}
-}
-function showLogin(){
-user=null;
-$("app").classList.add("hide");
-$("login").style.display="flex";
-$("loginMsg").textContent="Sign in securely with your Google Account.";
-$("googleBtn").disabled=false;
+function showLogin(message){
+  $("app").classList.add("hide");
+  $("login").style.display="flex";
+  $("loginMsg").textContent=message||"Sign in securely with your Google Account.";
+  $("googleBtn").disabled=false;
 }
 function signedIn(u){
-user=u;
-$("login").style.display="none";
-$("app").classList.remove("hide");
-$("email").textContent=u.email||"";
-$("pname").textContent=u.displayName||"Student";
-$("photo").src=u.photoURL||"";
-$("avatar").textContent=(u.displayName||"S")[0].toUpperCase();
-if(u.photoURL){
-$("avatar").innerHTML=`<img src="${esc(u.photoURL)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover" alt="Profile">`;
+  if(!u)return;
+  user=u;
+  $("login").style.display="none";
+  $("app").classList.remove("hide");
+  $("email").textContent=u.email||"";
+  $("pname").textContent=u.displayName||"Student";
+  $("photo").src=u.photoURL||"";
+  $("avatar").textContent=(u.displayName||"S")[0].toUpperCase();
+
+  if(u.photoURL){
+    $("avatar").innerHTML=
+      `<img src="${esc(u.photoURL)}" alt="Profile" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`;
+  }
+  loadData();
 }
-loadData();
+
+/* Google login: Popup first, redirect only when popup is blocked */
+async function googleLogin(){
+  const btn=$("googleBtn"),label=$("loginMsg");
+  if(redirecting)return;
+
+  btn.disabled=true;
+  label.textContent="Google से सुरक्षित login हो रहा है...";
+
+  try{
+    const provider=new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({prompt:"select_account"});
+
+    const result=await auth.signInWithPopup(provider);
+    if(result&&result.user){
+      signedIn(result.user);
+    }else{
+      label.textContent="Login पूरा नहीं हुआ। दोबारा प्रयास करें।";
+      btn.disabled=false;
+    }
+  }catch(e){
+    console.error("Google sign-in:",e.code,e.message);
+
+    if(e.code==="auth/popup-blocked"){
+      try{
+        redirecting=true;
+        label.textContent="Redirecting to Google...";
+        const provider=new firebase.auth.GoogleAuthProvider();
+        provider.setCustomParameters({prompt:"select_account"});
+        await auth.signInWithRedirect(provider);
+        return;
+      }catch(re){
+        console.error("Redirect sign-in:",re.code,re.message);
+        label.textContent="Login error: "+re.code+" — "+re.message;
+      }
+    }else if(e.code==="auth/popup-closed-by-user"){
+      label.textContent="Google login बंद हो गया। फिर से बटन दबाएँ।";
+    }else{
+      label.textContent="Login error: "+(e.code||"unknown")+" — "+e.message;
+    }
+    btn.disabled=false;
+  }
 }
+
+async function logout(){
+  try{
+    await auth.signOut();
+    user=null;
+    showLogin();
+  }catch(e){
+    alert("Sign out failed: "+e.message);
+  }
+}
+
 function searchAll(){
-let q=$("globalSearch").value.trim();
-if(q){show("materials");$("msearch").value=q;renderM()}
+  const q=$("globalSearch").value.trim();
+  if(q){show("materials");$("msearch").value=q;renderM()}
 }
+
 function mcard(m){
-let u=url(m);
-return `<article class="card">
-<div class="cardtop"><div class="ico">📘</div>
-<span class="chip">${esc(subject(m))}</span>
-<span class="chip green">${esc(topic(m))}</span></div>
-<h3>${esc(title(m))}</h3>
-<p class="muted">${esc(val(m,["description","details","subtitle"],"Study notes / PDF material"))}</p>
-<div class="cardfoot"><span class="muted">PDF / Notes</span>
-${u?`<a class="btn" href="${esc(u)}" target="_blank" rel="noopener">Open ↗</a>`:"<span class='muted'>Link missing</span>"}
-</div></article>`;
+  const u=url(m);
+  return `<article class="card">
+    <div class="cardtop"><div class="ico">📘</div>
+      <span class="chip">${esc(subject(m))}</span>
+      <span class="chip green">${esc(topic(m))}</span>
+    </div>
+    <h3>${esc(title(m))}</h3>
+    <p class="muted">${esc(val(m,["description","details","subtitle"],"Study notes / PDF material"))}</p>
+    <div class="cardfoot"><span class="muted">PDF / Notes</span>
+      ${u?`<a class="btn" href="${esc(u)}" target="_blank" rel="noopener">Open ↗</a>`:"<span class='muted'>Link missing</span>"}
+    </div>
+  </article>`;
 }
+
 function tcard(t){
-return `<article class="card">
-<div class="cardtop"><div class="ico">📝</div>
-<span class="chip">${esc(subject(t))}</span>
-<span class="chip orange">${qs(t).length} Questions</span></div>
-<h3>${esc(title(t))}</h3>
-<p class="muted">${esc(val(t,["description","details"],"Practice Test"))}</p>
-<div class="cardfoot"><span class="muted">MCQ Practice</span>
-<button class="btn" onclick="start('${esc(t.id)}')">Start →</button></div>
-</article>`;
+  return `<article class="card">
+    <div class="cardtop"><div class="ico">📝</div>
+      <span class="chip">${esc(subject(t))}</span>
+      <span class="chip orange">${qs(t).length} Questions</span>
+    </div>
+    <h3>${esc(title(t))}</h3>
+    <p class="muted">${esc(val(t,["description","details"],"Practice Test"))}</p>
+    <div class="cardfoot"><span class="muted">MCQ Practice</span>
+      <button class="btn" onclick="start('${esc(t.id)}')">Start →</button>
+    </div>
+  </article>`;
 }
+
 function fill(id,arr,label){
-let e=$(id),old=e.value;
-e.innerHTML=`<option value="">${label}</option>`+
-[...new Set(arr)].sort().map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join("");
-e.value=old;
+  const e=$(id),old=e.value;
+  e.innerHTML=`<option value="">${label}</option>`+
+    [...new Set(arr)].sort().map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join("");
+  e.value=old;
 }
+
 function renderM(){
-let q=$("msearch").value.toLowerCase(),s=$("sf").value,t=$("tf").value;
-let a=M.filter(m=>(!s||subject(m)===s)&&(!t||topic(m)===t)&&
-(!q||[title(m),subject(m),topic(m),m.description||""].join(" ").toLowerCase().includes(q)));
-$("mlist").innerHTML=a.length?a.map(mcard).join(""):'<div class="empty">No materials found.</div>';
+  const q=$("msearch").value.toLowerCase();
+  const s=$("sf").value,t=$("tf").value;
+  const a=M.filter(m=>(!s||subject(m)===s)&&(!t||topic(m)===t)&&
+    (!q||[title(m),subject(m),topic(m),m.description||""].join(" ").toLowerCase().includes(q)));
+  $("mlist").innerHTML=a.length?a.map(mcard).join(""):'<div class="empty">No materials found.</div>';
 }
+
 function renderT(){
-let q=$("tsearch").value.toLowerCase(),s=$("tsf").value;
-let a=T.filter(t=>(!s||subject(t)===s)&&
-(!q||[title(t),subject(t),t.description||""].join(" ").toLowerCase().includes(q)));
-if($("sort").value==="az")a.sort((x,y)=>title(x).localeCompare(title(y)));
-$("tlist").innerHTML=a.length?a.map(tcard).join(""):'<div class="empty">No published tests available.</div>';
+  const q=$("tsearch").value.toLowerCase(),s=$("tsf").value;
+  const a=T.filter(t=>(!s||subject(t)===s)&&
+    (!q||[title(t),subject(t),t.description||""].join(" ").toLowerCase().includes(q)));
+  if($("sort").value==="az")a.sort((x,y)=>title(x).localeCompare(title(y)));
+  $("tlist").innerHTML=a.length?a.map(tcard).join(""):'<div class="empty">No published tests available.</div>';
 }
 
-/* FIXED: profileTitle reference removed */
+/* Profile rendering: missing profileTitle element is not referenced */
 function renderHome(){
-$("mc").textContent=M.length;
-$("tc").textContent=T.length;
-$("ac").textContent=hist().length;
+  $("mc").textContent=M.length;
+  $("tc").textContent=T.length;
+  $("ac").textContent=hist().length;
 
-$("recentM").innerHTML=M.slice(0,2).map(mcard).join("")||
-'<div class="empty">Materials will appear here.</div>';
-$("recentT").innerHTML=T.slice(0,2).map(tcard).join("")||
-'<div class="empty">Tests will appear here.</div>';
+  $("recentM").innerHTML=M.slice(0,2).map(mcard).join("")||
+    '<div class="empty">Materials will appear here.</div>';
+  $("recentT").innerHTML=T.slice(0,2).map(tcard).join("")||
+    '<div class="empty">Tests will appear here.</div>';
 
-let p=prof(),h=hist();
-let n=p.name||(user&&user.displayName)||"Student";
+  const p=prof(),h=hist();
+  const n=p.name||(user&&user.displayName)||"Student";
 
-$("greeting").innerHTML="Learn smarter.<br>Score higher.";
-$("welcome").textContent="Welcome, "+n+" 👋";
-$("subtitle").textContent=(p.exam||"Your exam")+" preparation • Keep learning";
-$("name").value=p.name||(user&&user.displayName)||"";
-$("exam").value=p.exam||"SSC";
-$("goal").value=String(p.goal||60);
+  $("greeting").innerHTML="Learn smarter.<br>Score higher.";
+  $("welcome").textContent="Welcome, "+n+" 👋";
+  $("subtitle").textContent=(p.exam||"Your exam")+" preparation • Keep learning";
+  $("name").value=p.name||(user&&user.displayName)||"";
+  $("exam").value=p.exam||"SSC";
+  $("goal").value=String(p.goal||60);
 
-$("progress").style.width=Math.min(100,h.length*10)+"%";
-$("progressText").textContent=h.length?
-h.length+" test attempts completed. Keep going!":
-"Complete your first test to track progress.";
+  $("progress").style.width=Math.min(100,h.length*10)+"%";
+  $("progressText").textContent=h.length?
+    h.length+" test attempts completed. Keep going!":
+    "Complete your first test to track progress.";
 
-$("history").textContent=h.length?
-h.slice(-10).reverse().map(x=>x.title+": "+x.percent+"%").join(" • "):
-"No tests attempted yet.";
+  $("history").textContent=h.length?
+    h.slice(-10).reverse().map(x=>x.title+": "+x.percent+"%").join(" • "):
+    "No tests attempted yet.";
 }
+
 function answerIndex(q){
-let a=val(q,["correctAnswer","answer","correctOption","correct"],null);
-if(a==null)return -1;
-if(typeof a==="number")return a;
-let s=String(a).trim();
-if(/^\d+$/.test(s))return +s;
-if(/^[A-D]$/i.test(s))return s.toUpperCase().charCodeAt(0)-65;
-return opts(q).findIndex(x=>String(x)===s);
+  const a=val(q,["correctAnswer","answer","correctOption","correct"],null);
+  if(a==null)return -1;
+  if(typeof a==="number")return a;
+  const s=String(a).trim();
+  if(/^\d+$/.test(s))return +s;
+  if(/^[A-D]$/i.test(s))return s.toUpperCase().charCodeAt(0)-65;
+  return opts(q).findIndex(x=>String(x)===s);
 }
+
 function start(id){
-current=T.find(t=>t.id===id);
-if(!current)return;
-submitted=false;
-let a=qs(current);
-$("quizTitle").textContent=title(current);
-$("quizInfo").textContent=subject(current)+" • "+a.length+" questions";
-$("score").innerHTML="";
-$("submit").style.display="block";
-$("questions").innerHTML=a.length?a.map((q,i)=>`
-<div class="panel"><h3>${i+1}. ${esc(val(q,["question","text","title","statement"],"Question "+(i+1)))}</h3>
-${opts(q).map((o,j)=>`<label class="option">
-<input type="radio" name="q${i}" value="${j}">
-<span>${esc(typeof o==="object"?val(o,["text","label","option"],JSON.stringify(o)):o)}</span>
-</label>`).join("")}</div>`).join(""):'<div class="empty">No questions found.</div>';
-show("quiz");
+  current=T.find(t=>t.id===id);
+  if(!current)return;
+  submitted=false;
+  const a=qs(current);
+  $("quizTitle").textContent=title(current);
+  $("quizInfo").textContent=subject(current)+" • "+a.length+" questions";
+  $("score").innerHTML="";
+  $("submit").style.display="block";
+
+  $("questions").innerHTML=a.length?a.map((q,i)=>`
+    <div class="panel"><h3>${i+1}. ${esc(val(q,["question","text","title","statement"],"Question "+(i+1)))}</h3>
+      ${opts(q).map((o,j)=>`<label class="option">
+        <input type="radio" name="q${i}" value="${j}">
+        <span>${esc(typeof o==="object"?val(o,["text","label","option"],JSON.stringify(o)):o)}</span>
+      </label>`).join("")}
+    </div>`).join(""):'<div class="empty">No questions found.</div>';
+  show("quiz");
 }
+
 function finish(){
-if(!current||submitted)return;
-let a=qs(current);
-if(!a.length)return;
-let correct=0,answered=0;
-a.forEach((q,i)=>{
-let x=document.querySelector(`input[name="q${i}"]:checked`);
-if(x){answered++;if(+x.value===answerIndex(q))correct++}
-});
-let percent=Math.round(correct/a.length*100),h=hist();
-h.push({title:title(current),percent,correct,total:a.length,answered,date:Date.now()});
-localStorage.setItem("et_history",JSON.stringify(h));
-submitted=true;
-$("submit").style.display="none";
-$("score").innerHTML=`<div class="result"><h3>Test Completed 🎉</h3>
-<strong>${percent}%</strong><p>${correct} correct out of ${a.length}</p>
-<p>${answered} answered</p><button class="btn" onclick="show('tests')">More Tests</button></div>`;
-renderHome();
-window.scrollTo(0,document.body.scrollHeight);
+  if(!current||submitted)return;
+  const a=qs(current);
+  if(!a.length)return;
+  let correct=0,answered=0;
+  a.forEach((q,i)=>{
+    const x=document.querySelector(`input[name="q${i}"]:checked`);
+    if(x){answered++;if(+x.value===answerIndex(q))correct++}
+  });
+  const percent=Math.round(correct/a.length*100),h=hist();
+  h.push({title:title(current),percent,correct,total:a.length,answered,date:Date.now()});
+  localStorage.setItem("et_history",JSON.stringify(h));
+  submitted=true;
+  $("submit").style.display="none";
+  $("score").innerHTML=`<div class="result"><h3>Test Completed 🎉</h3>
+    <strong>${percent}%</strong><p>${correct} correct out of ${a.length}</p>
+    <p>${answered} answered</p><button class="btn" onclick="show('tests')">More Tests</button>
+  </div>`;
+  renderHome();
+  window.scrollTo(0,document.body.scrollHeight);
 }
+
 function saveProfile(){
-localStorage.setItem("et_profile",JSON.stringify({
-name:$("name").value.trim(),exam:$("exam").value,goal:$("goal").value
-}));
-$("pmsg").textContent="Profile saved successfully!";
-renderHome();
+  localStorage.setItem("et_profile",JSON.stringify({
+    name:$("name").value.trim(),exam:$("exam").value,goal:$("goal").value
+  }));
+  $("pmsg").textContent="Profile saved successfully!";
+  renderHome();
 }
+
 function resetHistory(){
-if(confirm("Reset your practice history?")){
-localStorage.removeItem("et_history");
-renderHome();
+  if(confirm("Reset your practice history?")){
+    localStorage.removeItem("et_history");
+    renderHome();
+  }
 }
-}
+
 async function loadData(){
-msg("Loading published content from Firebase...");
-try{
-let r=await Promise.all([
-db.ref("study_materials").orderByChild("published").equalTo(true).once("value"),
-db.ref("tests").orderByChild("published").equalTo(true).once("value")
-]);
-M=[];T=[];
-r[0].forEach(c=>{
-let d=c.val()||{};
-if(d.published===true)M.push({id:c.key,...d});
-});
-r[1].forEach(c=>{
-let d=c.val()||{};
-if(d.published===true)T.push({id:c.key,...d});
-});
-fill("sf",M.map(subject),"All Subjects");
-fill("tf",M.map(topic),"All Topics");
-fill("tsf",T.map(subject),"All Subjects");
-renderM();renderT();renderHome();
-msg("✓ Firebase connected • "+M.length+" materials • "+T.length+" tests","ok");
-}catch(e){
-console.error("Firebase database error:",e);
-msg("Firebase error: "+(e.code||"") +" "+e.message,"err");
+  msg("Loading published content from Firebase...");
+  try{
+    const r=await Promise.all([
+      db.ref("study_materials").orderByChild("published").equalTo(true).once("value"),
+      db.ref("tests").orderByChild("published").equalTo(true).once("value")
+    ]);
+
+    M=[];T=[];
+    r[0].forEach(c=>{
+      const d=c.val()||{};
+      if(d.published===true)M.push({id:c.key,...d});
+    });
+    r[1].forEach(c=>{
+      const d=c.val()||{};
+      if(d.published===true)T.push({id:c.key,...d});
+    });
+
+    fill("sf",M.map(subject),"All Subjects");
+    fill("tf",M.map(topic),"All Topics");
+    fill("tsf",T.map(subject),"All Subjects");
+    renderM();renderT();renderHome();
+    msg("✓ Firebase connected • "+M.length+" materials • "+T.length+" tests","ok");
+  }catch(e){
+    console.error("Firebase database error:",e.code,e.message);
+    msg("Database error: "+(e.code||"")+" "+e.message,"err");
+  }
 }
-}
+
+/* Complete redirect result once; no redirect loop */
 auth.getRedirectResult().catch(e=>{
-$("loginMsg").textContent="Google sign-in error: "+e.message;
+  console.error("Redirect result:",e.code,e.message);
+  if($("loginMsg"))$("loginMsg").textContent=
+    "Login error: "+(e.code||"unknown")+" — "+e.message;
 });
+
 auth.onAuthStateChanged(u=>{
-if(u)signedIn(u);
-else showLogin();
+  if(u)signedIn(u);
+  else showLogin();
 });
 </script>
 </body>
