@@ -5,78 +5,88 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#171832">
-<title>EduTest | Student Portal</title>
+<title>EduTest Student Portal</title>
 <style>
-:root{--p:#625cf5;--dark:#171832;--bg:#f5f6fc;--muted:#81869b;--line:#e9eaf2}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:#20213b;font:15px Arial,sans-serif;padding-bottom:86px}
+:root{--p:#625cf5;--d:#171832;--bg:#f5f6fc;--muted:#81869b;--line:#e8e9f2}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#20213b;font:15px Arial;padding-bottom:82px}
 button,input,select{font:inherit}button{cursor:pointer}
-.wrap{max-width:1050px;margin:auto;padding:0 17px}
-.hero{color:white;background:linear-gradient(130deg,#171832,#32349a 62%,#6c63ff);padding:22px 0 27px;border-radius:0 0 28px 28px}
-.top,.row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.wrap{max-width:1000px;margin:auto;padding:0 16px}
+.hero{background:linear-gradient(130deg,#171832,#33359b,#6c63ff);color:white;padding:20px 0 25px;border-radius:0 0 27px 27px}
+.top,.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .brand{font-size:23px;font-weight:800;display:flex;align-items:center;gap:10px}
-.logo{background:#ffffff20;padding:12px;border-radius:14px}
-.avatar{border:1px solid #ffffff55;background:#ffffff20;color:white;border-radius:50%;width:43px;height:43px}
-.eyebrow{font-size:10px;letter-spacing:2px;color:#d8d9ff;margin-top:27px}
-.hero h1{font-size:33px;line-height:1.16;margin:9px 0}
-.hero p{color:#e0e1ff;font-size:13px}
-.search{display:flex;align-items:center;gap:10px;background:white;border-radius:14px;padding:0 14px;margin-top:20px;color:#73778b}
-.search input{border:0!important;padding:15px 0!important;box-shadow:none!important}
-input,select{width:100%;background:white;border:1px solid var(--line);border-radius:11px;padding:13px;color:#252640;outline:none}
-input:focus,select:focus{border-color:var(--p)}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:15px}
-.stat{background:#ffffff17;border:1px solid #ffffff25;border-radius:14px;padding:12px}
-.stat b{display:block;font-size:23px;margin-bottom:5px}
-.stat span{font-size:11px;color:#e0e1ff}
-main{max-width:1050px;margin:auto;padding:18px 17px}
+.logo{padding:11px;background:#ffffff20;border-radius:13px}
+.avatar{border:1px solid #ffffff55;background:#ffffff20;color:white;border-radius:50%;width:43px;height:43px;object-fit:cover}
+.eyebrow{font-size:10px;letter-spacing:2px;color:#dedfff;margin-top:25px}
+.hero h1{font-size:32px;line-height:1.2;margin:10px 0}
+.hero p{font-size:13px;color:#e1e2ff}
+.search{display:flex;gap:10px;align-items:center;background:white;color:#666;border-radius:13px;padding:0 13px;margin-top:18px}
+input,select{width:100%;padding:13px;border:1px solid var(--line);border-radius:11px;background:white;color:#252640;outline:none}
+.search input{border:0;padding:15px 0}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:15px}
+.stat{background:#ffffff18;border:1px solid #ffffff25;border-radius:13px;padding:11px}
+.stat b{font-size:22px;display:block;margin-bottom:4px}.stat span{font-size:10px;color:#e1e2ff}
+main{max-width:1000px;margin:auto;padding:16px}
 .page{display:none}.page.active{display:block}
-.section-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:23px 0 14px}
-.section-head h2{font-size:20px;margin:0}
-.section-head p{font-size:12px;color:var(--muted);margin:5px 0 0}
-.welcome{background:linear-gradient(115deg,#e9e8ff,#fff);border:1px solid #dfddff;border-radius:19px;padding:19px;margin-bottom:22px}
-.welcome h2{font-size:20px;margin:0}
-.muted{font-size:12px;color:var(--muted);line-height:1.6}
-.progress{height:7px;background:#dcdafa;border-radius:10px;overflow:hidden;margin-top:12px}
-.progress span{display:block;height:100%;width:0;background:var(--p);border-radius:10px}
-.quick{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
-.quick button{border:1px solid var(--line);background:white;border-radius:16px;padding:16px 5px;color:#242541;box-shadow:0 4px 15px #20204a08}
-.quick i{display:block;font-style:normal;font-size:25px;margin-bottom:9px}
-.quick b{font-size:12px}.quick small{display:block;font-size:10px;color:var(--muted);margin-top:5px}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
-.card{min-width:0;background:white;border:1px solid var(--line);border-radius:17px;padding:16px;display:flex;flex-direction:column;gap:11px;box-shadow:0 5px 20px #1a1b4007}
-.card-top{display:flex;align-items:center;gap:10px}
-.ico{width:45px;height:45px;flex-shrink:0;display:grid;place-items:center;background:#efeeff;border-radius:14px;font-size:22px}
-.chips{display:flex;flex-wrap:wrap;gap:6px}
-.chip{font-size:10px;font-weight:bold;background:#efeeff;color:#5149c8;border-radius:30px;padding:6px 9px}
-.green{background:#e5f8ed;color:#087746}.orange{background:#fff0da;color:#995400}
-.card h3{font-size:16px;line-height:1.4;margin:0;overflow-wrap:anywhere}
-.card .desc{font-size:12px;color:var(--muted);line-height:1.5;margin:0}
-.cardfoot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto}
-.btn{border:0;border-radius:10px;padding:11px 14px;background:var(--p);color:white;font-size:12px;font-weight:bold}
-.light{background:#efefff;color:#5049c9}
-.filters{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
-.notice{font-size:12px;background:#eeefff;color:#4945b9;border:1px solid #deddff;padding:12px 14px;border-radius:12px;margin-bottom:14px;overflow-wrap:anywhere}
-.notice.ok{background:#e7f9ef;color:#087443;border-color:#c2efd5}
-.notice.error{background:#fff0ef;color:#b42318;border-color:#ffd2cf}
-.empty{grid-column:1/-1;text-align:center;background:white;padding:25px 15px;border-radius:15px;border:1px dashed #d8d9e6;color:var(--muted);font-size:13px}
-.bottom{position:fixed;z-index:10;bottom:0;left:0;right:0;background:#ffffffed;backdrop-filter:blur(14px);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding:8px 5px calc(8px + env(safe-area-inset-bottom))}
-.nav{border:0;background:transparent;color:#85899b;font-size:10px;font-weight:bold;padding:5px}
-.nav b{display:block;font-size:21px;margin-bottom:5px}
-.nav.active{color:var(--p)}.nav.active b{background:#efeeff;border-radius:10px;padding:4px}
-.panel{background:white;border:1px solid var(--line);border-radius:16px;padding:17px;margin:12px 0}
-.panel h3{margin-top:0}
-.option{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);padding:12px;border-radius:11px;margin:8px 0;font-size:13px}
-.option input{width:auto;margin:2px 0 0;accent-color:var(--p)}
-.full{width:100%}
-.result{text-align:center;background:#e8f9ef;border:1px solid #c3efd5;padding:20px;border-radius:16px;margin:15px 0}
-.result strong{font-size:36px;color:#087443}
-label{font-size:13px;font-weight:bold}
-.foot{text-align:center;font-size:11px;color:#a0a4b3;padding:24px 0}
-@media(max-width:480px){.wrap{padding:0 14px}.hero h1{font-size:31px}.grid{grid-template-columns:1fr}main{padding:15px 14px}.filters{grid-template-columns:1fr}.quick{gap:7px}.quick button{padding:14px 3px}.stat{padding:11px 7px}}
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:22px 0 13px}
+.section-head h2{font-size:20px;margin:0}.section-head p{font-size:12px;color:var(--muted);margin:5px 0 0}
+.welcome{padding:18px;border-radius:18px;background:linear-gradient(120deg,#e9e8ff,#fff);border:1px solid #dedcff;margin-bottom:20px}
+.welcome h2{margin:0;font-size:20px}.muted{font-size:12px;color:var(--muted);line-height:1.6}
+.progress{height:7px;background:#dcdafa;border-radius:9px;overflow:hidden;margin-top:12px}
+.progress span{display:block;height:100%;width:0;background:var(--p)}
+.quick{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.quick button{background:white;border:1px solid var(--line);border-radius:15px;padding:15px 4px;color:#252640}
+.quick i{font-style:normal;font-size:24px;display:block;margin-bottom:8px}
+.quick b{font-size:12px}.quick small{display:block;color:var(--muted);font-size:10px;margin-top:5px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.card,.panel{background:white;border:1px solid var(--line);border-radius:16px;padding:15px;box-shadow:0 4px 16px #17183208}
+.card{display:flex;flex-direction:column;gap:10px;min-width:0;overflow-wrap:anywhere}
+.card h3{font-size:16px;margin:0;line-height:1.4}
+.cardfoot{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:auto}
+.cardtop{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.ico{width:43px;height:43px;display:grid;place-items:center;background:#efeeff;border-radius:13px;font-size:22px}
+.chip{display:inline-block;padding:5px 8px;border-radius:20px;background:#efeeff;color:#5149c8;font-size:10px;font-weight:bold}
+.green{background:#e6f8ed;color:#087443}.orange{background:#fff0da;color:#995400}
+.btn{border:0;border-radius:10px;padding:11px 13px;background:var(--p);color:white;font-size:12px;font-weight:bold}
+.light{background:#efeeff;color:#5149c8}.full{width:100%}
+.filters{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0}
+.notice{padding:12px;border-radius:11px;background:#efefff;color:#4944b8;font-size:12px;margin-bottom:12px;overflow-wrap:anywhere}
+.notice.ok{background:#e6f8ed;color:#087443}.notice.err{background:#fff0ef;color:#b42318}
+.empty{grid-column:1/-1;text-align:center;background:white;border:1px dashed #d8d9e7;border-radius:14px;padding:23px;color:var(--muted);font-size:13px}
+.bottom{position:fixed;z-index:9;bottom:0;left:0;right:0;background:#ffffffed;backdrop-filter:blur(12px);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding:8px 4px calc(8px + env(safe-area-inset-bottom))}
+.nav{border:0;background:transparent;color:#85899b;font-size:10px;font-weight:bold;padding:4px}
+.nav b{display:block;font-size:21px;margin-bottom:4px}.nav.active{color:var(--p)}
+.nav.active b{background:#efeeff;border-radius:9px;padding:4px}
+.option{display:flex;gap:10px;border:1px solid var(--line);border-radius:10px;padding:12px;margin:8px 0;font-size:13px}
+.option input{width:auto;padding:0;margin-top:3px;accent-color:var(--p)}
+.result{text-align:center;background:#e6f8ed;border-radius:15px;padding:20px;margin:12px 0}
+.result strong{font-size:34px;color:#087443}
+#login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:22px;background:linear-gradient(145deg,#171832,#34369a,#6c63ff);color:white}
+.loginbox{width:100%;max-width:390px;text-align:center;background:#ffffff12;border:1px solid #ffffff30;border-radius:25px;padding:28px 22px;backdrop-filter:blur(10px)}
+.loginlogo{font-size:40px}.loginbox h1{font-size:29px;margin:12px 0}.loginbox p{font-size:13px;color:#e2e3ff;line-height:1.6}
+.google{width:100%;background:white;color:#222;border:0;border-radius:12px;padding:14px;font-weight:bold;display:flex;justify-content:center;align-items:center;gap:10px;margin-top:22px}
+.google img{width:20px;height:20px}.tiny{font-size:11px!important}
+.foot{text-align:center;font-size:11px;color:#9ba0b0;padding:23px 0}
+.hide{display:none!important}
+@media(max-width:470px){.grid{grid-template-columns:1fr}.filters{grid-template-columns:1fr}.hero h1{font-size:30px}}
 </style>
 </head>
 <body>
 
+<section id="login">
+<div class="loginbox">
+<div class="loginlogo">✦</div>
+<h1>EduTest</h1>
+<p>Your personal learning space</p>
+<p>Google Account से sign in करें और अपनी study materials तथा test series एक्सेस करें।</p>
+<button class="google" id="googleBtn" onclick="googleLogin()">
+<img alt="Google" src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg">
+Continue with Google
+</button>
+<p class="tiny" id="loginMsg">Secure sign-in powered by Firebase</p>
+</div>
+</section>
+
+<div id="app" class="hide">
 <header class="hero">
 <div class="wrap">
 <div class="top">
@@ -86,7 +96,7 @@ label{font-size:13px;font-weight:bold}
 <div class="eyebrow">YOUR PERSONAL LEARNING SPACE</div>
 <h1 id="greeting">Learn smarter.<br>Score higher.</h1>
 <p id="subtitle">Study material, test series aur progress — sab ek jagah.</p>
-<div class="search">⌕ <input id="globalSearch" placeholder="Subject, topic ya material search..." oninput="searchAll()"></div>
+<div class="search">⌕ <input id="globalSearch" placeholder="Search subject or topic..." oninput="searchAll()"></div>
 <div class="stats">
 <div class="stat"><b id="mc">0</b><span>Study Materials</span></div>
 <div class="stat"><b id="tc">0</b><span>Available Tests</span></div>
@@ -95,29 +105,29 @@ label{font-size:13px;font-weight:bold}
 </div>
 </header>
 <main>
-<div class="notice" id="status">Connecting to Firebase...</div>
+<div id="status" class="notice">Loading Firebase content...</div>
 
-<section class="page active" id="home">
+<section id="home" class="page active">
 <div class="welcome">
 <h2 id="welcome">Welcome back 👋</h2>
-<p class="muted">Your preparation journey starts here. Keep learning every day.</p>
+<p class="muted">Roz padhein, practice karein aur apna score improve karein.</p>
 <div class="progress"><span id="progress"></span></div>
 <p class="muted" id="progressText">Complete your first test to track progress.</p>
 </div>
-<div class="section-head"><div><h2>Quick Access</h2><p>Everything you need to prepare</p></div></div>
+<div class="section-head"><div><h2>Quick Access</h2><p>Everything for your preparation</p></div></div>
 <div class="quick">
 <button onclick="show('materials')"><i>📚</i><b>Study Material</b><small>PDF & Notes</small></button>
 <button onclick="show('tests')"><i>📝</i><b>Test Series</b><small>Practice MCQs</small></button>
-<button onclick="show('profile')"><i>🎯</i><b>My Profile</b><small>Study Progress</small></button>
+<button onclick="show('profile')"><i>🎯</i><b>My Profile</b><small>Your progress</small></button>
 </div>
-<div class="section-head"><div><h2>Recently Added</h2><p>Fresh study resources</p></div><button class="btn light" onclick="show('materials')">See all →</button></div>
+<div class="section-head"><div><h2>Recently Added</h2><p>Study resources</p></div><button class="btn light" onclick="show('materials')">See all →</button></div>
 <div class="grid" id="recentM"></div>
 <div class="section-head"><div><h2>Practice Zone</h2><p>Test your preparation</p></div><button class="btn light" onclick="show('tests')">All tests →</button></div>
 <div class="grid" id="recentT"></div>
 </section>
 
-<section class="page" id="materials">
-<div class="section-head"><div><h2>📚 Study Library</h2><p>Find notes by subject and topic</p></div><button class="btn light" onclick="loadData()">↻ Refresh</button></div>
+<section id="materials" class="page">
+<div class="section-head"><div><h2>📚 Study Library</h2><p>Subject and topic wise notes</p></div><button class="btn light" onclick="loadData()">↻ Refresh</button></div>
 <div class="filters">
 <select id="sf" onchange="renderM()"><option value="">All Subjects</option></select>
 <select id="tf" onchange="renderM()"><option value="">All Topics</option></select>
@@ -126,53 +136,55 @@ label{font-size:13px;font-weight:bold}
 <div class="grid" id="mlist"></div>
 </section>
 
-<section class="page" id="tests">
-<div class="section-head"><div><h2>📝 Test Series</h2><p>Practice, evaluate and improve</p></div><button class="btn light" onclick="loadData()">↻ Refresh</button></div>
+<section id="tests" class="page">
+<div class="section-head"><div><h2>📝 Test Series</h2><p>Practice and improve your score</p></div><button class="btn light" onclick="loadData()">↻ Refresh</button></div>
 <div class="filters">
 <select id="tsf" onchange="renderT()"><option value="">All Subjects</option></select>
-<select id="sort" onchange="renderT()"><option value="new">Recently Added</option><option value="az">Name A–Z</option></select>
+<select id="sort" onchange="renderT()"><option value="new">Recently Added</option><option value="az">Name A-Z</option></select>
 </div>
-<input id="tsearch" placeholder="Search test or subject..." oninput="renderT()" style="margin-bottom:13px">
+<input id="tsearch" placeholder="Search tests..." oninput="renderT()" style="margin-bottom:13px">
 <div class="grid" id="tlist"></div>
 </section>
 
-<section class="page" id="quiz">
+<section id="quiz" class="page">
 <div class="section-head"><div><h2 id="quizTitle">Practice Test</h2><p id="quizInfo">Choose your answers</p></div><button class="btn light" onclick="show('tests')">← Back</button></div>
 <div id="questions"></div>
 <button class="btn full" id="submit" onclick="finish()">Submit Test</button>
 <div id="score"></div>
 </section>
 
-<section class="page" id="profile">
-<div class="section-head"><div><h2>👤 My Profile</h2><p>Personalize your learning</p></div></div>
+<section id="profile" class="page">
+<div class="section-head"><div><h2>👤 My Profile</h2><p>Your account and learning progress</p></div></div>
 <div class="panel">
-<div class="card-top"><div class="ico" id="profileAvatar">S</div><div><h3 id="profileTitle">Student Profile</h3><p class="muted">Your personal learning space</p></div></div>
-<p><label for="name">Your Name</label></p><input id="name" placeholder="Enter your name" maxlength="60">
+<div class="cardtop"><img id="photo" class="avatar" alt="Profile photo" style="width:55px;height:55px"><div><h3 id="pname">Student</h3><p class="muted" id="email"></p></div></div>
+<p><label for="name">Your Name</label></p><input id="name" maxlength="60" placeholder="Your name">
 <p><label for="exam">Target Exam</label></p>
 <select id="exam"><option>SSC</option><option>Banking</option><option>Railway</option><option>UPSC</option><option>State Exams</option><option>Other</option></select>
 <p><label for="goal">Daily Study Goal</label></p>
 <select id="goal"><option value="30">30 Minutes</option><option value="60">1 Hour</option><option value="120">2 Hours</option><option value="180">3 Hours</option><option value="240">4 Hours</option></select>
-<button class="btn full" style="margin-top:14px" onclick="saveProfile()">Save Profile</button>
+<button class="btn full" style="margin-top:13px" onclick="saveProfile()">Save Profile</button>
 <p class="muted" id="pmsg"></p>
 </div>
 <div class="panel"><h3>📈 Practice Summary</h3><p class="muted" id="history">No tests attempted yet.</p><button class="btn light" onclick="resetHistory()">Reset History</button></div>
-<p class="muted">Profile aur history is browser mein save hote hain. Firebase cloud sync ke liye login integration alag se chahiye.</p>
+<div class="panel"><h3>Account</h3><p class="muted">Signed in with Google</p><button class="btn full" onclick="logout()">Sign Out</button></div>
+<p class="muted">Profile preferences और test history इस browser में सेव होते हैं।</p>
 </section>
 <div class="foot">EduTest • Learn Smarter, Score Higher ✦</div>
 </main>
-
 <nav class="bottom">
 <button class="nav active" data-page="home" onclick="show('home')"><b>⌂</b>Home</button>
 <button class="nav" data-page="materials" onclick="show('materials')"><b>▤</b>Materials</button>
-<button class="nav" data-page="tests" onclick="show('tests')"><b>✎</b>Test Series</button>
+<button class="nav" data-page="tests" onclick="show('tests')"><b>✎</b>Tests</button>
 <button class="nav" data-page="profile" onclick="show('profile')"><b>◉</b>Profile</button>
 </nav>
+</div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
-const firebaseConfig={
-apiKey:"AIzaSySyB5vN74NfP-Tx1tIxMDSmOwjhvkgp06Soo",
+const config={
+apiKey:"AIzaSyB5vN74NfP-Tx1tIxMDSmOwjhvkgp06Soo",
 authDomain:"edutest-admin.firebaseapp.com",
 databaseURL:"https://edutest-admin-default-rtdb.firebaseio.com",
 projectId:"edutest-admin",
@@ -180,7 +192,9 @@ storageBucket:"edutest-admin.firebasestorage.app",
 messagingSenderId:"785312729550",
 appId:"1:785312729550:web:d9cc16fee38afdc88b839f"
 };
-let db,M=[],T=[],current=null,submitted=false;
+if(!firebase.apps.length)firebase.initializeApp(config);
+const auth=firebase.auth(),db=firebase.database();
+let M=[],T=[],current=null,submitted=false,user=null;
 const $=id=>document.getElementById(id);
 const val=(o,keys,d="")=>{for(let k of keys)if(o&&o[k]!=null&&o[k]!=="")return o[k];return d};
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -190,73 +204,98 @@ const title=o=>String(val(o,["title","name","materialName","testName"],"Untitled
 const url=o=>String(val(o,["url","pdfUrl","fileUrl","link","driveUrl","downloadUrl"],""));
 function qs(t){let q=val(t,["questions","questionList","items"],[]);return Array.isArray(q)?q:Object.values(q||{})}
 function opts(q){let a=val(q,["options","choices","answers"],[]);return Array.isArray(a)?a:Object.values(a||{})}
-function profile(){try{return JSON.parse(localStorage.getItem("et_profile")||"{}")}catch(e){return {}}}
-function history(){try{return JSON.parse(localStorage.getItem("et_history")||"[]")}catch(e){return []}}
+function prof(){try{return JSON.parse(localStorage.getItem("et_profile")||"{}")}catch(e){return {}}}
+function hist(){try{return JSON.parse(localStorage.getItem("et_history")||"[]")}catch(e){return []}}
+function msg(s,type=""){ $("status").className="notice "+type;$("status").textContent=s}
 function show(id){
 document.querySelectorAll(".page").forEach(x=>x.classList.toggle("active",x.id===id));
 document.querySelectorAll(".nav").forEach(x=>x.classList.toggle("active",x.dataset.page===id));
 window.scrollTo(0,0);if(id==="materials")renderM();if(id==="tests")renderT();
 }
+async function googleLogin(){
+try{
+$("googleBtn").disabled=true;$("loginMsg").textContent="Opening Google Sign-In...";
+const p=new firebase.auth.GoogleAuthProvider();
+p.setCustomParameters({prompt:"select_account"});
+await auth.signInWithRedirect(p);
+}catch(e){$("loginMsg").textContent=e.message;$("googleBtn").disabled=false}
+}
+async function logout(){
+try{await auth.signOut();showLogin()}catch(e){alert("Sign out failed: "+e.message)}
+}
+function showLogin(){
+user=null;$("app").classList.add("hide");$("login").style.display="flex";
+$("loginMsg").textContent="Sign in securely with your Google Account.";
+$("googleBtn").disabled=false;
+}
+function signedIn(u){
+user=u;$("login").style.display="none";$("app").classList.remove("hide");
+$("email").textContent=u.email||"";
+$("pname").textContent=u.displayName||"Student";
+$("photo").src=u.photoURL||"";
+$("avatar").textContent=(u.displayName||"S")[0].toUpperCase();
+if(u.photoURL)$("avatar").innerHTML=`<img src="${esc(u.photoURL)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover" alt="Profile">`;
+loadData();
+}
 function searchAll(){let q=$("globalSearch").value.trim();if(q){show("materials");$("msearch").value=q;renderM()}}
-function materialCard(m){
+function mcard(m){
 let u=url(m);
-return `<article class="card"><div class="card-top"><div class="ico">📘</div><div class="chips"><span class="chip">${esc(subject(m))}</span><span class="chip green">${esc(topic(m))}</span></div></div><h3>${esc(title(m))}</h3><p class="desc">${esc(val(m,["description","details","subtitle"],"Study notes and learning resources"))}</p><div class="cardfoot"><span class="muted">PDF / Notes</span>${u?`<a class="btn" href="${esc(u)}" target="_blank" rel="noopener">Open ↗</a>`:"<span class='muted'>No link</span>"}</div></article>`;
+return `<article class="card"><div class="cardtop"><div class="ico">📘</div><span class="chip">${esc(subject(m))}</span><span class="chip green">${esc(topic(m))}</span></div><h3>${esc(title(m))}</h3><p class="muted">${esc(val(m,["description","details","subtitle"],"Study notes / PDF material"))}</p><div class="cardfoot"><span class="muted">PDF / Notes</span>${u?`<a class="btn" href="${esc(u)}" target="_blank" rel="noopener">Open ↗</a>`:"<span class='muted'>Link missing</span>"}</div></article>`;
 }
-function testCard(t){
-return `<article class="card"><div class="card-top"><div class="ico">📝</div><span class="chip">${esc(subject(t))}</span><span class="chip orange">${qs(t).length} Qs</span></div><h3>${esc(title(t))}</h3><p class="desc">${esc(val(t,["description","details"],"Practice test"))}</p><div class="cardfoot"><span class="muted">MCQ Practice</span><button class="btn" onclick="start('${esc(t.id)}')">Start →</button></div></article>`;
+function tcard(t){
+return `<article class="card"><div class="cardtop"><div class="ico">📝</div><span class="chip">${esc(subject(t))}</span><span class="chip orange">${qs(t).length} Questions</span></div><h3>${esc(title(t))}</h3><p class="muted">${esc(val(t,["description","details"],"Practice Test"))}</p><div class="cardfoot"><span class="muted">MCQ Practice</span><button class="btn" onclick="start('${esc(t.id)}')">Start →</button></div></article>`;
 }
-function fill(id,items,label){
-let el=$(id),old=el.value;el.innerHTML=`<option value="">${label}</option>`+[...new Set(items)].sort().map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join("");el.value=old;
+function fill(id,arr,label){
+let e=$(id),old=e.value;e.innerHTML=`<option value="">${label}</option>`+[...new Set(arr)].sort().map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join("");e.value=old;
 }
 function renderM(){
 let q=$("msearch").value.toLowerCase(),s=$("sf").value,t=$("tf").value;
 let a=M.filter(m=>(!s||subject(m)===s)&&(!t||topic(m)===t)&&(!q||[title(m),subject(m),topic(m),m.description||""].join(" ").toLowerCase().includes(q)));
-$("mlist").innerHTML=a.length?a.map(materialCard).join(""):'<div class="empty">No materials found for this search.</div>';
+$("mlist").innerHTML=a.length?a.map(mcard).join(""):'<div class="empty">No materials found.</div>';
 }
 function renderT(){
 let q=$("tsearch").value.toLowerCase(),s=$("tsf").value;
 let a=T.filter(t=>(!s||subject(t)===s)&&(!q||[title(t),subject(t),t.description||""].join(" ").toLowerCase().includes(q)));
 if($("sort").value==="az")a.sort((x,y)=>title(x).localeCompare(title(y)));
-$("tlist").innerHTML=a.length?a.map(testCard).join(""):'<div class="empty">No published tests available.</div>';
+$("tlist").innerHTML=a.length?a.map(tcard).join(""):'<div class="empty">No published tests available.</div>';
 }
 function renderHome(){
-$("mc").textContent=M.length;$("tc").textContent=T.length;$("ac").textContent=history().length;
-$("recentM").innerHTML=M.slice(0,2).map(materialCard).join("")||'<div class="empty">Study materials will appear here.</div>';
-$("recentT").innerHTML=T.slice(0,2).map(testCard).join("")||'<div class="empty">Published tests will appear here.</div>';
-let p=profile(),h=history(),n=p.name||"Student";
-$("greeting").innerHTML=p.name?"Welcome back,<br>"+esc(p.name)+"!":"Learn smarter.<br>Score higher.";
-$("welcome").textContent="Welcome"+(p.name?", "+p.name:" back")+" 👋";
-$("subtitle").textContent=p.exam?p.exam+" preparation • Learn every day":"Study material, test series aur progress — sab ek jagah.";
-$("avatar").textContent=n[0].toUpperCase();$("profileAvatar").textContent=n[0].toUpperCase();
-$("profileTitle").textContent=p.name||"Student Profile";$("name").value=p.name||"";
+$("mc").textContent=M.length;$("tc").textContent=T.length;$("ac").textContent=hist().length;
+$("recentM").innerHTML=M.slice(0,2).map(mcard).join("")||'<div class="empty">Materials will appear here.</div>';
+$("recentT").innerHTML=T.slice(0,2).map(tcard).join("")||'<div class="empty">Tests will appear here.</div>';
+let p=prof(),h=hist(),n=p.name||user?.displayName||"Student";
+$("greeting").innerHTML="Learn smarter.<br>Score higher.";
+$("welcome").textContent="Welcome, "+n+" 👋";
+$("subtitle").textContent=(p.exam||"Your exam")+" preparation • Keep learning";
+$("profileTitle").textContent=n;$("name").value=p.name||user?.displayName||"";
 $("exam").value=p.exam||"SSC";$("goal").value=String(p.goal||60);
 $("progress").style.width=Math.min(100,h.length*10)+"%";
-$("progressText").textContent=h.length?h.length+" tests completed. Keep going!":"Complete your first test to track progress.";
+$("progressText").textContent=h.length?h.length+" test attempts completed. Keep going!":"Complete your first test to track progress.";
 $("history").textContent=h.length?h.slice(-10).reverse().map(x=>x.title+": "+x.percent+"%").join(" • "):"No tests attempted yet.";
 }
 function answerIndex(q){
 let a=val(q,["correctAnswer","answer","correctOption","correct"],null);
 if(a==null)return -1;if(typeof a==="number")return a;
-let s=String(a).trim();if(/^\d+$/.test(s))return Number(s);
+let s=String(a).trim();if(/^\d+$/.test(s))return +s;
 if(/^[A-D]$/i.test(s))return s.toUpperCase().charCodeAt(0)-65;
-return opts(q).findIndex(o=>String(o)===s);
+return opts(q).findIndex(x=>String(x)===s);
 }
 function start(id){
 current=T.find(t=>t.id===id);if(!current)return;submitted=false;
 let a=qs(current);$("quizTitle").textContent=title(current);
 $("quizInfo").textContent=subject(current)+" • "+a.length+" questions";
 $("score").innerHTML="";$("submit").style.display="block";
-$("questions").innerHTML=a.length?a.map((q,i)=>`<div class="panel"><h3>${i+1}. ${esc(val(q,["question","text","title","statement"],"Question "+(i+1)))}</h3>${opts(q).map((o,j)=>`<label class="option"><input type="radio" name="q${i}" value="${j}"><span>${esc(typeof o==="object"?val(o,["text","label","option"],JSON.stringify(o)):o)}</span></label>`).join("")||'<p class="muted">Options missing</p>'}</div>`).join(""):'<div class="empty">No questions found in this test.</div>';
+$("questions").innerHTML=a.length?a.map((q,i)=>`<div class="panel"><h3>${i+1}. ${esc(val(q,["question","text","title","statement"],"Question "+(i+1)))}</h3>${opts(q).map((o,j)=>`<label class="option"><input type="radio" name="q${i}" value="${j}"><span>${esc(typeof o==="object"?val(o,["text","label","option"],JSON.stringify(o)):o)}</span></label>`).join("")}</div>`).join(""):'<div class="empty">No questions found.</div>';
 show("quiz");
 }
 function finish(){
 if(!current||submitted)return;let a=qs(current);if(!a.length)return;
 let correct=0,answered=0;
 a.forEach((q,i)=>{let x=document.querySelector(`input[name="q${i}"]:checked`);if(x){answered++;if(+x.value===answerIndex(q))correct++}});
-let pct=Math.round(correct/a.length*100),h=history();
-h.push({title:title(current),percent:pct,correct,total:a.length,answered,date:Date.now()});
+let percent=Math.round(correct/a.length*100),h=hist();
+h.push({title:title(current),percent,correct,total:a.length,answered,date:Date.now()});
 localStorage.setItem("et_history",JSON.stringify(h));submitted=true;$("submit").style.display="none";
-$("score").innerHTML=`<div class="result"><h3>Test Completed 🎉</h3><strong>${pct}%</strong><p>${correct} correct out of ${a.length}</p><p>${answered} questions answered</p><button class="btn" onclick="show('tests')">Explore More Tests</button></div>`;
+$("score").innerHTML=`<div class="result"><h3>Test Completed 🎉</h3><strong>${percent}%</strong><p>${correct} correct out of ${a.length}</p><p>${answered} answered</p><button class="btn" onclick="show('tests')">More Tests</button></div>`;
 renderHome();window.scrollTo(0,document.body.scrollHeight);
 }
 function saveProfile(){
@@ -265,10 +304,8 @@ $("pmsg").textContent="Profile saved successfully!";renderHome();
 }
 function resetHistory(){if(confirm("Reset your practice history?")){localStorage.removeItem("et_history");renderHome()}}
 async function loadData(){
-$("status").className="notice";$("status").textContent="Loading published content from Firebase...";
+msg("Loading published content from Firebase...");
 try{
-if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
-db=firebase.database();
 let r=await Promise.all([
 db.ref("study_materials").orderByChild("published").equalTo(true).once("value"),
 db.ref("tests").orderByChild("published").equalTo(true).once("value")
@@ -278,15 +315,11 @@ r[0].forEach(c=>{let d=c.val()||{};if(d.published===true)M.push({id:c.key,...d})
 r[1].forEach(c=>{let d=c.val()||{};if(d.published===true)T.push({id:c.key,...d})});
 fill("sf",M.map(subject),"All Subjects");fill("tf",M.map(topic),"All Topics");fill("tsf",T.map(subject),"All Subjects");
 renderM();renderT();renderHome();
-$("status").className="notice ok";
-$("status").textContent="✓ Firebase connected • "+M.length+" materials • "+T.length+" tests";
-}catch(e){
-console.error(e);$("status").className="notice error";
-$("status").textContent="Firebase error: "+e.message+" — Check database rules and published=true records.";
+msg("✓ Firebase connected • "+M.length+" materials • "+T.length+" tests","ok");
+}catch(e){console.error(e);msg("Database error: "+e.message+" • Check Realtime Database Rules.","err")}
 }
-}
-renderHome();loadData();
+auth.getRedirectResult().catch(e=>{$("loginMsg").textContent="Google sign-in error: "+e.message});
+auth.onAuthStateChanged(u=>{if(u)signedIn(u);else showLogin()});
 </script>
 </body>
 </html>
-
