@@ -285,7 +285,7 @@ tailwind.config = {
   <div class="cyber-grid"></div>
 </div>
 
-<!-- ==================== LOGIN SCREEN ==================== -->
+<!-- ==================== LOGIN SCREEN (ONLY GOOGLE SIGN-IN) ==================== -->
 <section id="login" class="min-h-screen flex items-center justify-center p-5 relative overflow-hidden">
   <!-- Decorative Floating Orbs -->
   <div class="absolute -top-24 -left-24 w-72 h-72 bg-indigo-600/30 rounded-full blur-3xl pointer-events-none"></div>
@@ -314,23 +314,6 @@ tailwind.config = {
       <span id="googleBtnText">Continue with Google</span>
       <i class="ph-bold ph-arrow-right text-slate-600"></i>
     </button>
-
-    <!-- Quick Student Access Button (Works even if preview domain blocks Google Popup) -->
-    <button type="button" id="guestBtn" onclick="quickStudentLogin()" class="w-full mt-3 py-3 px-5 rounded-2xl bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-500/30 active:scale-[0.99] text-indigo-200 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer">
-      <i class="ph-fill ph-rocket-launch text-cyan-400 text-base"></i>
-      <span>Instant Student Access (One-Click Enter)</span>
-    </button>
-
-    <!-- Custom Quick Name Box (Shown if user enters custom name) -->
-    <div id="customLoginBox" class="hide mt-4 pt-4 border-t border-white/10 text-left">
-      <label class="block text-xs font-semibold text-indigo-300 mb-1.5">Enter Your Name to Continue:</label>
-      <div class="flex gap-2">
-        <input id="quickNameInput" type="text" placeholder="आपका नाम (e.g. Rahul Kumar)" class="cyber-input py-2.5 text-xs">
-        <button type="button" onclick="confirmQuickLogin()" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-cyan-500 text-white font-bold text-xs shrink-0 shadow-lg">
-          Enter →
-        </button>
-      </div>
-    </div>
 
     <div class="mt-6 pt-5 border-t border-white/10 flex items-center justify-center gap-2 text-xs text-slate-400">
       <i class="ph-fill ph-shield-check text-emerald-400 text-base shrink-0"></i>
@@ -825,15 +808,9 @@ function showLogin(message){
 function signedIn(u){
   if(!u)return;
   user=u;
-  try{localStorage.setItem("et_saved_user",JSON.stringify({
-    uid:u.uid||"student_1",
-    displayName:u.displayName||"Student",
-    email:u.email||"student@edutest.portal",
-    photoURL:u.photoURL||""
-  }))}catch(e){}
   $("login").style.display="none";
   $("app").classList.remove("hide");
-  $("email").textContent=u.email||"Verified Student Session";
+  $("email").textContent=u.email||"";
   $("pname").textContent=u.displayName||"Student";
   $("photo").src=u.photoURL||"https://placehold.co/100x100/312e81/ffffff?text="+encodeURIComponent((u.displayName||"S")[0].toUpperCase());
   $("avatar").textContent=(u.displayName||"S")[0].toUpperCase();
@@ -845,14 +822,14 @@ function signedIn(u){
   loadData();
 }
 
-/* Google login: Popup first, redirect fallback, plus smart recovery if preview domain blocks popup */
+/* Strict Google Login Only: Popup first, redirect fallback when popup is blocked */
 async function googleLogin(){
   const btn=$("googleBtn"),btnText=$("googleBtnText"),label=$("loginMsg");
   if(redirecting)return;
 
   btn.disabled=true;
   if(btnText)btnText.textContent="Signing in...";
-  label.innerHTML='<span class="text-cyan-300 font-semibold">Google से सुरक्षित login हो रहा है...</span>';
+  label.textContent="Google से सुरक्षित login हो रहा है...";
 
   try{
     const provider=new firebase.auth.GoogleAuthProvider();
@@ -861,7 +838,6 @@ async function googleLogin(){
     const result=await auth.signInWithPopup(provider);
     if(result&&result.user){
       signedIn(result.user);
-      return;
     }else{
       label.textContent="Login पूरा नहीं हुआ। दोबारा प्रयास करें।";
       btn.disabled=false;
@@ -870,7 +846,7 @@ async function googleLogin(){
   }catch(e){
     console.error("Google sign-in:",e.code,e.message);
 
-    if(e.code==="auth/popup-blocked"){
+    if(e.code==="auth/popup-blocked" || e.code==="auth/operation-not-supported-in-this-environment"){
       try{
         redirecting=true;
         label.textContent="Redirecting to Google...";
@@ -880,83 +856,16 @@ async function googleLogin(){
         return;
       }catch(re){
         console.error("Redirect sign-in:",re.code,re.message);
+        label.textContent="Login error: "+re.code+" — "+re.message;
       }
-    }
-
-    if(
-      e.code==="auth/unauthorized-domain" ||
-      e.code==="auth/operation-not-supported-in-this-environment" ||
-      e.code==="auth/Popup-blocked" ||
-      e.code==="auth/cancelled-popup-request" ||
-      e.code==="auth/internal-error"
-    ){
-      label.innerHTML=`<span class="text-amber-300">इस डोमेन पर Google Popup प्रतिबंधित है (${esc(e.code)})। नीचे नाम डालकर तुरंत लॉग इन करें:</span>`;
-      const box=$("customLoginBox");
-      if(box)box.classList.remove("hide");
-      try{
-        const anon=await auth.signInAnonymously();
-        if(anon&&anon.user){
-          const saved=prof();
-          signedIn({
-            uid:anon.user.uid,
-            displayName:saved.name||"Student",
-            email:"student@edutest.app",
-            photoURL:""
-          });
-          return;
-        }
-      }catch(ae){}
     }else if(e.code==="auth/popup-closed-by-user"){
-      label.textContent="Google पॉपअप बंद हो गया। फिर से प्रयास करें या 'Instant Student Access' दबाएँ।";
+      label.textContent="Google login बंद हो गया। फिर से बटन दबाएँ।";
     }else{
-      label.textContent="Note: "+(e.code||"Sign-in restricted")+" — आप 'Instant Student Access' से सीधे प्रवेश कर सकते हैं।";
-      const box=$("customLoginBox");
-      if(box)box.classList.remove("hide");
+      label.textContent="Login error: "+(e.code||"unknown")+" — "+e.message;
     }
     btn.disabled=false;
     if(btnText)btnText.textContent="Continue with Google";
   }
-}
-
-/* Instant Student Login so the user is never stuck on the login screen */
-async function quickStudentLogin(){
-  const label=$("loginMsg");
-  label.innerHTML='<span class="text-emerald-300 font-semibold">पोर्टल में प्रवेश हो रहा है...</span>';
-  try{
-    const anon=await auth.signInAnonymously();
-    if(anon&&anon.user){
-      const p=prof();
-      signedIn({
-        uid:anon.user.uid,
-        displayName:p.name||"Aspirant Student",
-        email:"student@edutest.portal",
-        photoURL:""
-      });
-      return;
-    }
-  }catch(e){
-    const p=prof();
-    signedIn({
-      uid:"student_"+Date.now(),
-      displayName:p.name||"Aspirant Student",
-      email:"student@edutest.portal",
-      photoURL:""
-    });
-  }
-}
-
-function confirmQuickLogin(){
-  const inp=$("quickNameInput");
-  const customName=(inp&&inp.value.trim())||"Aspirant Student";
-  const p=prof();
-  p.name=customName;
-  try{localStorage.setItem("et_profile",JSON.stringify(p))}catch(e){}
-  signedIn({
-    uid:"student_"+Date.now(),
-    displayName:customName,
-    email:customName.toLowerCase().replace(/\s+/g,".")+"@edutest.portal",
-    photoURL:""
-  });
 }
 
 async function logout(){
@@ -966,8 +875,7 @@ async function logout(){
     user=null;
     showLogin();
   }catch(e){
-    user=null;
-    showLogin();
+    alert("Sign out failed: "+e.message);
   }
 }
 
@@ -1193,25 +1101,20 @@ auth.getRedirectResult().catch(e=>{
     "Login error: "+(e.code||"unknown")+" — "+e.message;
 });
 
+/* Clean up any previously cached guest session & enforce Firebase Google Auth */
+try{localStorage.removeItem("et_saved_user")}catch(e){}
+
 auth.onAuthStateChanged(u=>{
-  if(u){
+  if(u&&!u.isAnonymous){
     signedIn(u);
   }else{
-    try{
-      const cached=JSON.parse(localStorage.getItem("et_saved_user")||"null");
-      if(cached&&cached.uid){
-        signedIn(cached);
-        return;
-      }
-    }catch(e){}
+    if(u&&u.isAnonymous)auth.signOut();
     showLogin();
   }
 });
 
-// Expose functions explicitly on window so inline onclick handlers always work reliably
+// Expose functions on window
 window.googleLogin = googleLogin;
-window.quickStudentLogin = quickStudentLogin;
-window.confirmQuickLogin = confirmQuickLogin;
 window.logout = logout;
 window.show = show;
 window.loadData = loadData;
@@ -1226,4 +1129,3 @@ window.toggleTheme = toggleTheme;
 </script>
 </body>
 </html>
-
