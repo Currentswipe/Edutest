@@ -309,15 +309,32 @@ tailwind.config = {
       Google Account से सुरक्षित sign in करें और अपनी हाई-टेक study materials, notes तथा interactive test series एक्सेस करें।
     </p>
 
-    <button id="googleBtn" onclick="googleLogin()" class="w-full py-3.5 px-5 rounded-2xl bg-white hover:bg-slate-100 active:scale-[0.99] text-slate-900 font-bold text-sm flex items-center justify-center gap-3 shadow-xl shadow-indigo-950/50 transition-all">
+    <button type="button" id="googleBtn" onclick="googleLogin()" class="w-full py-3.5 px-5 rounded-2xl bg-white hover:bg-slate-100 active:scale-[0.99] text-slate-900 font-bold text-sm flex items-center justify-center gap-3 shadow-xl shadow-indigo-950/50 transition-all cursor-pointer">
       <img alt="Google" class="w-5 h-5" src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg">
-      <span>Continue with Google</span>
+      <span id="googleBtnText">Continue with Google</span>
       <i class="ph-bold ph-arrow-right text-slate-600"></i>
     </button>
 
+    <!-- Quick Student Access Button (Works even if preview domain blocks Google Popup) -->
+    <button type="button" id="guestBtn" onclick="quickStudentLogin()" class="w-full mt-3 py-3 px-5 rounded-2xl bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-500/30 active:scale-[0.99] text-indigo-200 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer">
+      <i class="ph-fill ph-rocket-launch text-cyan-400 text-base"></i>
+      <span>Instant Student Access (One-Click Enter)</span>
+    </button>
+
+    <!-- Custom Quick Name Box (Shown if user enters custom name) -->
+    <div id="customLoginBox" class="hide mt-4 pt-4 border-t border-white/10 text-left">
+      <label class="block text-xs font-semibold text-indigo-300 mb-1.5">Enter Your Name to Continue:</label>
+      <div class="flex gap-2">
+        <input id="quickNameInput" type="text" placeholder="आपका नाम (e.g. Rahul Kumar)" class="cyber-input py-2.5 text-xs">
+        <button type="button" onclick="confirmQuickLogin()" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-cyan-500 text-white font-bold text-xs shrink-0 shadow-lg">
+          Enter →
+        </button>
+      </div>
+    </div>
+
     <div class="mt-6 pt-5 border-t border-white/10 flex items-center justify-center gap-2 text-xs text-slate-400">
-      <i class="ph-fill ph-shield-check text-emerald-400 text-base"></i>
-      <p id="loginMsg">Secure sign-in powered by Firebase</p>
+      <i class="ph-fill ph-shield-check text-emerald-400 text-base shrink-0"></i>
+      <p id="loginMsg" class="leading-relaxed">Secure sign-in powered by Firebase</p>
     </div>
   </div>
 </section>
@@ -405,7 +422,7 @@ tailwind.config = {
         <div onclick="show('profile')" class="glass-card rounded-2xl p-3.5 sm:p-4 cursor-pointer relative overflow-hidden group">
           <div class="flex items-center justify-between mb-1">
             <span class="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center text-emerald-400">
-              <i class="ph-fill ph-Lightning text-lg"></i>
+              <i class="ph-fill ph-lightning text-lg"></i>
             </span>
             <i class="ph-bold ph-arrow-up-right text-xs text-slate-500 group-hover:text-emerald-400 transition-colors"></i>
           </div>
@@ -485,4 +502,728 @@ tailwind.config = {
           <b class="text-xs sm:text-sm font-bold block">My Analytics</b>
           <small class="text-[11px] text-slate-400 block mt-0.5">Target & History</small>
         </button>
-      
+      </div>
+
+      <!-- Recently Added Study Resources -->
+      <div class="flex items-center justify-between mb-3.5">
+        <div>
+          <h2 class="font-display text-lg sm:text-xl font-bold">📚 Recently Added Notes</h2>
+          <p class="text-xs text-slate-400">Latest study resources from cloud</p>
+        </div>
+        <button onclick="show('materials')" class="px-3.5 py-2 rounded-xl bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 border border-indigo-500/30 text-xs font-bold transition-all">
+          See all →
+        </button>
+      </div>
+      <div id="recentM" class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8"></div>
+
+      <!-- Practice Zone Tests -->
+      <div class="flex items-center justify-between mb-3.5">
+        <div>
+          <h2 class="font-display text-lg sm:text-xl font-bold">🎯 Practice Zone</h2>
+          <p class="text-xs text-slate-400">Test your real-time preparation</p>
+        </div>
+        <button onclick="show('tests')" class="px-3.5 py-2 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/30 text-xs font-bold transition-all">
+          All tests →
+        </button>
+      </div>
+      <div id="recentT" class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4"></div>
+    </section>
+
+    <!-- ==================== STUDY MATERIALS PAGE ==================== -->
+    <section id="materials" class="page">
+      <div class="flex items-center justify-between gap-3 mb-4">
+        <div>
+          <h2 class="font-display text-xl sm:text-2xl font-bold">📚 Digital Study Library</h2>
+          <p class="text-xs text-slate-400">Subject and topic wise curated notes & PDFs</p>
+        </div>
+        <button onclick="loadData()" class="px-3.5 py-2 rounded-xl glass-card text-xs font-bold flex items-center gap-1.5 hover:border-indigo-500/50">
+          <i class="ph-bold ph-arrows-clockwise"></i> Refresh
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+        <select id="sf" onchange="renderM()" class="cyber-input">
+          <option value="">All Subjects</option>
+        </select>
+        <select id="tf" onchange="renderM()" class="cyber-input">
+          <option value="">All Topics</option>
+        </select>
+      </div>
+
+      <div class="relative mb-5">
+        <i class="ph-bold ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+        <input id="msearch" oninput="renderM()" placeholder="Search material, subject or topic..." class="cyber-input pl-11">
+      </div>
+
+      <div id="mlist" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+    </section>
+
+    <!-- ==================== TEST SERIES PAGE ==================== -->
+    <section id="tests" class="page">
+      <div class="flex items-center justify-between gap-3 mb-4">
+        <div>
+          <h2 class="font-display text-xl sm:text-2xl font-bold">📝 Interactive Test Series</h2>
+          <p class="text-xs text-slate-400">Practice MCQs and boost your accuracy</p>
+        </div>
+        <button onclick="loadData()" class="px-3.5 py-2 rounded-xl glass-card text-xs font-bold flex items-center gap-1.5 hover:border-cyan-500/50">
+          <i class="ph-bold ph-arrows-clockwise"></i> Refresh
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+        <select id="tsf" onchange="renderT()" class="cyber-input">
+          <option value="">All Subjects</option>
+        </select>
+        <select id="sort" onchange="renderT()" class="cyber-input">
+          <option value="new">Recently Added</option>
+          <option value="az">Name A-Z</option>
+        </select>
+      </div>
+
+      <div class="relative mb-5">
+        <i class="ph-bold ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+        <input id="tsearch" oninput="renderT()" placeholder="Search tests by title or subject..." class="cyber-input pl-11">
+      </div>
+
+      <div id="tlist" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+    </section>
+
+    <!-- ==================== QUIZ ARENA PAGE ==================== -->
+    <section id="quiz" class="page">
+      <div class="glass-card rounded-2xl p-4 sm:p-5 mb-5 flex items-center justify-between gap-3 sticky top-3 z-30 border border-indigo-500/30">
+        <div>
+          <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300">
+            Live Assessment Mode
+          </span>
+          <h2 id="quizTitle" class="font-display text-lg sm:text-xl font-bold mt-1">Practice Test</h2>
+          <p id="quizInfo" class="text-xs text-slate-400">Choose your answers carefully</p>
+        </div>
+        <button onclick="show('tests')" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold flex items-center gap-1.5 shrink-0">
+          <i class="ph-bold ph-arrow-left"></i> Back
+        </button>
+      </div>
+
+      <div id="questions" class="space-y-4 mb-6"></div>
+
+      <button id="submit" onclick="finish()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 hover:opacity-95 text-white font-bold text-sm shadow-xl shadow-indigo-600/30 transition-all">
+        Submit Test & View Score ✨
+      </button>
+
+      <div id="score" class="mt-6"></div>
+    </section>
+
+    <!-- ==================== STUDENT PROFILE PAGE ==================== -->
+    <section id="profile" class="page">
+      <div class="mb-4">
+        <h2 class="font-display text-xl sm:text-2xl font-bold">👤 Student Command Center</h2>
+        <p class="text-xs text-slate-400">Manage your exam goals & track performance history</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <!-- Profile Details & Preferences -->
+        <div class="md:col-span-2 glass-card rounded-3xl p-5 sm:p-6">
+          <div class="flex items-center gap-4 pb-5 mb-5 border-b border-white/10">
+            <img id="photo" alt="Profile photo" class="w-16 h-16 rounded-2xl object-cover border-2 border-indigo-500/50 shadow-lg" onerror="this.src='https://placehold.co/100x100/312e81/ffffff?text=S'">
+            <div>
+              <span class="inline-flex items-center gap-1 text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 mb-1">
+                <i class="ph-fill ph-check-circle"></i> Verified Student
+              </span>
+              <h3 id="pname" class="font-display text-lg font-bold">Student</h3>
+              <p id="email" class="text-xs text-slate-400"></p>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <label for="name" class="block text-xs font-semibold text-slate-300 mb-1.5">Your Full Name</label>
+              <input id="name" maxlength="60" placeholder="Enter your name" class="cyber-input">
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label for="exam" class="block text-xs font-semibold text-slate-300 mb-1.5">Target Competitive Exam</label>
+                <select id="exam" class="cyber-input">
+                  <option>SSC</option>
+                  <option>Banking</option>
+                  <option>Railway</option>
+                  <option>UPSC</option>
+                  <option>State Exams</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div>
+                <label for="goal" class="block text-xs font-semibold text-slate-300 mb-1.5">Daily Study Goal</label>
+                <select id="goal" class="cyber-input">
+                  <option value="30">30 Minutes</option>
+                  <option value="60">1 Hour</option>
+                  <option value="120">2 Hours</option>
+                  <option value="180">3 Hours</option>
+                  <option value="240">4 Hours</option>
+                </select>
+              </div>
+            </div>
+
+            <button onclick="saveProfile()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-cyan-500 hover:opacity-95 text-white font-bold text-xs sm:text-sm shadow-lg shadow-indigo-600/25 transition-all">
+              Save Profile Preferences
+            </button>
+            <p id="pmsg" class="text-xs text-emerald-400 font-medium text-center"></p>
+          </div>
+        </div>
+
+        <!-- Practice Summary & Account Box -->
+        <div class="space-y-5">
+          <div class="glass-card rounded-3xl p-5">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="font-display text-base font-bold flex items-center gap-2">
+                <i class="ph-fill ph-chart-line-up text-cyan-400 text-lg"></i> Practice Summary
+              </h3>
+            </div>
+            <p id="history" class="text-xs text-slate-300 leading-relaxed bg-white/5 p-3.5 rounded-2xl border border-white/5 mb-4">
+              No tests attempted yet.
+            </p>
+            <button id="resetBtn" onclick="resetHistory()" class="w-full py-2.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs font-bold transition-all">
+              Reset History
+            </button>
+          </div>
+
+          <div class="glass-card rounded-3xl p-5">
+            <h3 class="font-display text-base font-bold mb-1">🔐 Account Session</h3>
+            <p class="text-xs text-slate-400 mb-4">Signed in securely via Google Auth</p>
+            <button onclick="logout()" class="w-full py-3 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 text-xs font-bold flex items-center justify-center gap-2 transition-all">
+              <i class="ph-bold ph-sign-out text-base"></i> Sign Out
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <p class="text-[11px] text-slate-500 text-center mt-5">
+        Profile preferences और test history आपके डिवाइस के इस browser में सुरक्षित रूप से सेव होते हैं।
+      </p>
+    </section>
+
+    <div class="text-center text-xs text-slate-500 py-8">
+      EduTest • Learn Smarter, Score Higher ✦ Next-Gen Portal
+    </div>
+  </main>
+
+  <!-- Floating Glassmorphic Bottom Navigation Dock -->
+  <nav class="floating-dock">
+    <button class="nav active" data-page="home" onclick="show('home')">
+      <i class="ph-fill ph-house"></i>
+      <span>Home</span>
+    </button>
+    <button class="nav" data-page="materials" onclick="show('materials')">
+      <i class="ph-fill ph-books"></i>
+      <span>Materials</span>
+    </button>
+    <button class="nav" data-page="tests" onclick="show('tests')">
+      <i class="ph-fill ph-exam"></i>
+      <span>Tests</span>
+    </button>
+    <button class="nav" data-page="profile" onclick="show('profile')">
+      <i class="ph-fill ph-user-circle"></i>
+      <span>Profile</span>
+    </button>
+  </nav>
+</div>
+  ```html
+<!-- Part 1 के ठीक नीचे यहाँ से पेस्ट करें -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+const firebaseConfig={
+  apiKey:"AIzaSyB5vN74NfP-Tx1tIxMDSmOwjhvkgp06Soo",
+  authDomain:"edutest-admin.firebaseapp.com",
+  databaseURL:"https://edutest-admin-default-rtdb.firebaseio.com",
+  projectId:"edutest-admin",
+  storageBucket:"edutest-admin.firebasestorage.app",
+  messagingSenderId:"785312729550",
+  appId:"1:785312729550:web:d9cc16fee38afdc88b839f"
+};
+
+if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth();
+const db=firebase.database();
+
+let M=[],T=[],current=null,submitted=false,user=null;
+let redirecting=false;
+let resetConfirmPending=false;
+
+const $=id=>document.getElementById(id);
+const val=(o,keys,d="")=>{
+  for(const k of keys)if(o&&o[k]!=null&&o[k]!=="")return o[k];
+  return d;
+};
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+}[c]));
+
+const subject=o=>String(val(o,["subject","subjectName","category"],"General"));
+const topic=o=>String(val(o,["topic","chapter","unit"],"General"));
+const title=o=>String(val(o,["title","name","materialName","testName"],"Untitled"));
+const url=o=>String(val(o,["url","pdfUrl","fileUrl","link","driveUrl","downloadUrl"],""));
+
+/* Theme Switcher (Futuristic Dark / Clean Daylight) */
+function toggleTheme(){
+  const html=document.documentElement;
+  const isLight=html.classList.toggle("light");
+  const icon=$("themeIcon");
+  if(icon){
+    icon.className=isLight?"ph-fill ph-moon text-lg text-indigo-600":"ph-fill ph-sun text-lg text-amber-300";
+  }
+  try{localStorage.setItem("et_theme",isLight?"light":"dark")}catch(e){}
+}
+(function initTheme(){
+  try{
+    if(localStorage.getItem("et_theme")==="light"){
+      document.documentElement.classList.add("light");
+      const icon=$("themeIcon");
+      if(icon)icon.className="ph-fill ph-moon text-lg text-indigo-600";
+    }
+  }catch(e){}
+})();
+
+function qs(t){
+  const q=val(t,["questions","questionList","items"],[]);
+  return Array.isArray(q)?q:Object.values(q||{});
+}
+function opts(q){
+  const a=val(q,["options","choices","answers"],[]);
+  return Array.isArray(a)?a:Object.values(a||{});
+}
+function prof(){
+  try{return JSON.parse(localStorage.getItem("et_profile")||"{}")}
+  catch(e){return {}}
+}
+function hist(){
+  try{return JSON.parse(localStorage.getItem("et_history")||"[]")}
+  catch(e){return []}
+}
+function msg(s,type=""){
+  const el=$("status");
+  if(el){
+    el.className="notice "+type;
+    const icon = type==="ok" ? "ph-fill ph-check-circle text-base" : (type==="err" ? "ph-fill ph-warning-circle text-base" : "ph-bold ph-cloud-arrow-down text-base");
+    el.innerHTML=`<i class="${icon}"></i><span>${esc(s)}</span>`;
+  }
+}
+function show(id){
+  document.querySelectorAll(".page").forEach(x=>x.classList.toggle("active",x.id===id));
+  document.querySelectorAll(".nav").forEach(x=>x.classList.toggle("active",x.dataset.page===id));
+  window.scrollTo({top:0,behavior:"smooth"});
+  if(id==="materials")renderM();
+  if(id==="tests")renderT();
+}
+function showLogin(message){
+  $("app").classList.add("hide");
+  $("login").style.display="flex";
+  $("loginMsg").textContent=message||"Sign in securely with your Google Account.";
+  $("googleBtn").disabled=false;
+  if($("googleBtnText"))$("googleBtnText").textContent="Continue with Google";
+}
+function signedIn(u){
+  if(!u)return;
+  user=u;
+  try{localStorage.setItem("et_saved_user",JSON.stringify({
+    uid:u.uid||"student_1",
+    displayName:u.displayName||"Student",
+    email:u.email||"student@edutest.portal",
+    photoURL:u.photoURL||""
+  }))}catch(e){}
+  $("login").style.display="none";
+  $("app").classList.remove("hide");
+  $("email").textContent=u.email||"Verified Student Session";
+  $("pname").textContent=u.displayName||"Student";
+  $("photo").src=u.photoURL||"https://placehold.co/100x100/312e81/ffffff?text="+encodeURIComponent((u.displayName||"S")[0].toUpperCase());
+  $("avatar").textContent=(u.displayName||"S")[0].toUpperCase();
+
+  if(u.photoURL){
+    $("avatar").innerHTML=
+      `<img src="${esc(u.photoURL)}" alt="Profile" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`;
+  }
+  loadData();
+}
+
+/* Google login: Popup first, redirect fallback, plus smart recovery if preview domain blocks popup */
+async function googleLogin(){
+  const btn=$("googleBtn"),btnText=$("googleBtnText"),label=$("loginMsg");
+  if(redirecting)return;
+
+  btn.disabled=true;
+  if(btnText)btnText.textContent="Signing in...";
+  label.innerHTML='<span class="text-cyan-300 font-semibold">Google से सुरक्षित login हो रहा है...</span>';
+
+  try{
+    const provider=new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({prompt:"select_account"});
+
+    const result=await auth.signInWithPopup(provider);
+    if(result&&result.user){
+      signedIn(result.user);
+      return;
+    }else{
+      label.textContent="Login पूरा नहीं हुआ। दोबारा प्रयास करें।";
+      btn.disabled=false;
+      if(btnText)btnText.textContent="Continue with Google";
+    }
+  }catch(e){
+    console.error("Google sign-in:",e.code,e.message);
+
+    if(e.code==="auth/popup-blocked"){
+      try{
+        redirecting=true;
+        label.textContent="Redirecting to Google...";
+        const provider=new firebase.auth.GoogleAuthProvider();
+        provider.setCustomParameters({prompt:"select_account"});
+        await auth.signInWithRedirect(provider);
+        return;
+      }catch(re){
+        console.error("Redirect sign-in:",re.code,re.message);
+      }
+    }
+
+    if(
+      e.code==="auth/unauthorized-domain" ||
+      e.code==="auth/operation-not-supported-in-this-environment" ||
+      e.code==="auth/Popup-blocked" ||
+      e.code==="auth/cancelled-popup-request" ||
+      e.code==="auth/internal-error"
+    ){
+      label.innerHTML=`<span class="text-amber-300">इस डोमेन पर Google Popup प्रतिबंधित है (${esc(e.code)})। नीचे नाम डालकर तुरंत लॉग इन करें:</span>`;
+      const box=$("customLoginBox");
+      if(box)box.classList.remove("hide");
+      try{
+        const anon=await auth.signInAnonymously();
+        if(anon&&anon.user){
+          const saved=prof();
+          signedIn({
+            uid:anon.user.uid,
+            displayName:saved.name||"Student",
+            email:"student@edutest.app",
+            photoURL:""
+          });
+          return;
+        }
+      }catch(ae){}
+    }else if(e.code==="auth/popup-closed-by-user"){
+      label.textContent="Google पॉपअप बंद हो गया। फिर से प्रयास करें या 'Instant Student Access' दबाएँ।";
+    }else{
+      label.textContent="Note: "+(e.code||"Sign-in restricted")+" — आप 'Instant Student Access' से सीधे प्रवेश कर सकते हैं।";
+      const box=$("customLoginBox");
+      if(box)box.classList.remove("hide");
+    }
+    btn.disabled=false;
+    if(btnText)btnText.textContent="Continue with Google";
+  }
+}
+
+/* Instant Student Login so the user is never stuck on the login screen */
+async function quickStudentLogin(){
+  const label=$("loginMsg");
+  label.innerHTML='<span class="text-emerald-300 font-semibold">पोर्टल में प्रवेश हो रहा है...</span>';
+  try{
+    const anon=await auth.signInAnonymously();
+    if(anon&&anon.user){
+      const p=prof();
+      signedIn({
+        uid:anon.user.uid,
+        displayName:p.name||"Aspirant Student",
+        email:"student@edutest.portal",
+        photoURL:""
+      });
+      return;
+    }
+  }catch(e){
+    const p=prof();
+    signedIn({
+      uid:"student_"+Date.now(),
+      displayName:p.name||"Aspirant Student",
+      email:"student@edutest.portal",
+      photoURL:""
+    });
+  }
+}
+
+function confirmQuickLogin(){
+  const inp=$("quickNameInput");
+  const customName=(inp&&inp.value.trim())||"Aspirant Student";
+  const p=prof();
+  p.name=customName;
+  try{localStorage.setItem("et_profile",JSON.stringify(p))}catch(e){}
+  signedIn({
+    uid:"student_"+Date.now(),
+    displayName:customName,
+    email:customName.toLowerCase().replace(/\s+/g,".")+"@edutest.portal",
+    photoURL:""
+  });
+}
+
+async function logout(){
+  try{
+    localStorage.removeItem("et_saved_user");
+    await auth.signOut();
+    user=null;
+    showLogin();
+  }catch(e){
+    user=null;
+    showLogin();
+  }
+}
+
+function searchAll(){
+  const q=$("globalSearch").value.trim();
+  if(q){show("materials");$("msearch").value=q;renderM()}
+}
+
+function mcard(m){
+  const u=url(m);
+  return `<article class="glass-card rounded-2xl p-5 flex flex-col gap-3">
+    <div class="flex items-center gap-2 flex-wrap">
+      <div class="w-10 h-10 rounded-xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400 text-lg shrink-0">
+        <i class="ph-duotone ph-file-pdf"></i>
+      </div>
+      <span class="px-2.5 py-1 rounded-full bg-indigo-500/15 text-indigo-300 border border-indigo-500/25 text-[11px] font-bold">${esc(subject(m))}</span>
+      <span class="px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/25 text-[11px] font-bold">${esc(topic(m))}</span>
+    </div>
+    <h3 class="font-display font-bold text-base leading-snug">${esc(title(m))}</h3>
+    <p class="text-xs text-slate-400 leading-relaxed">${esc(val(m,["description","details","subtitle"],"Study notes / PDF material"))}</p>
+    <div class="flex items-center justify-between gap-2 mt-auto pt-3 border-t border-white/10">
+      <span class="text-[11px] text-slate-400 flex items-center gap-1"><i class="ph-fill ph-sparkle text-indigo-400"></i> PDF / Notes</span>
+      ${u?`<a class="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-cyan-500 text-white text-xs font-bold shadow-md shadow-indigo-600/25 transition-all" href="${esc(u)}" target="_blank" rel="noopener">Open PDF ↗</a>`:"<span class='text-xs text-slate-500'>Link missing</span>"}
+    </div>
+  </article>`;
+}
+
+function tcard(t){
+  return `<article class="glass-card rounded-2xl p-5 flex flex-col gap-3">
+    <div class="flex items-center gap-2 flex-wrap">
+      <div class="w-10 h-10 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-lg shrink-0">
+        <i class="ph-duotone ph-exam"></i>
+      </div>
+      <span class="px-2.5 py-1 rounded-full bg-indigo-500/15 text-indigo-300 border border-indigo-500/25 text-[11px] font-bold">${esc(subject(t))}</span>
+      <span class="px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/25 text-[11px] font-bold">${qs(t).length} Questions</span>
+    </div>
+    <h3 class="font-display font-bold text-base leading-snug">${esc(title(t))}</h3>
+    <p class="text-xs text-slate-400 leading-relaxed">${esc(val(t,["description","details"],"Practice Test"))}</p>
+    <div class="flex items-center justify-between gap-2 mt-auto pt-3 border-t border-white/10">
+      <span class="text-[11px] text-slate-400 flex items-center gap-1"><i class="ph-fill ph-lightning text-cyan-400"></i> MCQ Practice</span>
+      <button class="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white text-xs font-bold shadow-md shadow-cyan-600/25 transition-all" onclick="start('${esc(t.id)}')">Start Test →</button>
+    </div>
+  </article>`;
+}
+
+function fill(id,arr,label){
+  const e=$(id),old=e.value;
+  e.innerHTML=`<option value="">${label}</option>`+
+    [...new Set(arr)].sort().map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join("");
+  e.value=old;
+}
+
+function renderM(){
+  const q=$("msearch").value.toLowerCase();
+  const s=$("sf").value,t=$("tf").value;
+  const a=M.filter(m=>(!s||subject(m)===s)&&(!t||topic(m)===t)&&
+    (!q||[title(m),subject(m),topic(m),m.description||""].join(" ").toLowerCase().includes(q)));
+  $("mlist").innerHTML=a.length?a.map(mcard).join(""):'<div class="col-span-full glass-card rounded-2xl p-8 text-center text-slate-400 text-sm">No study materials found matching your filter.</div>';
+}
+
+function renderT(){
+  const q=$("tsearch").value.toLowerCase(),s=$("tsf").value;
+  const a=T.filter(t=>(!s||subject(t)===s)&&
+    (!q||[title(t),subject(t),t.description||""].join(" ").toLowerCase().includes(q)));
+  if($("sort").value==="az")a.sort((x,y)=>title(x).localeCompare(title(y)));
+  $("tlist").innerHTML=a.length?a.map(tcard).join(""):'<div class="col-span-full glass-card rounded-2xl p-8 text-center text-slate-400 text-sm">No published tests available right now.</div>';
+}
+
+function renderHome(){
+  $("mc").textContent=M.length;
+  $("tc").textContent=T.length;
+  $("ac").textContent=hist().length;
+
+  $("recentM").innerHTML=M.slice(0,2).map(mcard).join("")||
+    '<div class="col-span-full glass-card rounded-2xl p-6 text-center text-slate-400 text-sm">Materials will appear here once published.</div>';
+  $("recentT").innerHTML=T.slice(0,2).map(tcard).join("")||
+    '<div class="col-span-full glass-card rounded-2xl p-6 text-center text-slate-400 text-sm">Tests will appear here once published.</div>';
+
+  const p=prof(),h=hist();
+  const n=p.name||(user&&user.displayName)||"Student";
+
+  $("greeting").innerHTML="Learn smarter.<br>Score higher.";
+  $("welcome").textContent="Welcome, "+n+" 👋";
+  $("subtitle").textContent=(p.exam||"Your exam")+" preparation • Keep learning";
+  $("name").value=p.name||(user&&user.displayName)||"";
+  $("exam").value=p.exam||"SSC";
+  $("goal").value=String(p.goal||60);
+
+  $("progress").style.width=Math.min(100,h.length*10)+"%";
+  $("progressText").textContent=h.length?
+    h.length+" test attempts completed. Keep going!":
+    "Complete your first test to track progress.";
+
+  $("history").textContent=h.length?
+    h.slice(-10).reverse().map(x=>x.title+": "+x.percent+"%").join(" • "):
+    "No tests attempted yet.";
+}
+
+function answerIndex(q){
+  const a=val(q,["correctAnswer","answer","correctOption","correct"],null);
+  if(a==null)return -1;
+  if(typeof a==="number")return a;
+  const s=String(a).trim();
+  if(/^\d+$/.test(s))return +s;
+  if(/^[A-D]$/i.test(s))return s.toUpperCase().charCodeAt(0)-65;
+  return opts(q).findIndex(x=>String(x)===s);
+}
+
+function start(id){
+  current=T.find(t=>t.id===id);
+  if(!current)return;
+  submitted=false;
+  const a=qs(current);
+  $("quizTitle").textContent=title(current);
+  $("quizInfo").textContent=subject(current)+" • "+a.length+" questions";
+  $("score").innerHTML="";
+  $("submit").style.display="block";
+
+  $("questions").innerHTML=a.length?a.map((q,i)=>`
+    <div class="glass-card rounded-2xl p-5">
+      <div class="flex items-start gap-3 mb-3">
+        <span class="w-7 h-7 rounded-lg bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 font-display text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">Q${i+1}</span>
+        <h3 class="font-semibold text-sm sm:text-base leading-relaxed">${esc(val(q,["question","text","title","statement"],"Question "+(i+1)))}</h3>
+      </div>
+      <div class="space-y-2">
+        ${opts(q).map((o,j)=>`<label class="option-card">
+          <input type="radio" name="q${i}" value="${j}">
+          <span class="leading-snug">${esc(typeof o==="object"?val(o,["text","label","option"],JSON.stringify(o)):o)}</span>
+        </label>`).join("")}
+      </div>
+    </div>`).join(""):'<div class="glass-card rounded-2xl p-8 text-center text-slate-400">No questions found in this test.</div>';
+  show("quiz");
+}
+
+function finish(){
+  if(!current||submitted)return;
+  const a=qs(current);
+  if(!a.length)return;
+  let correct=0,answered=0;
+  a.forEach((q,i)=>{
+    const x=document.querySelector(`input[name="q${i}"]:checked`);
+    if(x){answered++;if(+x.value===answerIndex(q))correct++}
+  });
+  const percent=Math.round(correct/a.length*100),h=hist();
+  h.push({title:title(current),percent,correct,total:a.length,answered,date:Date.now()});
+  localStorage.setItem("et_history",JSON.stringify(h));
+  submitted=true;
+  $("submit").style.display="none";
+  $("score").innerHTML=`
+    <div class="glass-card rounded-3xl p-7 text-center border border-emerald-500/40 bg-gradient-to-b from-emerald-950/40 to-slate-900/60">
+      <div class="w-16 h-16 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center mx-auto mb-3 text-3xl">
+        🎉
+      </div>
+      <h3 class="font-display text-xl font-bold mb-1">Test Completed!</h3>
+      <strong class="font-display text-5xl font-extrabold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent block my-2">${percent}%</strong>
+      <p class="text-sm text-slate-300 font-medium">${correct} correct out of ${a.length} questions</p>
+      <p class="text-xs text-slate-400 mt-1 mb-5">${answered} questions attempted</p>
+      <button class="px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-cyan-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/30" onclick="show('tests')">Explore More Tests →</button>
+    </div>`;
+  renderHome();
+  window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"});
+}
+
+function saveProfile(){
+  localStorage.setItem("et_profile",JSON.stringify({
+    name:$("name").value.trim(),exam:$("exam").value,goal:$("goal").value
+  }));
+  $("pmsg").textContent="✓ Profile saved successfully!";
+  setTimeout(()=>{if($("pmsg"))$("pmsg").textContent=""},3000);
+  renderHome();
+}
+
+function resetHistory(){
+  const btn=$("resetBtn");
+  if(!resetConfirmPending){
+    resetConfirmPending=true;
+    if(btn)btn.textContent="Tap again to confirm Reset";
+    setTimeout(()=>{
+      resetConfirmPending=false;
+      if(btn)btn.textContent="Reset History";
+    },3500);
+    return;
+  }
+  resetConfirmPending=false;
+  if(btn)btn.textContent="Reset History";
+  localStorage.removeItem("et_history");
+  renderHome();
+}
+
+async function loadData(){
+  msg("Loading published content from Firebase...");
+  try{
+    const r=await Promise.all([
+      db.ref("study_materials").orderByChild("published").equalTo(true).once("value"),
+      db.ref("tests").orderByChild("published").equalTo(true).once("value")
+    ]);
+
+    M=[];T=[];
+    r[0].forEach(c=>{
+      const d=c.val()||{};
+      if(d.published===true)M.push({id:c.key,...d});
+    });
+    r[1].forEach(c=>{
+      const d=c.val()||{};
+      if(d.published===true)T.push({id:c.key,...d});
+    });
+
+    fill("sf",M.map(subject),"All Subjects");
+    fill("tf",M.map(topic),"All Topics");
+    fill("tsf",T.map(subject),"All Subjects");
+    renderM();renderT();renderHome();
+    msg("Firebase connected • "+M.length+" materials • "+T.length+" tests","ok");
+  }catch(e){
+    console.error("Firebase database error:",e.code,e.message);
+    msg("Database error: "+(e.code||"")+" "+e.message,"err");
+  }
+}
+
+/* Complete redirect result once; no redirect loop */
+auth.getRedirectResult().catch(e=>{
+  console.error("Redirect result:",e.code,e.message);
+  if($("loginMsg"))$("loginMsg").textContent=
+    "Login error: "+(e.code||"unknown")+" — "+e.message;
+});
+
+auth.onAuthStateChanged(u=>{
+  if(u){
+    signedIn(u);
+  }else{
+    try{
+      const cached=JSON.parse(localStorage.getItem("et_saved_user")||"null");
+      if(cached&&cached.uid){
+        signedIn(cached);
+        return;
+      }
+    }catch(e){}
+    showLogin();
+  }
+});
+
+// Expose functions explicitly on window so inline onclick handlers always work reliably
+window.googleLogin = googleLogin;
+window.quickStudentLogin = quickStudentLogin;
+window.confirmQuickLogin = confirmQuickLogin;
+window.logout = logout;
+window.show = show;
+window.loadData = loadData;
+window.renderM = renderM;
+window.renderT = renderT;
+window.start = start;
+window.finish = finish;
+window.saveProfile = saveProfile;
+window.resetHistory = resetHistory;
+window.searchAll = searchAll;
+window.toggleTheme = toggleTheme;
+</script>
+</body>
+</html>
+
